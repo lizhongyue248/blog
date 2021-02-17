@@ -3,7 +3,22 @@ module.exports = {
     title: 'echocow-blog',
     siteUrl: 'http://new.echocow.cn'
   },
+  flags: {
+    DEV_SSR: false,
+    FAST_DEV: false,
+    FAST_REFRESH: true,
+    PARALLEL_SOURCING: true
+  },
   plugins: [
+    'gatsby-plugin-postcss',
+    'gatsby-transformer-json',
+    'gatsby-plugin-react-helmet',
+    {
+      resolve: 'gatsby-source-filesystem',
+      options: {
+        path: './data/'
+      }
+    },
     {
       resolve: 'gatsby-transformer-asciidoc',
       options: {

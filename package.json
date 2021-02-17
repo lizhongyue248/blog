@@ -8,6 +8,10 @@
     "url": "https://github.com/lizhongyue248",
     "email": "lizhongyue248@163.com"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lizhongyue248/a-yue"
+  },
   "keywords": [
     "gatsby"
   ],
@@ -20,31 +24,39 @@
   },
   "dependencies": {
     "@material-ui/core": "^4.11.3",
+    "@material-ui/icons": "^4.11.2",
     "ahooks": "^2.9.6",
+    "autoprefixer": "^10.2.4",
     "gatsby": "^2.26.1",
     "gatsby-image": "^2.10.0",
     "gatsby-plugin-google-analytics": "^2.10.0",
     "gatsby-plugin-manifest": "^2.11.0",
     "gatsby-plugin-offline": "^3.9.0",
-    "gatsby-plugin-postcss": "^3.6.0",
-    "gatsby-plugin-react-helmet": "^3.9.0",
+    "gatsby-plugin-postcss": "^3.7.0",
+    "gatsby-plugin-react-helmet": "^4.0.0-next.0",
     "gatsby-plugin-sharp": "^2.13.4",
     "gatsby-plugin-sitemap": "^2.11.0",
     "gatsby-plugin-typescript": "^2.11.0",
     "gatsby-source-filesystem": "^2.10.0",
     "gatsby-theme-material-ui": "^1.0.13",
     "gatsby-transformer-asciidoc": "^1.9.0",
+    "gatsby-transformer-json": "^2.11.0",
     "gatsby-transformer-sharp": "^2.11.0",
+    "mdi-material-ui": "^6.21.0",
     "postcss": "^8.2.4",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
-    "react-helmet": "^6.1.0"
+    "react-helmet": "^6.1.0",
+    "react-typed": "^1.2.0",
+    "tailwindcss": "^2.0.2",
+    "use-clipboard-copy": "^0.1.2"
   },
   "devDependencies": {
     "@babel/plugin-transform-react-jsx": "^7.12.13",
     "@types/node": "^14.14.22",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
+    "@types/react-helmet": "^6.1.0",
     "@typescript-eslint/eslint-plugin": "^4.14.2",
     "@typescript-eslint/parser": "^4.14.2",
     "babel-preset-gatsby": "^0.12.0",
