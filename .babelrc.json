@@ -5,6 +5,57 @@
       {
         "runtime": "automatic"
       }
+    ],
+    [
+      "prismjs",
+      {
+        "languages": [
+          "javascript",
+          "clike",
+          "docker",
+          "json",
+          "go",
+          "groovy",
+          "http",
+          "ignore",
+          "ini",
+          "php",
+          "sql",
+          "plsql",
+          "stylus",
+          "pug",
+          "git",
+          "dart",
+          "yaml",
+          "toml",
+          "bash",
+          "jsx",
+          "kotlin",
+          "scala",
+          "swift",
+          "css",
+          "markup",
+          "asciidoc",
+          "java",
+          "markdown",
+          "java",
+          "javadoc",
+          "ruby"
+        ],
+        "plugins": [
+          "show-language",
+          "copy-to-clipboard",
+          "line-numbers",
+          "inline-color",
+          "previewers",
+          "autoloader",
+          "autolinker",
+          "download-button",
+          "match-braces"
+        ],
+        "theme": "tomorrow",
+        "css": true
+      }
     ]
   ],
   "presets": [
@@ -12,7 +63,10 @@
       "babel-preset-gatsby",
       {
         "targets": {
-          "browsers": [">0.25%", "not dead"]
+          "browsers": [
+            ">0.25%",
+            "not dead"
+          ]
         }
       }
     ]

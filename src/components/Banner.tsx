@@ -3,10 +3,7 @@ import Typed from 'react-typed'
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown'
 import { createStyles } from '@material-ui/core/styles'
 import { makeStyles, Typography } from '@material-ui/core'
-
-interface BannerProps {
-  title: Array<string>
-}
+import { BannerProps } from '../interface/page'
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -21,18 +18,17 @@ const useStyles = makeStyles(() =>
   })
 )
 
-const Banner: FC<BannerProps> = (props: BannerProps): ReactElement => {
-  const { title = [''] } = props
+const Banner: FC<BannerProps> = ({ title }): ReactElement => {
   const classes = useStyles()
   const handleScrollContent = () => {
-    window.scrollTo({ top: screen.height, behavior: 'smooth' })
+    window.scrollTo({ top: screen.height - 100, behavior: 'smooth' })
   }
   return (
     <div className={classes.banner}>
       <div className={`${classes.mask} w-full h-full flex justify-center items-center`}>
         <Typography className='text-white' variant='h3'>
           <Typed
-            strings={title}
+            strings={[title]}
             typeSpeed={40}
             backSpeed={50}
             cursorChar='_'

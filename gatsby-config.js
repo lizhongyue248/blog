@@ -1,6 +1,6 @@
 module.exports = {
   siteMetadata: {
-    title: 'echocow-blog',
+    title: 'yue-blog',
     siteUrl: 'http://new.echocow.cn'
   },
   flags: {
@@ -23,8 +23,9 @@ module.exports = {
       resolve: 'gatsby-transformer-asciidoc',
       options: {
         attributes: {
-          showtitle: true
-        }
+          icons: 'font'
+        },
+        safe: 'unsafe'
       }
     },
     {
@@ -66,6 +67,12 @@ module.exports = {
       options: {
         name: 'pages',
         path: './posts'
+      }
+    },
+    {
+      resolve: 'gatsby-plugin-typography',
+      options: {
+        pathToConfigModule: 'src/templates/typography'
       }
     }
   ]

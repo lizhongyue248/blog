@@ -1,7 +1,17 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const colors = require('tailwindcss/colors')
+
 module.exports = {
   purge: ['./src/**/*.{js,jsx,ts,tsx}'],
-  darkMode: false, // or 'media' or 'class'
+  darkMode: 'class',
   theme: {
+    colors: {
+      ...colors,
+      transparent: 'transparent'
+    },
+    boxShadow: {
+      image: '0 5px 11px 0 rgb(0 0 0 / 18%), 0 4px 15px 0 rgb(0 0 0 / 15%)'
+    },
     extend: {
       keyframes: {
         'bounce-opacity': {
@@ -23,7 +33,9 @@ module.exports = {
     }
   },
   variants: {
-    extend: {}
+    extend: {
+      inset: ['hover', 'responsive']
+    }
   },
   plugins: [],
   important: true,

@@ -1,12 +1,13 @@
 import { FC, ReactElement } from 'react'
+import { Container } from '@material-ui/core'
 import Layout from '../components/Layout'
-import Banner from '../components/Banner'
 
 const IndexPage: FC = (): ReactElement => {
   return (
     <Layout>
-      <Banner />
-      123
+      <Container>
+        test
+      </Container>
     </Layout>
   )
 }
