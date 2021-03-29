@@ -1,7 +1,7 @@
 module.exports = {
   siteMetadata: {
-    title: 'yue-blog',
-    siteUrl: 'http://new.echocow.cn'
+    title: '阿月很乖',
+    siteUrl: 'https://blog.ayue.wiki'
   },
   flags: {
     DEV_SSR: false,

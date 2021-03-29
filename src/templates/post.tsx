@@ -1,5 +1,6 @@
 import { FC, ReactElement, useEffect, useState } from 'react'
 import { useClipboard } from 'use-clipboard-copy'
+import Prism from 'prismjs'
 import { graphql, Link } from 'gatsby'
 import { useBoolean } from 'ahooks'
 import SpeedDial from '@material-ui/lab/SpeedDial'
@@ -76,6 +77,7 @@ const Post: FC<PostProps> = (props): ReactElement => {
       const element = block as HTMLElement
       element.classList.add('shadow-image', 'mb-3')
     })
+    Prism.highlightAll()
   })
 
   return (

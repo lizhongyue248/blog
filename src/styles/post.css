@@ -410,9 +410,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
     text-decoration: underline;
 }
 
-/*#post-content table {*/
-/*    table-layout: fixed;*/
-/*}*/
+#post-content table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+#post-content table td {
+    word-break: break-all;
+}
 
 /*#post-content table .icon,*/
 /*#post-content .colist table tr > td:first-child {*/

@@ -1,13 +1,10 @@
 import { FC, ReactElement } from 'react'
-import { Container } from '@material-ui/core'
 import Layout from '../components/Layout'
 
 const IndexPage: FC = (): ReactElement => {
   return (
-    <Layout>
-      <Container>
-        test
-      </Container>
+    <Layout title='阿月很乖'>
+      test
     </Layout>
   )
 }

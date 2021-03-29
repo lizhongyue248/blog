@@ -16,8 +16,8 @@
     "gatsby"
   ],
   "scripts": {
-    "develop": "gatsby develop",
-    "start": "gatsby develop",
+    "develop": "gatsby develop -p 8001",
+    "start": "gatsby develop -p 8001",
     "build": "gatsby build",
     "serve": "gatsby serve",
     "clean": "gatsby clean",
@@ -49,6 +49,7 @@
     "mdi-material-ui": "^6.21.0",
     "ping-url": "^1.0.3",
     "postcss": "^8.2.4",
+    "prismjs": "^1.23.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-helmet": "^6.1.0",
@@ -60,12 +61,14 @@
   "devDependencies": {
     "@babel/plugin-transform-react-jsx": "^7.13.12",
     "@types/node": "^14.14.22",
+    "@types/prismjs": "^1.16.4",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.3",
     "@types/react-helmet": "^6.1.0",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
     "asciidoctor": "^2.2.2",
+    "babel-plugin-prismjs": "^2.0.1",
     "babel-preset-gatsby": "^1.1.0",
     "eslint": "^7.19.0",
     "eslint-config-standard": "^16.0.2",
