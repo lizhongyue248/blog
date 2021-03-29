@@ -1,7 +1,7 @@
 export interface Node {
   html: string
   id: string
-  fields: { slug: string, modifiedTime: string, birthTime: string }
+  fields: { slug: string, modifiedTime: string, birthTime: string, year: number }
   revision: { date: string, number: string }
   author: { fullName: string, email: string }
   document: { title: string }
