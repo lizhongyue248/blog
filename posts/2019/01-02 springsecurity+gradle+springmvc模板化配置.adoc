@@ -1,0 +1,329 @@
+= spring security + gradle + spring mvc 模板化配置
+:page-description: spring security + gradle + spring mvc 模板化配置
+:page-category: spring
+:page-image: https://img.hacpai.com/bing/20190205.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2019/01/02/1546395090197.html
+:page-created: 1546395938298
+:page-modified: 1546412533326
+:toc:
+
+以前自己一直被安全的问题困扰，对这方面知识欠缺，最近学习了 spring
+security，发现其实也别有一番洞天。写了一个简单
+demo放在博客上，以便随用随取。
+
+目录结构如图
+
+image::https://resources.echocow.cn//file/2019/01/74b6f15719c44d858fbd0aedc0d79751___20190102101236.png[__20190102101236png]
+
+附上对应的文件，已经写好了注释
+
+== SpringMvcInitializer
+
+[source,java]
+----
+package cn.echocow.spring;
+
+import cn.echocow.spring.config.RootConfig;
+import cn.echocow.spring.config.WebConfig;
+import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
+
+/**
+ * 继承 AbstractAnnotationConfigDispatcherServletInitializer，在 servlet 3.0 环境中
+ * 容器会在类路径中查找实现 ServletContainInitializer 接口的类，如果发现就使用他来配置 servlet
+ * spring 提供了这个借口实现，名为 SpringServletContainerInitializer，这个类又会查找实现
+ * WebApplicationInitializer 的类并将配置的任务交给他来完成，spring 3.2 引入一个基础实现，也就是
+ * AbstractAnnotationConfigDispatcherServletInitializer，当继承后，一旦部署就会自动被发现
+ * 简单地说相当于web.xml文件
+ * @author Echo
+ * @version 1.0
+ * @date 2019-01-01 13:34
+ */
+public class SpringMvcInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
+  /**
+   * 应用程序上下文配置文件，可以是多个，即相当于多个xml文件配置
+   * 返回的带有 @Configuration 的类一般定义 ContextLoaderListener 应用上下文中的 bean
+   * 此处一般配置应用中的其它 bean，通常是驱动应用后端的中间件或数据层组件
+   * @return 类
+   */
+   @Override
+   protected Class<?>[] getRootConfigClasses() {
+     return new Class<?>[]{RootConfig.class};
+   }
+
+  /**
+   * 获取应用程序上下文配置文件，即配置类
+   * 如果所有配置已经在 RootConfig 中配置，则可以设为null
+   * 返回的带有 @Configuration 的类一般定义 DispatcherServlet 应用上下文中的 bean
+   * 加载包含 web 组件的 bean，如控制器、视图解析器以及处理器映射等
+   * @return 类
+   */
+   @Override
+   protected Class<?>[] getServletConfigClasses() {
+     return new Class<?>[]{WebConfig.class};
+   }
+
+  /**
+   * 即将 DispatcherServlet 映射到 “/”，表示处理所有进入应用的请求。可以为多个。
+   * @return 类
+   */
+   @Override
+   protected String[] getServletMappings() {
+     return new String[]{"/"};
+   }
+}
+----
+
+== config/RootConfig
+
+[source,java]
+----
+package cn.echocow.spring.config;
+
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+/**
+ * 相当于spring的xml配置文件,排除掉有 EnableWebMvc 注解的类，因为它会被自动发现
+ *
+ * @author Echo
+ * @version 1.0
+ * @date 2019-01-01 13:33
+ *
+ @Configuration
+ @ComponentScan(basePackages = { "cn.echocow.spring" },
+       excludeFilters = {
+            @ComponentScan.Filter(type = FilterType.ANNOTATION, value = EnableWebMvc.class)
+       })
+ public class RootConfig {
+
+ }
+----
+
+== config/WebConfig
+
+[source,java]
+----
+package cn.echocow.spring.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.thymeleaf.spring5.SpringTemplateEngine;
+import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
+import org.thymeleaf.spring5.view.ThymeleafViewResolver;
+
+/**
+ * 配置 spring mvc
+ *
+ * @author Echo
+ * @version 1.0
+ * @date 2019-01-01 15:53
+ */
+@EnableWebMvc
+@Configuration
+@ComponentScan({"cn.echocow.spring.*"})
+public class WebConfig {
+  /**
+   * 配置模板解析
+   * @return 模板解析
+   */
+  @Bean
+  public SpringResourceTemplateResolver springResourceTemplateResolver() {
+    SpringResourceTemplateResolver springResourceTemplateResolver = new SpringResourceTemplateResolver();
+    springResourceTemplateResolver.setPrefix("/WEB-INF/pages/");
+    springResourceTemplateResolver.setSuffix(".html");
+    springResourceTemplateResolver.setTemplateMode("HTML");
+    springResourceTemplateResolver.setCacheable(false);
+    springResourceTemplateResolver.setCharacterEncoding("UTF-8");
+    return springResourceTemplateResolver;
+  }
+
+  /**
+   * 配置模板引擎
+   * @return 模板引擎
+   */
+   @Bean
+   public SpringTemplateEngine springTemplateEngine() {
+     SpringTemplateEngine springTemplateEngine = new SpringTemplateEngine();
+     springTemplateEngine.setTemplateResolver(springResourceTemplateResolver());
+     return springTemplateEngine;
+   }
+
+  /**
+   * 模板配置
+   * @return 模板配置
+   */
+   @Bean
+   public ThymeleafViewResolver thymeleafViewResolver() {
+     ThymeleafViewResolver thymeleafViewResolver = new ThymeleafViewResolver();
+     thymeleafViewResolver.setTemplateEngine(springTemplateEngine());
+     thymeleafViewResolver.setCharacterEncoding("UTF-8");
+     return thymeleafViewResolver;
+   }
+}
+----
+
+== config/SecurityConfig
+
+[source,java]
+----
+package cn.echocow.spring.config;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+/**
+ * 安全配置类 @EnableWebSecurity 启动 web 安全，此类必须继承 WebSecurityConfigurerAdapter
+ * 相当于spring-security.xml中的配置
+ *
+ * @author Echo
+ * @version 1.0
+ * @date 2019-01-01 13:33
+ */
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+  /**
+   * 在内存中设置三个用户
+   * @param auth 授权
+   * @throws Exception 异常
+   */
+   @Autowired
+  public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+    auth.inMemoryAuthentication().passwordEncoder(new BCryptPasswordEncoder()).
+                withUser("hongxf").password(new BCryptPasswordEncoder().encode("123456")).roles("USER");
+    auth.inMemoryAuthentication().passwordEncoder(new BCryptPasswordEncoder()).
+                withUser("admin").password(new BCryptPasswordEncoder().encode("123456")).roles("ADMIN");
+    auth.inMemoryAuthentication().passwordEncoder(new BCryptPasswordEncoder()).
+                withUser("dba").password(new BCryptPasswordEncoder().encode("123456")).roles("DBA");
+  }
+
+  /**
+   * 配置权限要求
+   * @param http http
+   * @throws Exception 授权
+   */
+   @Override
+   protected void configure(HttpSecurity http) throws Exception {
+     http.authorizeRequests()
+         .antMatchers("/admin/**").access("hasRole('ROLE_ADMIN')")
+         .antMatchers("/dba/**").access("hasRole('ROLE_ADMIN') or hasRole('ROLE_DBA')")
+         .and().formLogin();
+  }
+}
+----
+
+== config/SpringSecurityInitializer
+
+[source,java]
+----
+package cn.echocow.spring.config;
+
+import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
+
+/**
+ * 继承AbstractSecurityWebApplicationInitializer类编写类文件SpringSecurityInitializer
+ * spring 会发现他，并用它在 web 容器中注册 DelegatingFilterProxy
+ * 可以选择重载他的 appendFilters 或 insertFilters 方法来注册自己选择的 filter
+ * 只注册 DelegatingFilterProxy，就不用重载。
+ * DelegatingFilterProxy 会拦截发往应用中的所有的请求，并委托给 id 为 springSecurityFilterChain bean
+ * 启动时，会自动创建这些 bean
+ * 相当于在web.xml中配置spring security的filter
+ *
+ * @author Echo
+ * @version 1.0
+ * @date 2019-01-01 13:34
+ */
+ public class SpringSecurityInitializer extends AbstractSecurityWebApplicationInitializer {
+}
+----
+
+== web/HelloController
+
+[source,java]
+----
+package cn.echocow.spring.web;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+
+/**
+ * @author Echo
+ * @version 1.0
+ * @date 2019-01-01 13:34
+ */
+@Controller
+public class HelloController {
+  @RequestMapping(value = { "/", "/welcome" }, method = RequestMethod.GET)
+  public ModelAndView welcomePage() {
+    ModelAndView model = new ModelAndView();
+    model.addObject("title", "Spring Security Hello World");
+    model.addObject("message", "This is welcome page!");
+    model.setViewName("hello");
+    return model;
+  }
+  @RequestMapping(value = "/admin", method = RequestMethod.GET)
+  public ModelAndView adminPage() {
+    ModelAndView model = new ModelAndView();
+    model.addObject("title", "Spring Security Hello World");
+    model.addObject("message", "This is protected page - Admin Page!");
+    model.setViewName("admin");
+    return model;
+  }
+  @RequestMapping(value = "/dba", method = RequestMethod.GET)
+  public ModelAndView dbaPage() {
+    ModelAndView model = new ModelAndView();
+    model.addObject("title", "Spring Security Hello World");
+    model.addObject("message", "This is protected page - Database Page!");
+    model.setViewName("admin");
+    return model;
+  }
+}
+----
+
+== pages/admin.html
+
+[source,html]
+----
+<html>
+<html lang="zh" xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:th="http://www.thymeleaf.org">
+<head>
+ <meta charset="UTF-8">
+ <title>admin<title>
+<head>
+<body>
+<h1 th:text="|标题: ${title}|">Title : XXX<h1>
+<h1 th:text="|信息: ${message}|">Message : XXX<h1>
+<body>
+<html>
+----
+
+== pages/hello.html
+
+[source,html]
+----
+<html>
+<html lang="zh" xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:th="http://www.thymeleaf.org">
+<head>
+ <meta charset="UTF-8">
+ <title>hello<title>
+<head>
+<body>
+<h1 th:text="|标题: ${title}|">Title : XXX<h1>
+<h1 th:text="|信息: ${message}|">Message : XXX<h1>
+<body>
+<html>
+----
+

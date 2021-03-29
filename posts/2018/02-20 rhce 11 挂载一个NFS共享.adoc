@@ -1,0 +1,71 @@
+= [rhce] 11 挂载一个NFS共享
+:page-description: rhce 11 挂载一个NFS共享
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20181128.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/20/1546344584550.html
+:page-created: 1519115880000
+:page-modified: 1546346534441
+:toc:
+
+____
+在 desktopX 上挂载一个来自 serverX 上的 NFS 共享，并符合下列要求： -
+/pulbic 共享挂载到本地的 /mnt/nfsmount。 - /protected 挂载到本地的/
+mnt/nfssecure, 并使用安全的方式，密钥下载地址：
+http://classroom.example.com/pub/keytabs/desktop0.keytab - 用户
+ldapuserX 能够在 /mnt/nfssecure/project 上创建文件。 -
+这些文件系统在系统启动时自动挂载。
+____
+
+== 操作
+
+先 `showmount` 查看一下server0的共享。如果没有，返回检查 server0.
+
+....
+showmount -e server0
+Export list for server0:
+/protected 172.25.0.0/24
+/public    172.25.0.0/24
+....
+
+建立相应的挂载点 /mnt/nfsmount 、 /mnt/nfssecure
+
+....
+mkdir /mnt/nfsmount mkdir /mnt/nfssecure
+....
+
+下载kerberos证书到/etc/krb5.keytab
+
+....
+wget -O /etc/krb5.keytab http://classroom.example.com/pub/keytabs/desktop0.keytab
+....
+
+启动相关服务并设置开机启动
+
+....
+systemctl restart nfs-secure
+systemctl enable nfs-secure
+....
+
+`vim /etc/fstab` 使得开机能自动挂载
+
+....
+172.25.0.11:/public        /mnt/nfsmount   nfs     defaults                                   0       0
+172.25.0.11:/protected  /mnt/nfssecure   nfs     defaults,sec=krb5p,v4.2        0       0
+....
+
+重启服务
+
+....
+systemctl restart nfs-server.service
+....
+
+`mount -a` 挂载所有选项
+
+切换用户，尝试访问
+
+....
+su - ldapuserX
+....
+
+image::https://resources.echocow.cn/image/rhce/1.png[test]
+

@@ -1,0 +1,114 @@
+= [rhce] 9 配置多用户 SMB 挂载
+:page-description: rhce 9 配置多用户 SMB 挂载
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20180110.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/20/1546344586111.html
+:page-created: 1519080300000
+:page-modified: 1546346558038
+:toc:
+
+____
+在 desktopX 上完成以下要求的配置： - desktopX 把 serverX 的 common
+共享通过多用户的方式挂载到本地的 /mnt/multiuser - 用户 rob，samba 密码为
+redhat，只读权限访问 common 共享。 - 用户 brain，samba 密码为
+redhat，读写权限访问 common 共享。 - 该共享要求在系统启动时自动挂载。
+____
+
+____
+备注：实际的共享和挂载点请根据考试题目设定
+____
+
+== 操作
+
+安装 cifs-utils 软件包以及 samb-client，因为其提供了 mount.cifs 命令
+
+....
+yum install cifs-utils.x86_64 -y
+yum install samba-client.x86_64 -y
+....
+
+创建挂载目录
+
+....
+mkdir /mnt/multiuser
+....
+
+使用 brian 的用户名和密码（使用权限较多的用户，如可读写的
+brian）创建证书（凭据）文件。
+
+....
+echo 'username=brian' > /root/smb-multiuser.txt
+echo 'password=redhat' >> /root/smb-multiuser.txt
+....
+
+编辑挂载文件 `vim /etc/fstab`
+
+....
+//server47.example.com/common  /mnt/multiuser  cifs  credentials=/root/smb-multiuser.txt,sec=ntlmssp,multiuser   0 0
+....
+
+保存退出后，挂载 `mount -a`
+
+查看是否存在用户 rob 和 brian，如果不存在，创建，同时指定其 UID
+和服务端相同
+
+....
+useradd -u 1001 robuseradd -u 1002 brian
+....
+
+设置密码
+
+....
+echo "redhat" | passwd --stdin rob
+echo "redhat" | passwd --stdin brian
+....
+
+由于要测试 rob 用户的可读权限，所以先用 brian 用户测试创建文件
+
+切换到 brian 用户
+
+....
+ su - brian
+....
+
+添加 brian 的 samba 凭据，只读
+
+....
+cifscreds add server47
+....
+
+尝试写入文件
+
+....
+echo "multiuser" > /mnt/multiuser/brian .txt
+....
+
+成功，`cat` 读取查看。
+
+退出
+
+切换到 rob 用户
+
+添加 rob 的 samba 凭据，只读
+
+....
+cifscreds add server47
+....
+
+尝试写入文件
+
+....
+ echo "multiuser" > /mnt/multiuser/rob.txt
+....
+
+显示 image:https://resources.echocow.cn/image/rhce/9.1.png[显示]
+尝试读取 brian 创建的文件
+
+....
+cat /mnt/multiuser/brian.txt
+....
+
+image::https://resources.echocow.cn/image/rhce/9.1.png[查看]
+
+成功！
+

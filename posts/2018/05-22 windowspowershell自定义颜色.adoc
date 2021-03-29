@@ -1,0 +1,44 @@
+= windows powershell 自定义颜色
+:page-description: windows powershell 自定义颜色
+:page-category: 归档
+:page-image: https://img.hacpai.com/bing/20180828.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/05/22/1546344586774.html
+:page-created: 1526939400000
+:page-modified: 1546346501523
+:toc:
+
+折腾了二十多分钟终于改好了，真的好气。
+
+== 操作流程
+
+[arabic]
+. win+R->输入regedit->定位到HKEY_CURRENT_USERProcessor
+. 输入颜色对应的字符，可以输入两个，第一个表示背景颜色，第二个表示文本颜色；如果只输入一个，则只改变文本颜色。
+
+'''''
+
+== 颜色对应的character
+
+* 0=黑、8=灰
+* 1=蓝、9=淡蓝
+* 2=绿、A=淡绿
+* 3=湖蓝色、B=淡浅绿
+* 4=红、C=淡红
+* 5=紫、D=淡紫
+* 6=黄、E=淡黄
+* 7=白、F=亮白
+
+'''''
+
+== 示例
+
+image::https://resources.echocow.cn/image/blog/windwos1.1.png[1]
+
+输入3e：即背景湖蓝色，文本淡黄色
+
+效果如下~~
+
+image::https://resources.echocow.cn/image/blog/windwos1.2.png[2]
+
+即：输入3e，背景湖蓝色（3），文本淡黄色（e），效果如上所示。
+

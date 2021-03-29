@@ -1,0 +1,279 @@
+= vert.x 4 日志配置
+:page-description: vert.x 4 日志配置
+:page-category: vert.x
+:page-image: https://img.hacpai.com/bing/20190603.jpg?imageView2/1/w/960/h/540/interlace/1/q/100
+:page-href: /articles/2020/01/31/1580462516035.html
+:page-created: 1580462516228
+:page-modified: 1580469306324
+:toc:
+
+
+目前（2020-1-30）在 https://vertx.io/docs/vertx-core/java/#_logging[Vert.x 官网日志配置]
+的版本还是处于 3.8.x 版本的。在 vertx 3 版本中，我都是直接使用 `JUL`
+来进行日志配置，因为在默认情况下，vert.x 会使用 Java 默认的日志 `JUL` 即
+`Java Util Log`，并读取 `resource` 下的
+`vertx-default-jul-logging.properties` 文件并且不需要加任何依赖。
+
+如果需要添加其他的日志依赖还需要设置以下相应的环境变量，例如：
+
+[source,kotlin]
+----
+System.setProperty(LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory::class.java.name)
+----
+
+但是在 vert.x 4 的版本中，`io.vertx.core.logging.LoggerFactory`
+已经被标记为了 *过时* 状态。具体原因见 https://github.com/eclipse-vertx/vert.x/issues/2774[Github
+Issue]。大意就是 vert.x
+作为一个工具库，公开的日志存在一些移植性上的问题，不提供内部的日志的职责，并且在以后的主要版本中将其用作内部记录器。如果需要使用日志，自行配置使用。
+
+事实上在现在已经发布的 `vert.x 4.0.0-SNAPSHOT`
+中，也同样对其进行了说明。而在新的官网文档(4.0.0)中提到：
+
+[4.0.0]
+====
+=== Logging
+
+Vert.x logs using its internal logging API and supports various logging
+backends.
+
+The logging backend is selected as follows:
+
+[arabic]
+. the backend denoted by the `vertx.logger-delegate-factory-class-name`
+system property if present or,
+. JDK logging when a `vertx-default-jul-logging.properties` file is in
+the classpath or,
+. a backend present in the classpath, in the following order of
+preference:
+[arabic]
+.. SLF4J
+.. Log4J
+.. Log4J2
+
+Otherwise Vert.x defaults to JDK logging.
+
+==== Configuring with the system property
+
+Set the `vertx.logger-delegate-factory-class-name` system property to:
+
+* `io.vertx.core.logging.SLF4JLogDelegateFactory` for SLF4J or,
+* `io.vertx.core.logging.Log4jLogDelegateFactory` for Log4J or,
+* `io.vertx.core.logging.Log4j2LogDelegateFactory` for Log4J2 or,
+* `io.vertx.core.logging.JULLogDelegateFactory` for JDK logging
+
+==== Configuring JUL logging
+
+A JUL logging configuration file can be specified in the normal JUL way,
+by providing a system property named `java.util.logging.config.file`
+with the value being your configuration file. For more information on
+this and the structure of a JUL config file please consult the JDK
+logging documentation.
+
+Vert.x also provides a slightly more convenient way to specify a
+configuration file without having to set a system property. Just provide
+a JUL config file with the name `vertx-default-jul-logging.properties`
+on your classpath (e.g. inside your fatjar) and Vert.x will use that to
+configure JUL.
+====
+
+== JUL
+
+对于 `JUL` 依旧没有改变，只需要添加
+`vertx-default-jul-logging.properties` 文件即可。我以前项目的配置：
+
+[source,properties]
+----
+handlers=java.util.logging.ConsoleHandler,java.util.logging.FileHandler
+# 日志格式化
+java.util.logging.SimpleFormatter.format=%1$tc %4$s: %3$s %n%5$s  %n
+java.util.logging.ConsoleHandler.formatter=java.util.logging.SimpleFormatter
+java.util.logging.ConsoleHandler.level=INFO
+# 日志输出设置
+java.util.logging.FileHandler.level=WARNING
+java.util.logging.FileHandler.formatter=java.util.logging.SimpleFormatter
+java.util.logging.FileHandler.pattern=%h/vertxLog/Drcom.log
+
+.level=INFO
+io.vertx.ext.web.level=FINEST
+io.vertx.level=INFO
+com.hazelcast.level=INFO
+io.netty.util.internal.PlatformDependent.level=SEVERE
+----
+
+但是众所周知，`JUL` 的功能不如 Logback/Log4j2 等完善，比如 Output
+Handler 就没有 Logback/Log4j2
+的丰富，有时候需要自己来继承定制，又比如它的配置局限性很大，格式化、控制台颜色、日志输入等都没有太完善的支持。
+
+所以我们大可以抛弃使用 `JUL` 转而使用 `Logback` 或者
+`Log4j2`。这次我选择使用的是 `Log4j2`，他吸取了 `Logback`
+的优点，并且可以完美配合 `SLF4J` 来进行使用。
+
+____
+为什么一定要使用 `SLF4J` 呢？
+
+这就涉及到一个概念，`JCL` —— *Commons Logging*。`JCL` 是一个
+`Log Facade`，只提供 `Log API`，不提供实现。而 `SLF4j` 是类似于 `JCL` 的
+`Log Facade`，其作者认为 `JCL` 的 `API`
+设计得不好，容易让使用者写出性能有问题的代码，所以自己写了一套
+`Log Facade` 。而有了相应的 `Log API` 就要有相应的
+`Log Implementation`，而 `Log4j2` 设计上很大程度上模仿了
+`SLF4J`/`Logback`，性能上也获得了很大的提升。
+____
+
+== Log4j2 + SLF4J
+
+毫无疑问，项目中应该只使用一个具体的 `Log Implementation`。我们选择了
+`Log4j2`，
+
+从 vert.x 4 的官网文档中可以明确知道，他加载的顺序如下：
+
+[arabic]
+. 系统环境是否设置了
+`vertx.logger-delegate-factory-class-name`，如果有，就是用设置的值。
+. `JUL` 的配置文件 `vertx-default-jul-logging.properties` 是否在
+`classpath` 下
+. 如果上面都没有，就在 `classpath` 下按照顺序查找以下包是否存在
+[arabic]
+.. `SLF4J`
+.. `Log4J`
+.. `Log4J2`
+
+如果以上都没有，使用 `vert.x` 默认的 `JUL` 配置。
+
+所以 `vert.x` 4 中，是不需要我们去手动设置
+`vertx.logger-delegate-factory-class-name` 参数了，他会默认去加载
+`classpath` 下的日志库的。因此我们需要添加相关的依赖。事实上现在
+`Log4j2` 对 `SLF4J`
+的支持简直好得不要不要的。以至于连以前添加一个日志需要加 3 - 5
+个依赖的，现在只需要一个。如果你有兴趣翻看过文档的话应该可以看到https://logging.apache.org/log4j/2.0/log4j-slf4j-impl/index.html[这篇]。
+
+____
+[arabic]
+. `log4j-slf4j-impl` should be used with `SLF4J` *1.7.x* releases or
+older.
+. `log4j-slf4j18-impl` should be used with `SLF4J` *1.8.x* releases or
+newer.
+____
+
+如果我们想用 `Log4j2` + `SLF4J` 的组合，直接选择 `log4j-slf4j-impl` 或者
+`log4j-slf4j18-impl` 即可。这里当然选用 `log4j-slf4j18-impl`
+使用最新版本 `2.13.0`。它包含如下依赖：
+
+* `org.slf4j:slf4j-api:1.8.0-alpha2`
+* `org.apache.logging.log4j:log4j-api:2.13.0`
+* `org.apache.logging.log4j:log4j-core:2.13.0`
+
+这三个依赖已经包含了我们所有需要引入的东西。
+
+接下来就是添加相应的配置文件了，配置文件网上一搜有很多的，这是我用的
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+
+  <Properties>
+    <Property name="LOG_PATH" value="./logs"/>
+    <Property name="LOG_TMP_FILE" value="./logs/authorization-center-tmp.log"/>
+    <Property name="LOG_INFO_FILE" value="./logs/authorization-center-info.log"/>
+    <Property name="LOG_WARN_FILE" value="./logs/authorization-center-warn.log"/>
+    <Property name="LOG_ERROR_FILE" value="./logs/authorization-center-error.log"/>
+    <Property name="CONSOLE_LAYOUT"
+              value="%style{%d{yyyy-MM-dd HH:mm:ss.SSS}}{Blue,Bright} %highlight{${LOG_LEVEL_PATTERN:-%5p}}{FATAL=bg_red, ERROR=red, WARN=yellow, INFO=green, DEBUG=grey, TRACE=blue} %style{%pid}{magenta} --- %style{[%15.15t] %-40.40c{1.}}{cyan,Bright} : %m%n%ex"/>
+    <Property name="FILE_LAYOUT"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} %pid --- [%15.15t] %-40.40c{1.} : %m%n%ex"/>
+  </Properties>
+
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="${CONSOLE_LAYOUT}"/>
+    </Console>
+    <RollingFile name="RollingFileInfo" fileName="${LOG_INFO_FILE}"
+                 filePattern="${LOG_PATH}/info/info.%d{yyyy-MM-dd}.%i.log.gz">
+      <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+      <PatternLayout pattern="${FILE_LAYOUT}"/>
+      <Policies>
+        <TimeBasedTriggeringPolicy/>
+        <SizeBasedTriggeringPolicy size="50MB"/>
+      </Policies>
+    </RollingFile>
+    <RollingFile name="RollingFileWarn" fileName="${LOG_WARN_FILE}"
+                 filePattern="${LOG_PATH}/warn/warn.%d{yyyy-MM-dd}.%i.log.gz">
+      <ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="DENY"/>
+      <PatternLayout pattern="${FILE_LAYOUT}"/>
+      <Policies>
+        <TimeBasedTriggeringPolicy/>
+        <SizeBasedTriggeringPolicy size="50MB"/>
+      </Policies>
+    </RollingFile>
+    <RollingFile name="RollingFileError" fileName="${LOG_ERROR_FILE}"
+                 filePattern="${LOG_PATH}/error/error.%d{yyyy-MM-dd}.%i.log.gz">
+      <ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="DENY"/>
+      <PatternLayout pattern="${FILE_LAYOUT}"/>
+      <Policies>
+        <TimeBasedTriggeringPolicy/>
+        <SizeBasedTriggeringPolicy size="50MB"/>
+      </Policies>
+    </RollingFile>
+  </Appenders>
+  <Loggers>
+    <Logger name="cn.edu.gzmu.center" level="debug" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
+    <Root level="info">
+      <AppenderRef ref="Console"/>
+      <AppenderRef ref="RollingFileInfo"/>
+      <AppenderRef ref="RollingFileWarn"/>
+      <AppenderRef ref="RollingFileError"/>
+    </Root>
+  </Loggers>
+</Configuration>
+----
+
+当然，`log4j2` 的功能很强大，还有严格模式的 `xml`、`json`、`yaml`
+等配置方式，都是不错的。而且他支持控制台的颜色输出等，比如我配置的颜色是这样的：
+
+image::https://resources.echocow.cn/file/2020/01/30/深度截图_选择区域_20200131170626.png[color]
+
+可以去看https://logging.apache.org/log4j/2.x/manual/layouts.html[官方文档]
+，非常详细。
+
+=== 使用
+
+使用的时候需要用的是如下两个包：
+
+* `io.vertx.core.impl.logging.LoggerFactory`
+* `io.vertx.core.impl.logging.Logger`
+
+使用：
+
+[source,kotlin]
+----
+private val log: Logger = LoggerFactory.getLogger(MainVerticle::class.java.name)
+
+// ......
+
+log.info("Server start......")
+----
+
+或者使用如下包：
+
+* `org.slf4j.Logger`
+* `org.slf4j.LoggerFactory`
+
+使用的时候可以使用可变参数
+
+[source,java]
+----
+log.info("Server start on port {}......", server.getInteger("port", 8888))
+----
+
+== 总结
+
+`vert.x` 4 有很多改变，也加了很多新的特性，最大的改变莫过于
+`Core futurisation` 了。然而对于拥有协程的 `Kotlin`
+来说，有些地方编码方式没有太大改变。比较多的就是废弃了很多以前的
+`API`，比如 `JWT` 相关的，比如 `Web` 相关的 `API`
+都有部分被废弃，日志这里也有或多或少的改变。在 3.8.x
+的时候进行逐渐的过度，新项目使用 4.0.0 还是不错的。
+

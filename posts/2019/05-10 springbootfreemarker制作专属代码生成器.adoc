@@ -1,0 +1,626 @@
+= spring boot freemarker 制作专属代码生成器
+:page-description: spring boot freemarker 制作专属代码生成器
+:page-category: spring
+:page-image: https://img.hacpai.com/bing/20181008.jpg?imageView2/1/w/960/h/540/interlace/1/q/100
+:page-href: /articles/2019/05/10/1557456119712.html
+:page-created: 1557456119788
+:page-modified: 1557711427906
+:toc:
+
+最近在做学校的项目，自己从零开始一步一步搭建与设计，遇到了一堆的问题，不过也感觉到了自己在不断成长，只有在实践中才会发现会有那么多的问题存在。记录一下遇到的一个典型的问题，*代码生成*。因为项目使用的是
+spring data jpa 而不是 mybatis，所以并没有 mybatis-plus
+的代码生成器，就寻思自己写一个了。
+
+____
+实例地址：https://github.com/lizhongyue248/spring-boot-freemarker-generate[spring-boot-freemarker-generate]
+
+项目模块：https://github.com/gzmuSoft/lesson-cloud/tree/master/lesson-cloud-generate[lesson-cloud-generate]
+
+博客地址：https://echocow.cn[EchoCow]
+____
+
+== 这篇文章能够带给你什么
+
+[arabic]
+. spring boot 配置文件读取
+. spring boot 与 freemarker 的最佳实践
+. 如何从数据库中读取到有用的元数据和表信息
+. spring boot 事件监听机制
+. spring boot starter freemarker 的分析与探究
+
+期间遇到了很多问题，网上搜寻了半天，都没有使用 spring boot + freemarker
+来只做模板引擎的，我的思路其实来源于他的源码，具体后面会说。一开始准备单独写的，但是发现如果需要读取配置文件又要去找一堆库，还有一些工具类，为什么不直接用
+spring boot 呢？当然还有以下的一些原因
+
+[arabic]
+. 项目使用 spring boot 构建，父项目直接继承 spring
+boot，子项目用起来很方便。
+. spring boot 配置文件读取方便，比较熟悉他的使用。
+. 优秀的的依赖注入很方便。
+. 依赖很少，不需要再去麻烦的找一些库
+
+总结起来就是一个词，方便！
+
+== 在这之前
+
+你需要构建一个 spring boot 项目，并且将他作为你的依赖管理。
+
+同时需要一些必备的依赖，我们只用需要的，尽可能的简化，只有如下几个：
+
+[source,xml]
+----
+<!--FreeMarker模板引擎依赖-->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-freemarker</artifactId>
+</dependency>
+<!--mysql 驱动-->
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <scope>runtime</scope>
+</dependency>
+<!--主要用来读取配置文件-->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-configuration-processor</artifactId>
+    <optional>true</optional>
+</dependency>
+<!--lombok 工具-->
+<dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+    <optional>true</optional>
+</dependency>
+<!--测试依赖-->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-test</artifactId>
+    <scope>test</scope>
+</dependency>
+----
+
+如果使用的是 idea,那么依赖如下
+image:https://resources.echocow.cn/file/2019/05/10/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190509235702.png[dependency]
+
+== 开始
+
+现在我们需要明确一下如何完成这么一个生成的过程,
+
+[arabic]
+. 配置数据库并读取，连接数据库
+. 书写模板
+. 生成文件
+
+== 数据库
+
+=== 配置
+
+直接通过 spring-boot-configuration-processor
+来读取即可，非常简单的一个过程，我们需要一个 `application.yml` 或者
+`application.properties` 文件，我选择 `yml`，配置如下：
+
+[source,yml]
+----
+application:
+  generate:
+    # 驱动类
+    driver-class: com.mysql.cj.jdbc.Driver
+    # 用户名
+    username: root
+    # 密码
+    password: 123456
+    # 库名
+    catalog: generate
+    # 数据库地址
+    url: jdbc:mysql://127.0.0.1:3306/generate
+----
+
+你可以发现下面飘黄色警告，别急，慢慢来。
+
+image::https://resources.echocow.cn/file/2019/05/10/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190510001047.png[yml]
+
+我们需要一个实体类来和他对应
+
+[source,java]
+----
+@Data   // lombok 自动生成必要的方法
+@Component
+// 和配置文件前缀进行对应
+@ConfigurationProperties(prefix = "application.generate")
+public class GenConfig {
+    /**
+     * 数据库驱动类
+     */
+    private String driverClass;
+
+    /**
+     * 数据库用户名
+     */
+    private String username;
+
+    /**
+     * 密码
+     */
+    private String password;
+
+    /**
+     * 库名
+     */
+    private String catalog;
+
+    /**
+     * 链接地址
+     */
+    private String url;
+
+}
+----
+
+使用一个测试类进行读取测试
+
+[source,java]
+----
+import static org.junit.Assert.*;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class GenDemoApplicationTests {
+
+    @Autowired
+    private GenConfig genConfig;
+
+    @Test
+    public void contextLoads() {
+        assertNotNull(genConfig);
+        assertEquals(genConfig.getUsername(), "root");
+    }
+
+}
+----
+
+测试用例通过，配置读取是没有问题的。运行一次以后，你回去看配置文件，会发现没有警告了。
+
+=== 连接
+
+使用最简单 jdbc 链接，也是最快捷的方式。
+
+==== 获取数据库元数据
+
+其实就是获取数据库链接后获取元数据，jdbc 基础
+
+[source,java]
+----
+// 自动注入
+private final GenConfig genConfig;
+
+public GenDatabaseUtil(GenConfig genConfig) {
+    this.genConfig = genConfig;
+}
+
+/**
+ * 获取数据库元数据
+ *
+ * @return 元数据
+ * @throws Exception 异常
+ */
+private DatabaseMetaData getMetaData() throws Exception {
+    Class.forName(genConfig.getDriverClass());
+    return DriverManager.getConnection(genConfig.getUrl(),
+            genConfig.getUsername(), genConfig.getPassword()).getMetaData();
+}
+----
+
+然后获取所有的表
+
+[source,java]
+----
+/**
+ * 获取库的所有表
+ *
+ * @return 所有表
+ */
+public List<String> getTables() {
+    List<String> tables = new ArrayList<>();
+    try {
+        ResultSet resultSet = getMetaData().getTables(genConfig.getCatalog(), null,
+                "%", new String[]{"TABLE"});
+        while (resultSet.next()) {
+            String tableName = resultSet.getString("TABLE_NAME");
+            tables.add(tableName);
+        }
+        resultSet.close();
+    } catch (Exception e) {
+        log.error("Please check your database conf! {}", e.getMessage());
+        e.printStackTrace();
+    }
+    return tables;
+}
+----
+
+测试一下方法
+
+[source,java]
+----
+@Autowired
+private GenDatabaseUtil genDatabaseUtil;
+
+@Test
+public void testTables() {
+    // 直接打印了
+    genDatabaseUtil.getTables().forEach(System.out::println);
+}
+----
+
+==== 获取列信息
+
+然后我们需要一个实体类来和列进行对应
+
+[source,java]
+----
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ColumnClass {
+    /**
+     * 表名称
+     */
+    private String tableName;
+    /**
+     * 列名称
+     */
+    private String columnName;
+    /**
+     * 列大小
+     */
+    private Integer columnSize;
+    /**
+     * 列的类型
+     */
+    private String columnType;
+    /**
+     * 列的注释
+     */
+    private String columnComment;
+    /**
+     * 是否能为空值
+     */
+    private Boolean nullAble;
+}
+----
+
+接着我们就需要一个方法来获取一个表的所有列，里面有一个自己写得工具类，请查看
+github，这个工具类封装了一些方法进行使用。
+
+[source,java]
+----
+/**
+ * 获取指定表的所有列
+ *
+ * @param tableName 表名
+ * @return 所有列的集合
+ */
+public List<ColumnClass> getColumns(String tableName) {
+    try (ResultSet resultSet = getMetaData().getColumns(genConfig.getCatalog(), null, tableName, "%")) {
+        return getColumns(resultSet, tableName);
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return null;
+}
+
+/**
+ * 获取某列的结果集抽取
+ *
+ * @param resultSet 结果集
+ * @param tableName 表名
+ * @throws SQLException 异常
+ */
+private List<ColumnClass> getColumns(ResultSet resultSet, String tableName) throws SQLException {
+    List<ColumnClass> columns = new ArrayList<>();
+    while (resultSet.next()) {
+        String columnName = resultSet.getString("COLUMN_NAME");
+        String remarks = resultSet.getString("REMARKS");
+        Boolean nullAble = resultSet.getInt("NULLABLE") == 1;
+        columns.add(new ColumnClass(
+            tableName,
+            GenUtil.underlineToHump(columnName),
+            resultSet.getInt("COLUMN_SIZE"),
+            GenUtil.fieldConversion(resultSet.getString("TYPE_NAME")),
+            remarks, nullAble
+        ));
+    }
+    return columns;
+}
+----
+
+同样，测试一下
+
+[source,java]
+----
+@Test
+public void testColumns() {
+    genDatabaseUtil.getColumns("user").forEach(System.out::println);
+}
+
+// 结果
+// ColumnClass(tableName=user, columnName=id, columnSize=10, columnType=java.lang.Integer, columnComment=, nullAble=false)
+// ColumnClass(tableName=user, columnName=name, columnSize=255, columnType=java.lang.String, columnComment=, nullAble=false)
+// ColumnClass(tableName=user, columnName=pwd, columnSize=255, columnType=java.lang.String, columnComment=, nullAble=false)
+----
+
+这样就没有问题了。
+
+== 书写模板
+
+在 `resource` 下创建 `templates` 文件夹，同时创建一个 `entity.ftl` 的
+`freemarker` 文件：
+
+....
+package ${package_name};
+
+import lombok.Data;
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import java.io.Serializable;
+
+/**
+* ${table_name}
+*
+* @author echo cow
+* @date ${.now?datetime}
+*/
+@Data
+@Table(name = "${table_name}")
+@Entity(name = "${table_name}")
+public class ${class_name} implements Serializable {
+<#list columns as column>
+
+    /**
+    * ${column.columnComment}
+    */
+    private ${column.columnType} ${column.columnName};
+</#list>
+}
+....
+
+== 生成模板
+
+生成模板有很多种方式，本质都是对 spring
+的应用进行监听，当他启动的时候调用某个时间或者进行监听。这里我使用实现
+`ApplicationRunner` 的方式，他会需要实现一个 `run`
+方法，通过实现这个方法，会在应用启动完成后调用此方法。
+
+先上成品代码：
+
+
+[source,java]
+....
+@Slf4j
+@Component
+public class GenEntity implements ApplicationRunner {
+
+    // 读取配置文件
+    private final GenDatabaseUtil genDatabaseUtil;
+    //  FreeMarker 配置工程
+    private final FreeMarkerConfigurationFactory freeMarkerConfigurationFactory;
+
+    public GenEntity(GenDatabaseUtil genDatabaseUtil, FreeMarkerConfigurationFactory freeMarkerConfigurationFactory) {
+        this.genDatabaseUtil = genDatabaseUtil;
+        this.freeMarkerConfigurationFactory = freeMarkerConfigurationFactory;
+    }
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        Configuration configuration = freeMarkerConfigurationFactory.createConfiguration();
+        // 他会自己寻找 resources 下的 templates 目录下的模板文件
+        Template entityTemplate = configuration.getTemplate("entity.ftl");
+        // 获取数据库所有表
+        List<String> tables = genDatabaseUtil.getTables();
+        // 存放模板变量
+        Map<String, Object> data = new HashMap<>();
+        data.put("package_name", "cn.echocow.generate.entity");
+        // 文件写入
+        FileWriter fileWriter;
+        for (String table : tables) {
+            // 工具类将下划线命名转化为驼峰
+            String entityClassName = GenUtil.underlineToHump(table, true);
+            data.put("table_name", table);
+            data.put("class_name", entityClassName);
+            // 获取当前表的所有列
+            data.put("columns", genDatabaseUtil.getColumns(table));
+            // 文件创建
+            File file = new File("src/main/java/cn/echocow/gendemo/entity/" + GenUtil.underlineToHump(table, true) + GenUtil.SUFFIX);
+            if (!file.exists()) {
+                if (!new File("src/main/java/cn/echocow/gendemo/entity").mkdirs()) {
+                    log.error("创建文件夹失败");
+                    return;
+                }
+                if (!file.createNewFile()) {
+                    log.error("{} 创建文件失败", table);
+                    return;
+                }
+            }
+            fileWriter = new FileWriter(file);
+            entityTemplate.process(data, fileWriter);
+            log.info("Table {} generate succeed!", table);
+        }
+    }
+}
+....
+
+=== 探究过程
+
+*其实对于一个生成的过程，就是一个 `模板 + 数据`
+组合的过程，对于任何模板引擎都是如此，需要获取到一个模板，然后讲数据带过去，模板引擎使用数据对页面进行渲染，就是这么一个过程。所以我们就需要很重要的两个东西*
+- 模板 —— template - 数据 —— 直接使用 map 携带过去
+
+所以我们在引入的 freemarker 依赖中，可以找到
+`freemarker.template.Template` 这么一个类，来看看他远吗的注释
+
+image::https://resources.echocow.cn/file/2019/05/10/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190510093223.png[tempalte]
+
+所以他提供了两种方式来创建 template 1.
+`use Configuration#getTemplate(String) to create/get Template objects`
+=> 使用 Configuration 的 getTemplate 方法来进行创建。 2.
+`you can also construct a template from a Reader or a String that contains the template source code`
+=> 使用他的构造方法来进行创建。
+
+然后我去查询 Configuration
+类，里面有的只是如何使用，有兴趣的可以自己去看看，但是如何在 spring boot
+中使用呢？这个时候我就想到了我们引入的 `spring-boot-starter-freemarker`
+依赖，既然有 Starter
+依赖，那么必定就会有相应的自动配置，所以我们需要去找寻一下他自动装配的
+Bean 在哪里。如果你了解 spring boot
+自动装配的话，应该能够找到，直接在在自动装配的文件中，直接搜索就可以找到如下地方：
+
+image::https://resources.echocow.cn/file/2019/05/10/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190510094443.png[search]
+
+那么我们继续看看这个类
+
+image::https://resources.echocow.cn/file/2019/05/10/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190510095002.png[FreeMarkerAutoConfiguration]
+
+他的核心就是条件装配，当我们没有引入 freemarker
+的时候，是不会进行自动配置的；同时他引入了三个配置，分别如下 -
+`FreeMarkerServletWebConfiguration` 对于 servlet web 环境下进行自动配置
+- `FreeMarkerReactiveWebConfiguration` 对于 reactive web
+环境下进行自动配置 - `FreeMarkerNonWebConfiguration` 对于 non web
+环境想进行自动配置
+
+我们现在是 non web 环境，我们只用看 `FreeMarkerNonWebConfiguration`
+即可，其他两个是不会进行自动装配的。里看看这个类
+
+image::https://resources.echocow.cn/file/2019/05/10/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190510095915.png[FreeMarkerNonWebConfiguration]
+
+你会发现他就自动装配了一个 Bean，在我们没有配置
+`FreeMarkerConfigurationFactoryBean` 的时候，
+进行自动装配。所以他的核心就是
+`FreeMarkerConfigurationFactoryBean`，来看看这个类
+
+image::https://resources.echocow.cn/file/2019/05/10/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190510100627.png[FreeMarkerConfigurationFactoryBean]
+
+他已经说的十分清楚了，我们直接来看
+`FreeMarkerConfigurationFactor`,上面的注释非常清楚，我们直接来看需要的方法
+
+image::https://resources.echocow.cn/file/2019/05/10/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190510100912.png[FreeMarkerConfigurationFactor]
+
+通过这个类的 `createConfiguration` 方法我们可以创建一个 `Configuration`
+配置，然后通过他的 `getTemplate` 方法可以获取到 `Template`
+
+image::https://resources.echocow.cn/file/2019/05/10/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190510101233.png[Configuration]
+
+他使用多态，创建一个默认的
+`Template`，对于我们来说够用了，所以在上面的生成的代码中，我们直接注入
+`FreeMarkerConfigurationFactory` 使用即可。
+
+[source,java]
+----
+Configuration configuration = freeMarkerConfigurationFactory.createConfiguration();
+Template entityTemplate = configuration.getTemplate("entity.ftl");
+----
+
+对于数据就是一个 map 而已，封装好后使用 `process` 方法生成即可，需要一个
+`Writer`
+的子类，可以自由选择。具体去查看下他的源码就知道了，都很好找到，主要调用的是
+`createProcessingEnvironment(Object dataModel, Writer out)` 这个方法。
+
+[source,java]
+----
+Map<String, Object> data = new HashMap<>(4);
+FileWriter fileWriter = new FileWriter(file);
+entityTemplate.process(data, fileWriter);
+----
+
+== 工具类
+
+[source,java]
+----
+@Slf4j
+public class GenUtil {
+    private static final String UNDERLINE = "_";
+    private static final Map<String, String> MYSQL_TO_JAVA = new HashMap<>();
+    public static final String SUFFIX = ".java";
+
+    static {
+        MYSQL_TO_JAVA.put("VARCHAR", "java.lang.String");
+        MYSQL_TO_JAVA.put("BIGINT", "java.lang.Long");
+        MYSQL_TO_JAVA.put("DATE", "java.time.LocalDate");
+        MYSQL_TO_JAVA.put("FLOAT", "java.lang.Float");
+        MYSQL_TO_JAVA.put("TINYINT", "java.lang.Integer");
+        MYSQL_TO_JAVA.put("INT", "java.lang.Integer");
+        MYSQL_TO_JAVA.put("BINARY", "java.lang.Byte");
+        MYSQL_TO_JAVA.put("SMALLINT", "java.lang.Short");
+        MYSQL_TO_JAVA.put("DATETIME", "java.time.LocalDateTime");
+        MYSQL_TO_JAVA.put("BIT", "java.lang.Boolean");
+    }
+
+
+    /**
+     * 下划线命名转驼峰式命名
+     *
+     * @param para 下划线命名
+     * @return 驼峰式命名
+     */
+    public static String underlineToHump(String para) {
+        StringBuilder result = new StringBuilder();
+        for (String s : para.split(UNDERLINE)) {
+            if (!para.contains("_")) {
+                result.append(s);
+                continue;
+            }
+            if (result.length() == 0) {
+                result.append(s.toLowerCase());
+            } else {
+                result.append(s.substring(0, 1).toUpperCase());
+                result.append(s.substring(1).toLowerCase());
+            }
+        }
+        return result.toString();
+    }
+
+    /**
+     * 下划线命名转驼峰式命名
+     *
+     * @param para            下划线命名
+     * @param firstCharChange 首字母是否转换
+     * @return 驼峰式命名
+     */
+    public static String underlineToHump(String para, boolean firstCharChange) {
+        String result = underlineToHump(para);
+        return firstCharChange ? result.substring(0, 1).toUpperCase() + result.substring(1) : result;
+    }
+
+    /**
+     * 数据库字段转换
+     *
+     * @param mysqlDataType 数据库字段类型
+     * @return 转换结果
+     */
+    public static String fieldConversion(String mysqlDataType) {
+        return MYSQL_TO_JAVA.getOrDefault(mysqlDataType, "Object");
+    }
+
+
+}
+----
+
+== 总结
+
+其实还是很简单的，只要了解了 spring boot
+的自动装配机制，找到他对某个库是如何支持的，那么思路就会很畅通，然后就可以在他的基础上来做更多的事情。当然这个是简化版的代码生成，其实还可以做很多自定义化，比如在我们项目中就增加了下面的功能：
+
+[arabic]
+. 指定生成的模块
+. 自定义各种配置
+. 指定生成时排除某些表
+. 指定生成时排除某些列
+. 指定生成时按照条件添加某些注解
+. ……
+
+同样，如果你对于 `spring` 的事件熟悉的话，可以自定义生成顺序，比如
+`@Order` 注解，比如使用 `SpringApplicationBuilder`
+自己启动并添加事件监听都是可行的。
+
+不过如果有多个代码生成的话，就会有设计方面的问题，如何设计才能够更优雅而没有一堆重复的代码。我在当初就没考虑到这个问题，写出来的代码可维护性就很差，自己重构半天出现更多的问题=-=然后暂时放弃重构，后面再说吧～～
+

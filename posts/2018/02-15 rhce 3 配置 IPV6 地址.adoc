@@ -1,0 +1,80 @@
+= [rhce] 3 配置 IPV6 地址
+:page-description: 配置 IPV6 地址
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20180829.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/15/1546344586289.html
+:page-created: 1518657900000
+:page-modified: 1546346640054
+:toc:
+
+____
+在你的考试系统上配置接口 eth0 使用以下 IPV6地址： -
+serverx上的地址应该是 fddb:fe2a:ab1e::c0a8:1/64 -
+根据考试实际提供的地址配置 - desktopx上的地址应该是
+fddb:fe2a:ab1e::c0a8:2/64 - 两个系统必须能够与网络
+fddb:fe2a:able/64内的系统通信。 - 地址必须在重启后依旧生效。 -
+两个系统必须保持当前的 IPV4 地址并能通信
+____
+
+== 方法一：
+
+修改/etc/sysconfig/network-scripts/ifcfg-eth0
+
+[source,bash]
+----
+/etc/sysconfig/network-scripts/ifcfg-eth0
+----
+
+[source,bash]
+----
+DEVICE=eth0
+BOOTPROTO=static
+ONBOOT=yes
+TYPE=Ethernet
+USERCTL=yes
+PEERDNS=yes
+IPV6INIT=yes
+IPADDR=172.25.47.11
+PREFIX=24
+GATEWAY=172.25.47.254
+DNS1=172.254.254.254
+IPV6ADDR="fddb:fe2a:ab1e::c0a8:1/64"
+IPV6_AUTOCONF=no
+----
+
+[source,bash]
+----
+systemctl restart network
+----
+
+image::https://resources.echocow.cn/image/rhce/3.1.png[see]
+
+== 方法二：
+
+通过nmcli控制
+
+[source,bash]
+----
+nmcli connection show              //查看当前的连接
+----
+
+image::https://resources.echocow.cn/6.png[see]
+
+[source,bash]
+----
+nmcli connection modify "System eth0" ipv6.method manual ipv6.addresses "fddb:fe2a:ab1e::c0a8:2/64"
+
+# 重启查看
+
+systemctl restart NetworkManager
+----
+
+配置完毕后nmcli con show查看
+
+image::https://resources.echocow.cn/image/rhce/3.2.png[see]
+
+重启reboot
+
+image::https://resources.echocow.cn/image/rhce/3.3.png[see]
+
+只有一个

@@ -26,7 +26,7 @@ const Banner: FC<BannerProps> = ({ title }): ReactElement => {
   return (
     <div className={classes.banner}>
       <div className={`${classes.mask} w-full h-full flex justify-center items-center`}>
-        <Typography className='text-white' variant='h3'>
+        <Typography className='text-white text-center mx-8' variant='h4'>
           <Typed
             strings={[title]}
             typeSpeed={40}

@@ -1,0 +1,57 @@
+= [rhce] 17 创建一个脚本
+:page-description: rhce 17 创建一个脚本
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20180301.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/22/1546344580391.html
+:page-created: 1519309080000
+:page-modified: 1546349362004
+:toc:
+
+____
+在system1上创建一个名为/root/foo.sh的脚本，让其提供下列特性： -
+当运行/root/foo.sh redhat,输出为fedora - 当运行/root/foo.sh
+fedora,输出为redhat -
+当没有任何参数或者参数不是redhat或者fedora时，其错误输出产生以下的信息：/root/foo.sh
+redhat:fedora
+____
+
+== 操作
+
+切换到 root 目录，并编辑文件
+
+....
+cd ~
+vim foo.sh
+....
+
+编写脚本
+
+[source,shell]
+----
+#!/bin/bash
+case $1 in
+   redhat)
+     echo fedora
+     ;;
+   fedora)
+     echo redhat
+     ;;
+   *)
+   echo '/root/foo.sh redhat:fedora'
+esac
+
+:wq
+----
+
+添加可执行权限并测试
+
+....
+[root@system1 ~]# chmod +x foo.sh
+[root@system1 ~]# ./foo.sh
+/root/foo.sh redhat:fedora
+[root@system1 ~]# ./foo.sh red
+/root/foo.sh redhat:fedora
+[root@system1 ~]# ./foo.sh redhat
+fedora
+....
+

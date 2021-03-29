@@ -56,8 +56,28 @@ type AsciidocEdge {
 }
 
 type AsciidocFields {
+  birthTime(
+    "Returns the difference between this date and the current time. Defaults to \"milliseconds\" but you can also pass in as the measurement \"years\", \"months\", \"weeks\", \"days\", \"hours\", \"minutes\", and \"seconds\"."
+    difference: String,
+    "Format the date using Moment.js' date tokens, e.g. `date(formatString: \"YYYY MMMM DD\")`. See https://momentjs.com/docs/#/displaying/format/ for documentation for different tokens."
+    formatString: String,
+    "Returns a string generated with Moment.js' `fromNow` function"
+    fromNow: Boolean,
+    "Configures the locale Moment.js will use to format the date."
+    locale: String
+  ): Date
+  modifiedTime(
+    "Returns the difference between this date and the current time. Defaults to \"milliseconds\" but you can also pass in as the measurement \"years\", \"months\", \"weeks\", \"days\", \"hours\", \"minutes\", and \"seconds\"."
+    difference: String,
+    "Format the date using Moment.js' date tokens, e.g. `date(formatString: \"YYYY MMMM DD\")`. See https://momentjs.com/docs/#/displaying/format/ for documentation for different tokens."
+    formatString: String,
+    "Returns a string generated with Moment.js' `fromNow` function"
+    fromNow: Boolean,
+    "Configures the locale Moment.js will use to format the date."
+    locale: String
+  ): Date
   slug: String
-  year: Int
+  year: Float
 }
 
 type AsciidocGroupConnection {
@@ -71,8 +91,11 @@ type AsciidocGroupConnection {
 
 type AsciidocPageAttributes {
   category: String
+  created: String
   description: String
+  href: String
   image: String
+  modified: String
   sort: String
 }
 
@@ -966,6 +989,8 @@ enum AsciidocFieldsEnum {
   document___main
   document___subtitle
   document___title
+  fields___birthTime
+  fields___modifiedTime
   fields___slug
   fields___year
   html
@@ -979,8 +1004,11 @@ enum AsciidocFieldsEnum {
   internal___owner
   internal___type
   pageAttributes___category
+  pageAttributes___created
   pageAttributes___description
+  pageAttributes___href
   pageAttributes___image
+  pageAttributes___modified
   pageAttributes___sort
   parent___children
   parent___children___children
@@ -1279,6 +1307,8 @@ enum FileFieldsEnum {
   childAsciidoc___document___main
   childAsciidoc___document___subtitle
   childAsciidoc___document___title
+  childAsciidoc___fields___birthTime
+  childAsciidoc___fields___modifiedTime
   childAsciidoc___fields___slug
   childAsciidoc___fields___year
   childAsciidoc___html
@@ -1292,8 +1322,11 @@ enum FileFieldsEnum {
   childAsciidoc___internal___owner
   childAsciidoc___internal___type
   childAsciidoc___pageAttributes___category
+  childAsciidoc___pageAttributes___created
   childAsciidoc___pageAttributes___description
+  childAsciidoc___pageAttributes___href
   childAsciidoc___pageAttributes___image
+  childAsciidoc___pageAttributes___modified
   childAsciidoc___pageAttributes___sort
   childAsciidoc___parent___children
   childAsciidoc___parent___children___children
@@ -1495,6 +1528,8 @@ enum FileFieldsEnum {
   childrenAsciidoc___document___main
   childrenAsciidoc___document___subtitle
   childrenAsciidoc___document___title
+  childrenAsciidoc___fields___birthTime
+  childrenAsciidoc___fields___modifiedTime
   childrenAsciidoc___fields___slug
   childrenAsciidoc___fields___year
   childrenAsciidoc___html
@@ -1508,8 +1543,11 @@ enum FileFieldsEnum {
   childrenAsciidoc___internal___owner
   childrenAsciidoc___internal___type
   childrenAsciidoc___pageAttributes___category
+  childrenAsciidoc___pageAttributes___created
   childrenAsciidoc___pageAttributes___description
+  childrenAsciidoc___pageAttributes___href
   childrenAsciidoc___pageAttributes___image
+  childrenAsciidoc___pageAttributes___modified
   childrenAsciidoc___pageAttributes___sort
   childrenAsciidoc___parent___children
   childrenAsciidoc___parent___children___children
@@ -2600,8 +2638,10 @@ input AsciidocDocumentFilterInput {
 }
 
 input AsciidocFieldsFilterInput {
+  birthTime: DateQueryOperatorInput
+  modifiedTime: DateQueryOperatorInput
   slug: StringQueryOperatorInput
-  year: IntQueryOperatorInput
+  year: FloatQueryOperatorInput
 }
 
 input AsciidocFilterInput {
@@ -2623,8 +2663,11 @@ input AsciidocFilterListInput {
 
 input AsciidocPageAttributesFilterInput {
   category: StringQueryOperatorInput
+  created: StringQueryOperatorInput
   description: StringQueryOperatorInput
+  href: StringQueryOperatorInput
   image: StringQueryOperatorInput
+  modified: StringQueryOperatorInput
   sort: StringQueryOperatorInput
 }
 

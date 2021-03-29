@@ -1,0 +1,28 @@
+= [rhce] 7 配置端口转发
+:page-description: rhce 7 配置端口转发
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20190118.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/19/1546344575180.html
+:page-created: 1518985380000
+:page-modified: 1546346587347
+:toc:
+
+____
+在 serverX 上配置端口转发，要求如下：
+
+[arabic]
+. 在 172.25.X.0/24 网络中的系统，访问 serverX 的本地端口 5423
+将被转发到端口 80
+. 此设置必须永久有效。
+____
+
+....
+firewall-cmd --permanent --add-rich-rule 'rule family=ipv4 source address=172.25.0.0/24 forward-port port=5423 protocol=tcp to-port=80' --permanent
+
+firewall-cmd --permanent --add-rich-rule 'rule family=ipv4 source address=172.25.0.0/24 forward-port port=5423 protocol=udp to-port=80' --permanent
+
+firewall-cmd --reload
+....
+
+image::https://resources.echocow.cn/image/rhce/7.png[哈哈哈哈]
+

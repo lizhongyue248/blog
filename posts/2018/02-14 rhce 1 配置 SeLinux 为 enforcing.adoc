@@ -1,0 +1,26 @@
+= [rhce] 1 配置 SeLinux 为 enforcing
+:page-description: 配置 SeLinux 为 enforcing
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20180401.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/14/1546344581049.html
+:page-created: 1518606660000
+:page-modified: 1546346712257
+:toc:
+
+修改配置文件
+
+[source,bash]
+----
+vim /etc/sysconfig/selinux
+----
+
+image:https://resources.echocow.cn/image/rhce/1.png[rhce]
+
+修改为题目所需要的即可
+
+退出后，执行
+
+[source,bash]
+----
+setenforce  1             //使强制模式立即生效
+----

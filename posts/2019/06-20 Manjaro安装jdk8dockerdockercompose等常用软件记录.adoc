@@ -1,0 +1,395 @@
+= Manjaro 安装 jdk 8 / docker / docker compose 等常用软件记录
+:page-description: Manjaro 安装 jdk 8 / docker / docker compose 等常用软件记录
+:page-category: linux
+:page-image: https://img.hacpai.com/bing/20171227.jpg?imageView2/1/w/960/h/540/interlace/1/q/100
+:page-href: /articles/2019/06/20/1561008381459.html
+:page-created: 1561008381605
+:page-modified: 1571842365332
+:toc:
+
+这几天都在折腾系统，无意义的折腾的那种。从manjaro kde 崩溃后换了 xfce
+原以为 xfce 占用内存会少一点，但是其实相差不到一个G，而且为了好看上了
+compiz ，但是总是蜜汁卡死，昨天一天卡死其次，实在受不了，所以再次换回
+kde，，，真香！**不过发现 jdk 的安装方式和以前不同了，不能够通过
+`yaourt` 直接安装了，因为他下不下来 jdk
+了，所以需要绕一下。**另外记录一下自己安装的东西，不然每次都要一个一个去找真的太麻烦了。。。
+
+== 前提
+
+开机卡死每次都会遇到
+
+....
+sudo vi /ect/default/grub
+....
+
+在quiet后加上 nouveau.modeset=0，然后
+
+....
+sudo update-grub
+....
+
+确保你以及配置了 已经 源，并且能够使用 `yaourt` 进行搜索安装。
+
+== oracle jdk 安装
+
+=== 下载 jdk
+
+一种是去 https://www.oracle.com/technetwork/java/javase/downloads/[官网]
+下载，不过你会发现需要登录什么的很麻烦，我在七牛云上备份了一个
+
+* http://downloads.echocow.cn/jdk-8u212-linux-x64.tar.gz[七牛云链接
+8u212]
+* http://downloads.echocow.cn/jdk-8u221-linux-x64.tar.gz[七牛云链接
+8u221]
+
+*下载完成后存放在当前用户的家目录下的 `Downloads` 文件夹下，没有就使用
+`mkdir ~/Downloads` 创建一个*
+
+=== 安装 jdk
+
+使用命令进行查找安装
+
+[source,bash]
+....
+[echo@echo-pc ~]$ yaourt jdk
+# 找到大约 第 55 个如下
+# 55 aur/jdk8 8u212-1 (76) (2.48)
+#   Oracle Java 8 Development Kit
+==> 输入 n° 以安装需要的软件包（例如：1 2 3 或者是 1-3）
+==> ---------------------------------
+==> 55
+
+# ......
+
+==> 编辑 PKGBUILD ？ [Y/n] ("A" 忽略)
+==> ----------------------------
+==> n
+
+#......
+
+==> 编辑 jdk8.install ？ [Y/n] ("A" 忽略)
+==> --------------------------------
+==> n
+
+==> 继续构建 jdk8 ？[Y/n]
+==> ----------------
+==> y
+....
+
+设置默认 `jdk`
+
+[source,bash]
+....
+[echo@echo-pc ~]$ archlinux-java status
+Available Java environments:
+  java-8-jdk (default)
+# 如果默认不是 jdk8，就使用 sudo archlinux-java set java-8-jdk 进行修改
+....
+
+== Docker 安装
+
+[arabic]
+. 运行 `sudo pacman -S docker` 或 `yaourt -S docker` 安装
+. 运行 `sudo usermod -aG docker 当前用户名` 添加用户组
+. 注销用户，重启 docker 即可
+
+配置镜像 https://lug.ustc.edu.cn/wiki/mirrors/help/docker[USTC]
+
+== Docker-compose 安装
+
+[source,bash]
+....
+# 下载
+➜  ~ sudo curl -L https://github.com/docker/compose/releases/download/1.24.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+
+# 修改权限
+➜  ~ sudo chmod +x /usr/local/bin/docker-compose
+
+# 查看
+➜  ~ docker-compose -v
+docker-compose version 1.24.0, build 0aa59064
+....
+
+== zsh
+
+[source,bash]
+....
+yaourt -S zsh
+sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
+....
+
+== gradle, vim ,git， peek
+
+[source,bash]
+....
+yaourt -S gradle vim git  peek
+....
+
+== 前端
+
+[source,bash]
+....
+yaourt -S nodejs npm  yarn npm-check-updates ts-node
+....
+
+== teamviewer
+
+[source,bash]
+....
+yaourt -S teamviewer
+teamviewer --daemon start
+teamviewer --daemon enable
+....
+
+====
+2019.10.1 更新
+====
+
+'''''
+
+这段时间不停的重装系统，自己记录得还是太少啦，下面全部写一下吧，免得以后麻烦死人啦=-=
+
+== 初始
+
+=== 切换源
+
+[source,bash]
+....
+sudo pacman-mirrors -i -c China -m rank
+....
+
+修改/etc/pacman.conf文件 在文件后添加如下语句
+
+[source,bash]
+....
+[archlinuxcn]
+SigLevel = Optional TrustedOnly
+Server = https://mirrors.ustc.edu.cn/archlinuxcn/$arch
+....
+
+导入GPG Key
+
+[source,bash]
+....
+sudo pacman -Syyu && sudo pacman -S archlinuxcn-keyring
+....
+
+等很久很久…
+
+== 中文乱码
+
+manjaro 18 在更新后会出现中文字体缺失得情况，需要手动安装一下中文字体
+
+[source,bash]
+....
+sudo pacman -S wqy-bitmapfont
+sudo pacman -S wqy-microhei
+sudo pacman -S wqy-zenhei
+....
+
+三种字体总有一种可以使用
+
+== 搜狗输入法
+
+[source,bash]
+....
+sudo pacman -S fcitx-sogoupinyin fcitx-im fcitx-configtool # 图形化的配置工具
+....
+
+安装完毕还不可以使用，需要进行如下配置：
+
+[source,bash]
+....
+vim ~/.xprofile
+....
+
+添加如下语句
+
+[source,bash]
+....
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS="@im=fcitx"
+....
+
+配置完毕之后，可以使用可视化界面调节输入法的设置
+
+[source,bash]
+....
+fcitx-configtool
+....
+
+注销后就可以使用啦
+
+== 科学上网
+
+[source,bash]
+....
+yaourt -S shadowsocks-qt5 electron-ssr
+....
+
+== pacman的彩蛋
+
+1. 打开 `/etc/pacman.conf` 文件。
+2. 在 `# Misc options` 部分，去掉  `Color` 前的 `#` 。
+3. 添加一行 `ILoveCandy`。
+4. 这样在使用 `pacman` 安装软件的时候，可以看到一个吃豆人233，因为pacman本身就是吃豆人的意思
+
+=== 截图
+
+除了上面说到得 peek 可以截图以外，深度截图工具很不错。
+
+[source,bash]
+....
+sudo pacman -S deepin-screenshot
+....
+
+=== 安装 qq
+
+`pacman -S deepin.com.qq.office` 或 `pacman -S deepin.com.qq.im`
+
+一个是qq，一个是tim，
+
+如果无法启动
+
+[arabic]
+. `yaourt -S gnome-settings-daemon`
+. 然后运行 `/usr/lib/gsd-xsettings`，或者后台运行
+`nohup /usr/lib/gsd-xsettings > /dev/null 2>&1 &`
+. 启动qq/tim
+. 通过 `sudo ln /usr/lib/gsd-xsettings ~/.config/autostart-scripts/gsd-xsettings`
+添加开机自启
+
+'''''
+
+2019-10-7 更新
+
+== tty 中文乱码
+
+manjaro 的 tty 无法显示中文，一般下载东西的时候我会选择挂在 tty
+上下载而不是进桌面环境。找了 Fbterm 来显示中文，值得一提的是，Fbterm
+已经停止维护，目前 aur 上面的是来自于 git
+上的，测试后目前可用，不过无法使用其配套的输入法支持 fcitx-fbterm 了。
+
+[arabic]
+. `yaourt fbterm` 直接安装
+. `sudo gpasswd -a 用户名 video` 添加用户到指定组
+. `fbterm` 命令直接运行即可
+
+可以修改 `~/.fbtermrc` 进行自定义字体和大小配置，在运行第一次`fbterm`
+命令后会自动生成这个文件。可以设置颜色，大小等，例如我的部分配置
+
+[source,bash]
+....
+font-names=wqy-microhei
+font-size=18
+....
+
+'''''
+
+2019-10-23 更新
+
+== 快捷键备份
+
+自己的一些自定义快捷键
+
+* http://downloads.echocow.cn/manjaro/%E5%BF%AB%E6%8D%B7%E9%94%AE%E5%A4%87%E4%BB%BD[全局快捷键]
+* http://downloads.echocow.cn/manjaro/%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BF%AB%E6%8D%B7%E9%94%AE%E5%A4%87%E4%BB%BD[自定义快捷键]
+
+快捷键沿用了部分 i3
+的快捷键习惯，感觉还是挺顺手的。有些快捷键也挺好玩的，不过有些需要注意
+
+* `META` 键就是我们说的 `WIN` 键，如图
+image:https://resources.echocow.cn/file/2019/10/5/jianpan.png[META]
+* 数字键盘分为两种，一种就是普通的数字键盘，一种是小键盘，如图
+image:https://resources.echocow.cn/file/2019/10/5/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20191023224136.png[数字键盘]
+在快捷键中 `NUM+5` 指的是小键盘上的，不是普通数字键。例如 将窗口推至上侧
+的快捷键是 `META+NUM+8`，其实就是两个键，`WIN+8`，此时 `8` 是小键盘的
+`8`。
+* 部分快捷键需要安装相关的应用
+
+=== 全局快捷键
+
+[cols=",,",options="header",]
+|===
+|动作 |快捷键 |常用等级
+|deepin 截图 |`CTRL+ALT+D` |★★★★★
+|打开命令行 |`META+ENTER` |★★★★★
+|打开/缩回 Yakuake |`F10` |★★★★★
+|运行命令 |`ALT+空格` |★★★★★
+|用剪贴板内容运行命令 |`ALT+SHIFT+F2` |★★
+|遍历窗口 |`ALT+TAB` |★★★★★
+|遍历窗口(反向) |`ALT+TAB+BACKTAB` |★
+|遍历当前应用程序窗口 |`ALT+～` |★★★★
+|遍历当前应用程序窗口(反向) |`ALT+～` |★
+|窗口操作菜单 |`ALT+F3` |★★★★
+|窗口到桌面 1 |`META+SHIFT+F1` |★★★★
+|窗口到桌面 2 |`META+SHIFT+F2` |★★★★
+|窗口到桌面 3 |`META+SHIFT+F3` |★★★★
+|窗口到桌面 4 |`META+SHIFT+F4` |★★★★
+|窗口上移一个桌面 |`META+SHIFT+↑` |★★★
+|窗口下移一个桌面 |`META+SHIFT+↓` |★★★
+|窗口左移一个桌面 |`META+SHIFT+←` |★★★
+|窗口右移一个桌面 |`META+SHIFT+→` |★★★
+|放大 |`META+=` |★★★★☆
+|缩小 |`META+-` |★★★★☆
+|更改窗口大小 |`META+SHIFT+S` |★★★★
+|挂起混成器 |`ALT+SHIFT+F12` |禁特效
+|关闭窗口 |`META+SHIFT+Q` |★★★★★
+|激活请求注意的窗口 |`CTRL+ALT+X` |★★★★★
+|将窗口放到全部桌面 |`META+SHIFT+A` |★★★
+|将窗口放至全屏 |`META+NUM+5` |★★★
+|将窗口快速铺至上方 |`META+↑` |★★★★☆
+|将窗口快速铺至下方 |`META+↓` |★★★★☆
+|将窗口快速铺至左方 |`META+←` |★★★★☆
+|将窗口快速铺至右方 |`META+→` |★★★★☆
+|将窗口快速铺至右上方 |`META+NUM+9` |★★★★
+|将窗口快速铺至右下方 |`META+NUM+3` |★★★★
+|将窗口快速铺至左上方 |`META+NUM+7` |★★★★
+|将窗口快速铺至左下方 |`META+NUM+1` |★★★★
+|将窗口水平扩展 |`META+NUM++` |☆
+|将窗口水平收缩 |`META+NUM+-` |☆
+|将窗口推至上侧 |`META+NUM+8` |★★
+|将窗口推至下侧 |`META+NUM+2` |★★
+|将窗口推至左侧 |`META+NUM+4` |★★
+|将窗口推至右侧 |`META+NUM+6` |★★
+|切换当前窗口分类 |`CTRL+F7` |☆
+|切换到上方的窗口 |`META+ALT+↑` |★★★☆
+|切换到下方的窗口 |`META+ALT+↓` |★★★☆
+|切换到左方的窗口 |`META+ALT+←` |★★★☆
+|切换到右方的窗口 |`META+ALT+→` |★★★☆
+|切换到上面的桌面 |`META+CTRL+↑` |★★★★☆
+|切换到下面的桌面 |`META+CTRL+↓` |★★★★☆
+|切换到左面的桌面 |`META+CTRL+←` |★★★★☆
+|切换到右面的桌面 |`META+CTRL+→` |★★★★☆
+|切换到桌面 1 |`CTRL+F1` |★★★★★
+|切换到桌面 2 |`CTRL+F2` |★★★★★
+|切换到桌面 3 |`CTRL+F3` |★★★★★
+|切换到桌面 4 |`CTRL+F4` |★★★★★
+|切换鼠标点击效果 |`META+SHIFT+8` |★★★
+|切换显示窗口(对当前桌面) |`CTRL+F9` |★
+|切换显示窗口(对全部桌面) |`CTRL+F10` |★
+|清除全部鼠标标记 |`META+SHIFT+F11` |★★★★
+|清除上一个鼠标标记 |`META+SHIFT+F12` |★★★★
+|杀死窗口 |`CTRL+ALT+ESC` |★★★★
+|设置窗口快捷键 |`META+SHIFT+K` |★★★★
+|显示桌面网格 |`CTRL+F8` |★★★☆
+|移动窗口 |`META+SHIFT+M` |★★★★☆
+|移动鼠标到焦点 |`META+F5` |★★
+|移动鼠标到中央 |`META+F6` |★★
+|桌面立方 |`META+F10` |★★★★★
+|桌面球体 |`META+F11` |★★★
+|桌面圆柱 |`META+F12` |★★★
+|最大化窗口 |`META+PgUp` |★★★★
+|最小化窗口 |`META+PgDown` |★★★★
+|===
+
+=== 全局快捷键
+
+[cols=",,",options="header",]
+|===
+|动作 |快捷键 |常用等级
+|TIM 截图 |`CTRL+ALT+A` |★★★★★
+|TIM 提取命令 |`CTRL+ALT+Z` |★★★★★
+|===
+

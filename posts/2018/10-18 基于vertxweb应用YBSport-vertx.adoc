@@ -1,0 +1,593 @@
+= 基于 vertx web 应用 YBSport-vertx
+:page-description: 基于 vertx web 应用 YBSport-vertx
+:page-category: 归档
+:page-image: https://img.hacpai.com/bing/20180213.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/10/18/1546344582189.html
+:page-created: 1539819360000
+:page-modified: 1546347641551
+:toc:
+
+== YBSport
+
+易运动，通过易班app所记录的每日步数可兑换相应的网薪。
+
+== 简介
+
+你还在为没有网薪发愁吗？民大易运动上线啦~现在，你只要在走路或跑步的时候开启易班app并给予权限，把它放在后台，将会自动记录你每日运动的步数哦~通过这个步数每天可以兑换一定数量的网薪！网薪可以去网薪商城兑换各种实物哦！还有其他更好玩儿的用途等你来发现！只要开启APP运动简单一步即可获得定量的网薪！快来行动吧，一起易运动！
+
+____
+应用地址:http://yiban.echocow.cn/YBSport[贵民大易运动]
+
+*测试帐号：15585291942*
+
+*测试密码：LZY574196898*
+____
+
+== 技术选型
+
+* 核心框架: vert.x web、vert.x web client
+* 配置管理: vert.x conf
+* 单元测试: junit4、vert.x unit
+* 反向代理: nginx
+* 数据库: postgreSQL 10
+* 日志：log4j2
+* 前端：mui
+
+== 使用
+
+本应用为我校 易班工作站
+开发，需要提供易班工作站的接口和用户信息方能使用。
+
+环境：nginx + idea + postgresql 10
+
+=== nginx 配置
+
+nginx
+用于反向代理静态页面，http://nginx.org/en/download.html[官网下载地址]
+
+windows 可以直接 http://nginx.org/download/nginx-1.15.2.zip[下载]
+
+Centos7 可以借鉴此教程
+http://note.youdao.com/noteshare?id=c0e4bb495ad5ade62a546f4efc7773c2&sub=wcp1535266273108984[Centos7安装Nginx实战
+- 阿豪聊干货 - 博客园]
+
+其他 linux 发行版需要自行寻找教程。
+
+nginx 需要配置端口号和起始路径,请查看 conf/nginx.conf
+
+[source,text]
+----
+我的如下配置：
+
+    server {
+        listen       8001;
+        server_name  localhost;
+
+        location / {
+           root   E:\work\yiban\YBWorkSpace\YBSport\YBSport-UI;
+           index  index.html index.htm;
+        }
+    }
+    
+其中 8001 为你 nginx 反向代理页面的端口号
+----
+
+=== idea 配置
+
+clone 下此项目后默认没有配置模块，请自行在 project structure 进行配置。
+
+依赖管理使用 maven，请在 idea 中自行引入 import 依赖
+
+请修改 YBSport-web / src / main / resources / conf / config-bak.json
+配置文件，并重命名为 config.json
+
+然后，修改 UI 模块的 index.html 中 ajax 请求的地址端口为 你配置
+config.json 中 http 下的 port 端口号，默认 8888
+
+如果你需要修改日志输出位置（默认当前系统用户家目录/logs/YbSport/），请修改
+log4j2.xml 即可
+
+[source,xml]
+----
+<Properties>
+    <property name="log_charset">UTF-8</property>
+    <property name="log_pattern">
+        %d{yyyy-MM-dd HH:mm:ss} [%5p] [%t] (%F:%L) %m%n
+    </property>
+    <!--修改此处-->
+    <property name="logBaseFolder">${sys:user.home}/logs/YbSport/</property>
+    <property name="every_file_size">100MB</property>
+</Properties>
+----
+
+=== 数据库配置
+
+数据库我用惯了 mysql，想尝试下新的，所以选择了 postgresql。
+
+三张表：ybsport_buy、ybsport_time、ybsport_type
+
+* ybsport_buy 易运动兑换记录：用来记录哪些兑换了
+* ybsport_time
+易运动活动开始时间：用来记录什么时候开始什么时候结束，可以选择为长期活动
+* ybsport_type 易运动兑换的类型：记录了可以兑换哪些类型。
+
+数据库结构文件存放于 doc/sql 下，可能需要你手动绑定下 *ybsport_buy.type*
+和 *ybsport_type.id* 的外键信息
+
+____
+注意:在 sql 文件中,我将他的所有者给了 yiban
+这个用户，可能你需要手动修改下，例如修改 alter table ybsport_type owner
+to yiban 为你希望的用户
+____
+
+____
+注意:ybsport_time 里面每次数据库都只查询第一条启用的数据，如果此数据的
+*备注* 字段为 *长期* ，那么易运动
+这个活动就是长期新的，否则就是指定时间内的，如果没有启用的数据，那么默认活动未开启。
+____
+
+____
+注意:ybsport_buy 中的 yb_user 字段为 json 格式
+____
+
+=== 基于易班使用
+
+请登录 https://open.yiban.cn/[易班开放平台] ，然后完成以下操作 1.
+注册账户 -> 申请成为开发者 2. 上方导航 管理中心 -> 左侧 轻应用 ->
+创建轻应用 3. 填写资料时，维护地址可不填，应用地址为
+http://localhost:8001，8001 即为你配置的 nginx 的端口号。 4. 进入
+管理中心 -> 轻应用 -> 你创建的应用 -> 点击名字 进入到应用详情，获取到
+*AppID* , *AppSecret* 和 *站内地址* 5. 将获取到的 *AppID* , *AppSecret*
+, *站内地址* 填入 *cn.echocow.yiban.ybsport.utils.ConstEnum* 中 6. 修改
+易班防跨站伪造参数 为你指定的值 7. 运行 nginx 、postgresql 、idea 中运行
+cn.echocow.yiban.ybsport.Application
+
+____
+注意：如果要在电脑端查看，请 修改应用 -> 使用场景 ->
+兼容易班客户端、PC/手机浏览器
+____
+
+=== 脱离易班使用
+
+由于接口是由易班提供，所以暂无法脱离易班使用。
+
+== Home
+
+他们都说，易班都不给经费了，还帮他写啥。但是其实，我感觉我在帮我自己。每一次完整的写完一个应用，都会有不同的体验，才会真正的经历过一次项目完整的
+0
+到有，这个过程到最后一刻，都是很让人满足的。你看着自己的成品通过了审核，心理也是同样美滋滋的，并且每一个作品，都在见证你的成长。所以虽然没有钱，但是如果这个应用真的符合我的理念，那么我依旧还会去做的。
+
+=== 前言
+
+易运动是我非常想做的一个项目，从五月底开始就一直很想做，当时一时兴起做好了前端，不得不说我前端功底不怎么样，但是却意外的达到了我期望的效果，让我十分喜欢。所以从几个月前就想做的。当时的技术选型就是
+mui +
+vert.x，但是不得不说我的实力有限，还不能很好的理解其异步思想，虽然说现在也是有点模糊，但是勉强写的出来了。放假实习完毕后，回来家的第一件事就是完成自己想做的这个应用，以前了解过vert.x也自己看过相关的资料，
+但不得不说思想的转变是极其困难的，需要时间和努力去不断熏陶。直到今天都只是入门，然后磕磕碰碰的写出了第一个模块
+*YBSport-web* ，其对应的前端
+*YBSport-UI*。但是中间也出现很多很多问题，也算是解决了，能够写出成品来，还是很开心的。
+
+* https://github.com/GZMZ-YIBAN/YBSport/wiki/Api[Api]
+* https://github.com/GZMZ-YIBAN/YBSport/wiki/YBSport-UI[YBStore-UI]
+* https://github.com/GZMZ-YIBAN/YBSport/wiki/YBSport-web[YBSport-web]
+
+== Api
+
+本页主要说明了请求的 Api 接口,所有交互均是 json 格式
+
+=== 获取当前是否在活动时间内或者长期
+
+* 接口描述：用来判断用户是否可以兑换
+* 请求路径：/status
+* 请求方式：GET
+* 请求参数：无
+* 返回结果示例:
+
+[source,json]
+----
+{
+  "code": "请求代码",
+  "msg": "请求结果",
+  "data": {
+    "body": "boolean 是否在活动时间内",
+    "start": "活动开始时间",
+    "end": "活动结束时间",
+    "long": "是否是长期活动"
+    }
+  }
+}
+----
+
+* 补充：此接口首先判断 body 是否在时间内，然后再判断 long
+是否为长期活动，如果是，就不读取 start 和
+end。如果不是，就读取并显示出来。
+
+=== 获取可兑换的类型信息
+
+* 接口描述：获取兑换类型的数据，生成可兑换类型的按钮
+* 请求路径：/
+* 请求方式：GET
+* 请求参数：
+
+[source,json]
+----
+{
+    "verify_request" : "加密授权参数",
+    "state" : "易班防跨站伪造参数"
+} 
+----
+
+* 返回结果示例:
+
+[source,json]
+----
+{
+  "code": "请求代码",
+  "msg": "请求结果",
+  "data": {
+    "list": [
+      {
+        "id": "主键",
+        "needSteps": "需要的步数",
+        "getMoney": "花费的网薪"
+      },
+      {
+        "id": "主键",
+        "needSteps": "需要的步数",
+        "getMoney": "花费的网薪"
+      }
+    ]
+  }
+}
+----
+
+=== 获取当前步数以及最近三十天的运动步数
+
+* 接口描述：获取易班运动数据，初始化图和运动数据。
+* 请求路径：/steps
+* 请求方式：GET
+* 请求参数：
+
+[source,json]
+----
+{
+    "verify_request" : "加密授权参数",
+    "state" : "易班防跨站伪造参数"
+}
+----
+
+* 返回结果示例:
+
+[source,json]
+----
+{
+  "code": "请求代码",
+  "msg": "请求结果",
+  "data": {
+    "sport_steps": "今日运动步数",
+    "date_time": "今日时间",
+    "list": [
+      {
+        "sport_steps": "步数",
+        "date_time": "时间"
+      },
+      {
+        "sport_steps": "步数",
+        "date_time": "时间"
+      }
+    ]
+  }
+}
+----
+
+=== 获取已经兑换的列表信息
+
+* 接口描述：获取已近数据，初始化兑换记录。
+* 请求路径：/buyList
+* 请求方式：GET
+* 请求参数：
+
+[source,json]
+----
+{
+    "verify_request" : "加密授权参数",
+    "state" : "易班防跨站伪造参数"
+}
+----
+
+* 返回结果示例:
+
+[source,json]
+----
+{
+  "code": "请求代码",
+  "msg": "请求结果",
+  "data": {
+    "sport_steps": "今日运动步数",
+    "date_time": "今日时间",
+    "list": [
+      {
+        "date": "兑换时间",
+        "get_money": "获得网薪",
+        "is_enable": "是否已经发放"
+      },
+      {
+        "date": "兑换时间",
+        "get_money": "获得网薪",
+        "is_enable": "是否已经发放"
+      }
+    ]
+  }
+}
+----
+
+=== 发起兑换
+
+* 接口描述：发起兑换请求
+* 请求路径：/buy
+* 请求方式：POST
+* 请求参数：
+
+[source,json]
+----
+{
+    "verify_request" : "加密授权参数",
+    "state" : "易班防跨站伪造参数",
+    "parameter.typeId": "兑换类型",
+    "parameter.sportSteps": "兑换步数"
+}
+----
+
+* 返回结果示例
+
+[source,json]
+----
+{
+  "code": "请求代码",
+  "msg": "请求结果",
+  "data": {
+    "status": "success | failed 是否成功",
+    "message": "如果失败，回显信息"
+    }
+  }
+}
+----
+
+== YBSport-UI
+
+本着前后端分离，模块化开发的思想，将前后端分离开发，提供接口 API
+，然后前端对接收到的数据进行处理即可。 事实上自己也是如此开发，以 nginx
+进行静态页面反向代理，ajax 请求数据。
+
+但是存在的一个问题就是就是跨域问题，一旦解决了跨域问题就能够很好的解决所有的问题。
+
+=== 遇到的坑
+
+==== 错误处理
+
+本不是前端开发人员，所以自然不了解前端对请求会遇到哪些错误。一开始选用时使用简化版的
+ajax 请求处理
+`javascript 1.5 mui.post('http://server-name/login.php',{         username:'username',         password:'password'     },function(data){         // 服务器返回响应，根据响应结果，分析是否登录成功；         // ...     },'json' );`
+但是后来发现，一旦网络出现问题，或者服务器响应时间过长，就不会有任何回显信息，会很尴尬的等待。所以我更换为有异常处理和超时等待的
+ajax 请求
+`javascript 1.5 mui.ajax('http://server-name/login.php',{     data:{         username:'username',         password:'password'     },     dataType:'json',// 服务器返回json格式数据     type:'post',// HTTP请求类型     timeout:10000,// 超时时间设置为10秒；     headers:{'Content-Type':'application/json'},                       success:function(data){         // 服务器返回响应，根据响应结果，分析是否登录成功；         // ...     },     error:function(xhr,type,errorThrown){         // 异常处理；         console.log(type);     } });`
+
+这样，当处理出现不可预期问题的时候，也可以对客户端进行友好的提示。
+
+==== 易班内置浏览器引入他库
+
+在我和国睿测试投票系统的时候，遇到的一个问题就是当我点击一个按钮的时候，出现多次触发时间的情况，卡了很久。最后国睿对其进行抓包分析，
+发现了易班app在启动内置浏览器的时候自动引入了 zepto 库，我对此发起过提问
+
+[source,text]
+----
+Q：您好，我们开发的时候遇到易班APP的问题，希望给予回复，谢谢。 
+
+1易班app内置浏览器加载了zepto库，但是其中的某些方法与应用冲突，请问有什么办法禁止易班内置浏览器加载这个库？
+
+2易班app内置浏览器在关闭时会删除cookie，请问有什么办法保存或者类似cookie可以保存对象方式？
+
+提问时间 : 2018-06-04 22:00:55
+A：您好。
+
+1、该问题的确与开放平台相关设计期望不符，已向易班app开发组传达问题意见，但经过沟通目前易班app内置浏览器容器业务耦合程度较大，需要一个长时间的优化或者重构的评估规划。请开发者暂时寻找其它方案避免（比如自定义JS编写）；
+
+2、关闭内置浏览器清除cookie是合理的安全机制，应用端可自行对cookie内容或功能标示存储。
+
+回答时间 : 2018-06-05 11:00:02
+----
+
+当初我负责的是前端页面处理，所以不得已我只能去适配客户端，目前发现的只有一个
+点击事件 发生冲突，重复绑定的情况。
+`javascript 1.5 // mui提供的绑定,为 tap 事件，同时 zepto 也是同样 tap 绑定，造成重复绑定 mui(document.body).on("tap", "#help", function () {     // code })`
+所以我加入的识别易班浏览器的方法，以其自动适应用 tap 还是 click 绑定
+`javascript 1.7 let cli; navigator.userAgent.indexOf("yiban_android") > (-1) ? cli = "click" : cli = "tap"; // 绑定 mui(document.body).on(cli, "#help", function () {     // code })`
+为什么不直接用 click 呢？就是任性~~~就想用 tap，然后用此方法防止冲突。
+
+==== JavaScript 兼容性问题
+
+这次开发应用就是遇到此问题，在我在电脑上，我的手机上（华为P9），测试均正常，然后测试云磊的手机，也是正常，但是却发现在某些手机上不能正常显示。
+比如红米note，还有夜神模拟器。排查了几个小时，发现了一个问题，一直报的的语法错误语法错误语法错误，我重复检查前端半天，也是没找到什么错了，
+最后尝试把 `let` 和 `const` 改回 `var` ，就正常了。
+
+我想了想，发现目前易班app使用的是用户手机操作系统自带的浏览器内核，如果目前用户手机系统自带的浏览器内核较低，是不支持
+es6 的，所以需要去做适配。
+
+当然如果不使用 es6 自然可以忽略此问题了。
+
+=== 感受
+
+前端基本就这些了，六月初的时候就写完一部分，现在由于需求的增加，比如侧边栏，历史计步，兑换记录这些的添加又自己去改页面，当然是很笨的处理方法。
+不过感觉前端所见即所得的方式比后端来的有趣多，各种语法糖还是很不错的。这是目前为止我写得最满意的一个前端了！虽然很简陋，但是我真心喜欢。
+
+== YBSport-web
+
+前面说过，很早前就接触了 vert.x ，但是当初只有 ssh
+的经验，并且也是照着教程做的，感觉自己提升还是不高。在接触到这个框架的时候，查阅资料是十分困难的，
+在国内的环境下感觉学起来很吃力，后来翻墙找了更多的资料学习，不过其实都没有视频学得容易。自己不断尝试，不断地改变思想，让自己去适应异步的氛围，每一步学习都是自己查的资料。
+不得不说这样学起来很累，但是真的，提升真的很大。不论是从问题查找，代码风格还是思维方面，都提升了很多。他的性能与支持也没有让我失望，但是自己还是初步入门，
+并没有真正领悟到他的核心，还需要不断地努力。
+
+=== 异步处理
+
+==== 多 Verticle 部署
+
+项目开始的时候，深受**横向切割**的思想影响，所以将他分为了两个 Verticle
+，一个作为路由发送 eventBus
+，一个接受并处理数据。但是实在自己思想局限，将所有的请求的处理都放在了一个
+Verticle 里面，所有的数据处理都放在了一个 Verticle
+里，所以造成的结果就是一个 class
+十分冗长，甚至一个方法十分冗长。按照**横向切割**的思想，应该包如下：
+
+[source,text]
+----
+loginService
+  |—— LaginVerticle
+  |—— LoginDbVerticle
+infoService
+  |—— InfoVerticle
+  |—— InfoDbVerticle
+
+...
+----
+
+我觉得我的理解实在不够深刻，一直没有想通有多个Verticle时候如何一起部署。。。而且当时的自己过于急躁，如今看下来结构实在不忍直视。。。而异步中如何处理两个
+Verticle
+呢？我当初找到的办法是在确认一个部署成功后，再依次部署第二个，如下：
+
+....
+Future<String> dbVerticleDeployment = Future.future();
+        vertx.deployVerticle(new ConvertDbVerticle(), dbVerticleDeployment.completer());
+        dbVerticleDeployment.compose(id -> {
+            Future<String> convertRestVerticleDeployment = Future.future();
+            vertx.deployVerticle(
+                    ConvertRestVerticle.class.getName(),
+                    new DeploymentOptions().setInstances(1),
+                    convertRestVerticleDeployment.completer());
+            return convertRestVerticleDeployment;
+        }).setHandler(ar -> {
+            if (ar.succeeded()) {
+                startFuture.complete();
+            } else {
+                startFuture.fail(ar.cause());
+            }
+        });
+....
+
+而在 Application 中直接部署 Application 即可。但是不够优雅，这是 vertx
+的一个官网示例，但是却还是不明白多个 Verticle
+如何处理。。。希望大神解答。
+
+==== 配置读取
+
+学习此框架的核心，无非就是 *事件驱动* 和
+*异步处理(非阻塞)*。我一开始写的时候遇到的一个问题就是思想的转变，使用
+vert.x conf 模块进行读取 json 配置文件，
+但是由于是异步的，本着学习的思想，不用 jdk
+自带的读取配置文件。所以遇到的一个问题就是异步处理不关心他的结果便向下执行，我因此在
+stackoverflow 上
+https://stackoverflow.com/questions/51999544/in-vert-x-why-do-static-methods-run-before-static-code-blocks[提问]，
+当然并没有很好地解决问题，遇到错误的概率还是很大，不过我还是采纳了他，因为的确给了我一定的思想。后来我依旧没有办法将他读取的方法独立为一个静态方法，所以只有将它放于代码中执行。
+
+[source,text]
+----
+ConfigFactory.retriever.getConfig(res -> {
+    if (res.succeeded()) {
+        JsonObject httpConfig = res.result().getJsonObject("http");
+        server.requestHandler(router::accept)
+                .listen(httpConfig.getInteger("port"), httpConfig.getString("host"),
+                        listenResult -> {
+                            if (listenResult.failed()) {
+                                LOGGER.error("Http Server failed!" + listenResult.cause());
+                            } else {
+                                LOGGER.info("Http Server started on " + httpConfig.getString("host") + ":" + httpConfig.getInteger("port") + "!");
+                            }
+                        });
+    } else {
+        LOGGER.error("Config get error! Something went wring during getting the config!" + res.cause());
+        throw new RuntimeException("Config get error! Something went wring during getting the config");
+    }
+});
+----
+
+保证执行成功后才执行后面的代码，这是一开始处理异步的方式。
+
+==== 事务管理
+
+可以说这是我这个应用的败笔吧，我没有做事务处理。也就是说涉及到多个sql操作数据的时候，其中一个失败而另外一个成功，会造成数据不统一。不过在我的程序中，没有同时操作数据的sql存在，而是多个查询语句后只有一个数据操作，而我需要对查询出来的数据进行判断后再决定是否操作数据。而在不断的操作数据库的时候又面临回调地狱的问题所所以我选择使用
+Future 来避免回调地狱
+
+....
+Future<SQLConnection> connectionFuture = Future.future();
+Future<ResultSet> dateFuture = Future.future();
+Future<ResultSet> compareFuture = Future.future();
+Future<ResultSet> queryFuture = Future.future();
+Future<UpdateResult> updateFuture = Future.future();
+....
+
+异步查询数据，然后让每个 Future 接受处理结果，再单独拿出来 setHandler
+处理数据，这样就避免了回调地狱。
+
+==== 结果合并
+
+当我在 ConvertDbVerticle 接受 eventBus 接收到数据的时候，我希望返回的
+JsonObject 包含多个从数据库查询出来的结果，例如 getInfo 方法中我希望获得
+`ybsport_type` 和 `ybsport_buy` 表的数据然后合并至 JsonObject 的 reply
+之中，但是数据查询是异步的，如何处理呢？我选择使用了 CompositeFuture 的
+all 方法进行组合，只有当两个异步查询都成功的时候，才能够执行 all
+的回调函数，然后在 all 的回调函数里面为 reply 填充结果即可。
+
+....
+CompositeFuture.all(typeResult, userResult).setHandler(results -> {
+    if (results.succeeded()) {
+        LOGGER.info("Both results are ready for use!");
+        JsonObject t = results.result().resultAt(0);
+        JsonObject u = results.result().resultAt(1);
+        reply.mergeIn(t);
+        reply.mergeIn(u);
+        message.reply(reply);
+    } else {
+        reportQueryError(message, results.cause(), "Both or one result attempt failed!");
+    }
+});
+....
+
+此时返回过去的 reply 即是一个合并力两个异步查询的结果集了。
+
+=== 日志处理
+
+vert.x 默认使用的日志处理的是 JDK 内置的 JUL
+，但是其输出方式我改了好久都不满意，而且资料太少，所以自己引入了他的日志框架，一开始打算引入
+slf4j，后来还是使用了 log4j ，不过需要修改他的默认配置，如下：
+
+....
+    System.setProperty("vertx.logger-delegate-factory-class-name",
+            "io.vertx.core.logging.Log4j2LogDelegateFactory");
+....
+
+=== DNS 解析缓慢或错误
+
+由于易班使用的 oauth
+接口，我需要跳转到回调页面，但是发现解析他的域名的时候十分缓慢，查询后才发现他使用的
+google 的 dns 解析，所以需要禁用他默认的 DNS，使用系统默认的 DNS 解析。
+
+....
+    System.getProperties().setProperty(DISABLE_DNS_RESOLVER_PROP_NAME, "true");
+....
+
+=== 字符串转 JSON 对象
+
+自己当初阅历有限，傻傻的一个属性一个属性的遍历存放，其实应该使用 jackson
+来进行更好的处理的，自己写了一个 StringToPojoJson 实在太笨。
+
+== Documentation
+
+请查看 https://github.com/GZMZ-YIBAN/YBSport/wiki[wiki] 以了解更多信息
+
+== 应用截图
+
+我在 UI 模块提供 `static.html`
+可以直接看到成功的前端效果演示。当然现在也已经上线 易班应用广场 可以直接
+http://yiban.echocow.cn/YBSport/[查看]
+
+image::https://resources.echocow.cn/image/blog/%E9%A1%B9%E7%9B%AE/show.gif[avatar]
+

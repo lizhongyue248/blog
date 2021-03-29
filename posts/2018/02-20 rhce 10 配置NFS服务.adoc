@@ -1,0 +1,82 @@
+= [rhce] 10 配置 NFS 服务
+:page-description: rhce 10 配置 NFS 服务
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20180304.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/20/1546344584166.html
+:page-created: 1519086900000
+:page-modified: 1546346546670
+:toc:
+
+____
+在 serverX 配置 NFS 服务，要求如下： - 以只读的形式共享目录 /public
+同时只能被 example.com 域中的系统访问。 - 以读写的形式共享目录
+/protected 同时只能被 example.com 域中的系统访问。 - 访问 /protected
+需要通过 Kerberos 安全加密，您可以使用下面提供的密钥：
+http://classroom.example.com/pub/keytabs/serverX.keytab - 目录
+/protected 应该包含名为 project 拥有人为 ldapuserX 的子目录 - 用户
+ldapuserX 能以读写形式访问/ protected/project
+____
+
+== 操作
+
+创建目录
+
+....
+mkdir /publicmkdir -p /protected/project
+....
+
+修改目录权限，protected 需要有读写权限，project 需要修改拥有人身份
+
+....
+chmod o+w /protected/ -R
+chown ldapuser0 /protected/project/
+....
+
+打标签
+
+....
+semanage fcontext -a -t public_content_t '/protected(/.*)?'
+restorecon -RvF /protected/
+....
+
+下载kerberos证书到 /etc/krb5.keytab
+
+....
+wget -O /etc/krb5.keytab http://classroom.example.com/pub/keytabs/server0.keytab
+....
+
+`vim /etc/exports` 修改文件，增加共享信息。
+
+....
+/public 172.25.0.0/24(ro) #要共享的目录 允许访问的ip段 参数
+/protected 172.25.0.0/24(rw,sec=krb5p)
+....
+
+启动NFS相关服务，并设置开机启动 nfs-server 和 nfs-secure-server
+
+....
+systemctl restart nfs-server nfs-secure-server  
+systemctl enable nfs-server nfs-secure-server
+....
+
+如果没有下载kerberos证书，或者下载不正确，是不能正常启动nfs-secure-server的
+
+配置防火墙 允许相关服务 nfs、rpc-bind和mountd
+
+....
+firewall-cmd --permanent --add-service=nfs
+firewall-cmd --permanent --add-service=rpc-bind
+firewall-cmd --permanent --add-service=mountd
+firewall-cmd --reload
+....
+
+配置到这里就完成了。如果想要查看输出的共享信息，可以使用
+`exportfs -v`查看
+
+....
+[root@server0 ~]# exportfs -v/public         172.25.0.0/24(ro,wdelay,root_squash,no_subtree_check,sec=sys,ro,secure,root_squash,no_all_squash)/protected      172.25.0.0/24(rw,wdelay,root_squash,no_subtree_check,sec=krb5p,rw,secure,root_squash,no_all_squash)
+....
+
+如果你修改了 /etc/exports 配置，不想重启服务又想立即生效，可以使用
+`exportfs -arv`
+

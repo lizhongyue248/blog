@@ -1,0 +1,69 @@
+= tomcat 上配置二级域名
+:page-description: tomcat 上配置二级域名
+:page-category: 归档
+:page-image: https://img.hacpai.com/bing/20180514.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/03/04/1546344584354.html
+:page-created: 1520108340000
+:page-modified: 1546346452987
+:toc:
+
+____
+今天在 Tomcat 上配置二级域名，说实话，Tomcat 的 server.xml
+文件是我最不想碰的，上次真的被他搞出了阴影来。但是后面觉得还是有必要配一下，早晚都要经历的=-=所以还是花时间配置了。
+____
+
+== 环境
+
+一台已经安装好 Tomcat9 的 centos7 服务器，其使用 IP
+地址必须能够正常访问。已经配置好dns 解析的域名，能够 ping
+得通你所需要配置的二级域名。
+
+== 步骤
+
+进入 Tomcat9 目录下的 conf 文件夹，编辑 server.xml 文件。
+
+可选 ：寻找到标签 Connector ，将 port 设置为80
+
+image:https://resources.echocow.cn/image/blog/tomcat.2.1.png[image]
+
+[source,xml]
+----
+<Connector port="80" protocol="HTTP/1.1" connectionTimeout="20000" 
+           redirectPort="8443" URIEncoding="UTF-8" />
+----
+
+继续向下，寻找到 name 为 localhost 的 Host
+标签，修改为主域名（如www.echocow.cn），添加 port 等参数
+
+image:https://resources.echocow.cn/image/blog/tomcat.2.2.png[image]
+
+端口号、协议等按需求填写
+
+[source,xml]
+----
+<Host name="www.echocow.cn"  appBase="webapps"  port="80" protocol="HTTP/1.1"
+    connectionTimeout="20000" redirectPort="8443" unpackWARs="true" autoDeploy="true">
+----
+
+第一个二级域名配置完毕，只是主要的二级域名。
+
+其他二级域名方法相同，只不过需要多添加一个 Host 标签，下面我添加一个
+yiban.echocow.cn 的二级域名。
+
+image:https://resources.echocow.cn/image/blog/tomcat.2.3.png[image]
+
+其中 context 对应的其域名下的文件夹以及目录。这样既算是配置完毕
+
+[source,xml]
+----
+<Host name="yiban.echocow.cn"  appBase="webapps" port="80" protocol="HTTP/1.1"
+    connectionTimeout="20000" redirectPort="8443" unpackWARs="true" autoDeploy="true">
+    <Context path="/YBSeatOrder" docBase="YBSeatOrder" debug="0" reloadable="true" />
+    <Context path="/YBStore" docBase="YBStore" debug="0" reloadable="true" />
+</Host>
+----
+
+image:https://resources.echocow.cn/image/blog/tomcat.2.4.png[image]
+
+如此，访问 yiban.echocow.cn/YBStore 即是访问 YBStore 这个项目了。
+

@@ -1,0 +1,143 @@
+= kotlin 1.3.70 中 kotlinx.serialization 升级到 0.20.0
+:page-description: 月初的时候 Kotlin 1.3.70 正式发布 这不得不说是一个非常好的消息，带来的不仅是标准库新的功能，同时让我们写起来也更加舒服，现在对.gradle.kts 更加友好了.
+:page-category: kotlin
+:page-image: https://img.hacpai.com/bing/20180821.jpg?imageView2/1/w/960/h/540/interlace/1/q/100
+:page-href: /articles/2020/03/11/1583919686142.html
+:page-created: 1583919686317
+:page-modified: 1583919802128
+:toc:
+
+
+月初的时候 Kotlin 1.3.70
+https://blog.jetbrains.com/kotlin/2020/03/kotlin-1-3-70-released/[正式发布]了，这不得不说是一个非常好的消息，带来的不仅是标准库新的功能，同时让我们写起来也更加舒服，现在对
+`.gradle.kts`
+也更加友好了，具体可以查看它的发布文档。随之而然的，就是相应的生态进行更新了，不得不提的就是
+ https://github.com/Kotlin/kotlinx.serialization[kotlinx.serialization]
+这个库了。他为我们序列化提供了极大的方便，而他与 1.3.70 对应的版本是
+ https://github.com/Kotlin/kotlinx.serialization/blob/master/CHANGELOG.md#0200--2020-03-04[0.20.0]。
+
+如果你还在使用 v0.14.0 版本，可能会报以下错误：
+
+[source,bash]
+....
+java.lang.NoSuchMethodError: No direct method (ILkotlinx/serialization/SerializationConstructorMarker;)V in class Lcom/xxxx/common/core/Model; or its super classes (declaration of 'com.xxxx.common.core.Model' appears in /data/app/com.xxxx.demo-PV-n86-hzEl-eyc8UqbACQ==/base.apk!classes7.dex)
+10-11 15:30:10.048 E/AndroidRuntime(25760): at com.xxxx.reg.data.User.(Unknown Source:9)
+10-11 15:30:10.048 E/AndroidRuntime(25760): at com.xxxx.reg.data.User$$serializer.deserialize(Unknown Source:624)
+10-11 15:30:10.048 E/AndroidRuntime(25760): at com.xxxx.reg.data.User$$serializer.deserialize(User.kt:17)
+10-11 15:30:10.048 E/AndroidRuntime(25760): at kotlinx.serialization.json.internal.PolymorphicKt.decodeSerializableValuePolymorphic(Polymorphic.kt:33)
+....
+
+升级到 v0.20.0 就可以了。当然在这个版本中发生了不小的改变，将它过期的
+api 总结一下。
+
+== Json.nonstric
+
+默认情况下，他开启 `nonstric` 模式的，也就是解析的 `key`
+必须完全符合实体类的要求，不能够多出其他的字段。但是很多时候我们不希望这样，在以前的版本中是这样配置的：
+
+[source,kotlin]
+----
+private val json = Json(JsonConfiguration(strictMode = false))
+----
+
+但是在 0.20.0 中，已经不能够这样配置了，参见 https://github.com/Kotlin/kotlinx.serialization/blob/master/runtime/commonMain/src/kotlinx/serialization/json/JsonConfiguration.kt#L112[github]
+
+* `strictMode` 分割为 `ignoreUnknownKeys`、`isLenient`和
+`serializeSpecialFloatingPointValues`，
+* `unquoted` 重命名为 `unquotedPrint`
+
+在新的版本中我们需要如下使用：
+
+[source,kotlin]
+----
+private val json = Json(
+  JsonConfiguration.Default.copy(
+    ignoreUnknownKeys = true,
+    isLenient = true,
+    serializeSpecialFloatingPointValues = true,
+    useArrayPolymorphism = true
+  )
+)
+----
+
+== SerialDescriptor
+
+我们在对某些数据结构进行序列化和反序列化的时候应该写过如下的代码：
+
+[source,kotlin]
+----
+@Serializer(forClass = LocalDateTime::class)
+class LocalDateTimeSerializer : KSerializer<LocalDateTime> {
+
+  override val descriptor: SerialDescriptor = StringDescriptor
+  private val formatter: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withLocale(Locale.SIMPLIFIED_CHINESE)
+
+  override fun deserialize(decoder: Decoder): LocalDateTime =
+    LocalDateTime.parse(decoder.decodeString(), formatter)
+
+  override fun serialize(encoder: Encoder, obj: LocalDateTime) {
+    encoder.encodeString(formatter.format(obj))
+  }
+}
+----
+
+通过实现 `serialize` 和 `descriptor`
+方法就可以完成自定义的序列化。但是在 0.20.0 版本中 `StringDescriptor`
+被标记为过时了，相应的以下基本数据类型的都被标记了过时：
+
+* `IntDescriptor`
+* `UnitDescriptor`
+* `BooleanDescriptor`
+* `ByteDescriptor`
+* `ShortDescriptor`
+* `LongDescriptor`
+* `FloatDescriptor`
+* `DoubleDescriptor`
+* `CharDescriptor`
+* `StringDescriptor`
+
+源码中的注解如下：
+
+[source,kotlin]
+----
+@Deprecated(message = message,
+    replaceWith = ReplaceWith("PrimitiveDescriptor(\"yourSerializerUniqueName\", PrimitiveKind.STRING)"))
+object StringDescriptor : Migration()
+----
+
+我们需要使用 `PrimitiveDescriptor`
+来进行替代，参考 https://github.com/Kotlin/kotlinx.serialization/blob/146a0d08ed87a97cf5435a89fcafd3aa639c106e/runtime/commonMain/src/kotlinx/serialization/SerialDescriptorBuilder.kt#L60[github]：
+
+[source,kotlin]
+----
+override val descriptor: SerialDescriptor = PrimitiveDescriptor("LocalDateTimeTz", PrimitiveKind.STRING)
+----
+
+需要注意的是这个字符串的 `key`
+需要是唯一的。不然的话可能会造成他无法找到等问题。
+
+== bultins package
+
+另外，一些功能已移至 bultins package 包。
+
+例如：
+
+[source,kotlin]
+----
+import kotlinx.serialization.list
+User.serializer().list
+// 替换为
+import kotlinx.serialization.builtins.list
+User.serializer().list
+----
+
+[source,kotlin]
+----
+import kotlinx.serialization.internal.StringSerializer
+StringSerializer()
+// 替换为
+import kotlinx.serialization.builtins.serializer
+String.serializer()
+----
+

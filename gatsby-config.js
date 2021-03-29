@@ -68,12 +68,6 @@ module.exports = {
         name: 'pages',
         path: './posts'
       }
-    },
-    {
-      resolve: 'gatsby-plugin-typography',
-      options: {
-        pathToConfigModule: 'src/templates/typography'
-      }
     }
   ]
 }

@@ -1,0 +1,73 @@
+= [rhce] 16 实现动态WEB 内容
+:page-description: rhce 16 实现动态WEB 内容
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20181213.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/21/1546344579104.html
+:page-created: 1519215300000
+:page-modified: 1546346234004
+:toc:
+
+____
+在 system1 上配置提供动态web内容，要求如下： -
+动态内容由名为wsgi.group8.example.com 的虚拟主机提供 -
+虚拟主机侦听在端口 8909 - 从
+http://server.group8.example.com/pub/webinfo.wsgi
+下载一个脚本，然后放在适当的位置，无论如何不要修改此文件的内容 -
+客户端访问 http:// wsgi.group8.example.com:8909/
+时，应该接收到动态生成的web页面 - 此 http://
+wsgi.group8.example.com:8909/ 必须能被 group8.example.com
+域内的所有系统访问
+____
+
+== 操作
+
+安装 wsgi 的模块，才能运行 .wsgi 后缀的文件
+
+....
+yum  install mod_wsgi
+....
+
+创建文件夹并获取文件
+
+....
+mkdir /var/www/webappcd /var/www/webapp
+wget -O webinfo.wsgi http://server.group8.example.com/pub/webinfo.wsgi
+....
+
+配置虚拟主机
+
+[source,xml]
+----
+vim wsgi.conf
+
+Listen 8908
+<VirtualHost *:8908>
+  DocumentRoot "/var/www/webapp"
+  ServerName wsgi.group8.example.com
+  WSGIScriptAlias      /    /var/www/webapp/webinfo.wsgi
+</VirtualHost>
+----
+
+测试配置
+
+....
+apachectl configtest
+....
+
+开启防火墙，只允许 group8.example.com 域内的所有系统访问
+
+....
+firewall-cmd --add-rich-rule 'rule family="ipv4" source address="172.24.8.0/24" port port="8909" protocol="tcp" accept' --permanent
+....
+
+重启防火墙，并设置端口，重启服务
+
+....
+firewall-cmd --reloadsemanage port -a -t http_port_t -p tcp 8909
+systemctl restart httpd
+....
+
+测试
+
+image:https://resources.echocow.cn/image/rhce/16.1.png[image]
+

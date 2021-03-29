@@ -1,0 +1,32 @@
+= [RHCE] 考试目录
+:page-description: RHCE 考试目录
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20180707.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/03/01/1546344573160.html
+:page-created: 1519842180000
+:page-modified: 1546346416767
+:toc:
+
+* ☒ 1. 配置 SeLinux +
+* ☒ 2. 配置防火墙对 SSH 的限制
+* ☒ 3. 配置 IPV6 地址
+* ☒ 4. 配置链路聚合
+* ☒ 5. 自定义用户环境
+* ☒ 6. 配置本地邮件服务
+* ☒ 7. 配置端口转发
+* ☒ 8. 通过 SMB 共享目录
+* ☒ 9. 配置多用户 SMB 挂载
+* ☒ 10. 配置 NFS 服务
+* ☒ 11. 挂载一个 NFS 共享
+* ☒ 12. 实现一个 web 服务器
+* ☒ 13. 配置安全 web 服务
+* ☒ 14. 配置虚拟主机
+* ☒ 15. 配置 web 内容的访问
+* ☒ 16. 实现动态 web 内容 （新版已没有此题）
+* ☒ 17. 创建一个脚本
+* ☒ 18. 创建一个添加用户的脚本
+* ☒ 19. 配置 ISCSI 服务端
+* ☒ 20. 配置 ISCSI 客户端
+* ☒ 21. 部署 MariaDB 数据库
+* ☒ 22. 数据库查询填空
+

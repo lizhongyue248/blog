@@ -1,0 +1,140 @@
+= 智慧树/知到 自动看课脚本 ——js版
+:page-description: 智慧树/知到 自动看课脚本 ——js版
+:page-category: 归档
+:page-image: https://resources.echocow.cn/file/2019/4/7/1/timg.jpg
+:page-href: /articles/2019/04/07/1554643306922.html
+:page-created: 1554643306973
+:page-modified: 1558924250355
+:toc:
+
+使用 jquery 完成自动看课，自动答题，自动倍数播放等，可以自由设置参数等。
+
+____
+友情提醒：刷课有风险，由于是纯 js
+代码，所以我个人觉得我的这个是风险最低的几乎为零，但是却不敢保证完全没有风险。
+____
+
+'''''
+
+____
+免责申明：本脚本仅供技术交流，请勿用于商业及非法用途，如产生法律纠纷与本人无关！使用后产生的一切后果由使用者自行承担，本人概不负责。
+____
+
+== 使用方式
+
+[arabic]
+. F12 打开开发者工具
+. 选择控制台（console）
+. 粘贴源代码
+. 设置好参数，点击开始即可
+
+== 源代码
+
+[source,javascript]
+----
+/**
+* 回答问题
+*/
+function echo_question() {
+  if ($("#tmDialog_iframe").length > 0) {
+    $.each($("#tmDialog_iframe").contents().find("input[type='radio']"),(index,value) => {
+      value.click()
+      if($("#tmDialog_iframe").contents().find(".exam_correct").length > 0){
+        console.log("回答问题成功! 正确答案: " + $(value).parent().text().trim())
+        setTimeout(() => {
+          $(".popbtn_cancel").click()
+        }, 1000)
+        return false
+      }
+    });
+    // 多选默认全选，不判断对错
+    $.each($("#tmDialog_iframe").contents().find("input[type='checkbox']"),(index,value) => {
+      value.click()
+      setTimeout(() => {
+          $(".popbtn_cancel").click()
+      }, 1000)
+    });
+  }
+}
+
+function echo_play_method () {
+   if ($("#echo-play-y").prop("checked")) {
+          $(".line1bq").click()
+   }
+}
+
+/**
+* 设置
+*/
+function echo_set () {
+  if($('#echo-sound-y').prop("checked")){
+    $(".volumeIcon").click()
+  }
+  if($('#echo-rate-y').prop("checked")){
+    $("[rate='1.5']").click()
+  }
+}
+
+/**
+* 开始
+*/
+function echo_cow () {
+  echo_play = !echo_play;
+  if (echo_play) {
+      echo_tip.text("停止");
+      echo_status.text("状态: 运行中...");
+      $('.playButton').click()
+      echo_play_method()
+      setTimeout(() => {
+        echo_set()
+      }, 1000)
+      echo_get()
+      echo_id = setInterval(echo_get,$('#echo-time').val() * 1000)
+      console.log("运行中...")
+  } else {
+      echo_tip.text("start")
+      echo_status.text("状态: 已停止...")
+      window.clearInterval(echo_id)
+      console.log("已停止")
+  }
+}
+
+/**
+* 检测
+*/
+function echo_get () {
+  console.log((++echo_times) + " times run...");
+  echo_question()
+  if ($('.passTime').css("width") == '100%' || $(".progressbar_box_tip").html().indexOf("100%") > 0) {
+    $("#nextBtn").click()
+    setTimeout(() => {
+      echo_play_method()
+    }, 1000)
+    setTimeout(() => {
+      echo_set()
+    }, 3000)
+  }
+}
+
+
+var echo_box = $("<div style='background: wheat;padding: 20px;'><h4 style='margin: 0;'>欢迎使用! By: <u><i><a style='color: coral' href='https://www.echocow.cn' target='_blank'>EchoCow</a></i></u></h4><h4 id='echo_status' style='margin: 0;'>当前状态: 停止...</h4><h4 style='margin: 0;'>现在，你可以选择 <button id='echo_tip' onclick='echo_cow()'>开始</button></h4></div>");
+var echo_setting = $("<div style='background:wheat;padding:20px;'><p>设置</p><div><label for='echo-time'>运行间隔：</label><input type='number' name='echo-time' id='echo-time' value='10'>秒</div><div>是否关闭声音：<label for='echo-sound-y'><input id='echo-sound-y' name='echo-sound' type='radio' checked='true'>是</label><label for='echo-sound-n'><input id='echo-sound-n' name='echo-sound' type='radio'>否 </label></div><div>是否1.5倍速播放：<label for='echo-rate-y'><input id='echo-rate-y' name='echo-rate' type='radio' checked='true'>是</label><label for='echo-rate-n'><input id='echo-rate-n' name='echo-rate' type='radio'>否 </label></div><div>是否流畅模式播放：<label for='echo-play-y'><input id='echo-play-y' name='echo-play' type='radio'>是</label><label for='echo-play-n'><input id='echo-play-n' name='echo-play' type='radio' checked='true'>否 </label></div></div>")
+$('.main_right').prepend(echo_box)
+$('.main_right').prepend(echo_setting)
+var echo_tip = $('#echo_tip')
+var echo_status = $('#echo_status')
+var echo_id
+var echo_times = 0
+var echo_play = false
+$(".main_right").css("overflow", "auto")
+console.clear()
+console.log("初始化成功!请点击开始按钮开始...")
+----
+
+== 截图
+
+image:https://resources.echocow.cn/file/2019/4/8/Peek%202019-04-08%2011-39.gif[image]
+
+刚刚才发现我朋友也写了=-=早半个小时看到我就懒得写了啊！！！尴尬，见
+http://www.rainss.cn/essay/1104.html[rainss]。祝大家刷课愉快哦哈哈哈哈～～～
+

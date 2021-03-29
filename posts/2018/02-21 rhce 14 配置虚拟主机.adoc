@@ -1,0 +1,64 @@
+= [rhce] 14 配置虚拟主机
+:page-description: rhce 14 配置虚拟主机
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20180915.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/21/1546344576678.html
+:page-created: 1519174140000
+:page-modified: 1546346096678
+:toc:
+
+____
+在 serverX 上扩展你的 web 服务器，为站点 http://wwwX.example.com
+创建一个虚拟主机，然后执行以下步骤 - 设置 DocumentRoot 为
+/var/www/virtual - 从 http://classroom.example.com/materials/www.html
+下载文件并重命名为 index.html ，不要对文件 index.html 内容做任何修改。 -
+将 index.html 文件放到虚拟主机的 DocumentRoot 目录下，确保floyd
+用户能够在 /var/www/virtual 目录下创建文件。
+____
+
+____
+*注意：原始站点 http://serverX.example.com
+必须仍然能够访问，站点的所用的域名网络中已有 DNS 服务器解析*
+____
+
+== 操作
+
+创建文件夹，并下载文件
+
+....
+mkdir -p /var/www/virtual
+wget -O /var/www/virtual/index.html http://classroom.example.com/materials/www.html
+....
+
+创建新的虚拟主机
+
+....
+vim /etc/httpd/conf.d/www47.conf
+<VirtualHost *:80>
+  ServerName www47.example.com
+  DocumentRoot "/var/www/virtual"
+  <Directory "/var/www/virtual">
+    Require all granted
+  </Directory>
+</VirtualHost>
+....
+
+测试配置是否有误
+
+....
+apachectl  configtest
+....
+
+添加用户，并设置 ACL 权限
+
+....
+useradd floyd
+setfacl -m u:floyd:rwX /var/www/virtual
+....
+
+然后重启服务
+
+....
+systemctl  restart   httpd
+....
+

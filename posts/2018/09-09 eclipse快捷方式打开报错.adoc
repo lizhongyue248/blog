@@ -1,0 +1,45 @@
+= eclipse 快捷方式 打开报错
+:page-description: eclipse 快捷方式 打开报错
+:page-category: 归档
+:page-image: https://img.hacpai.com/bing/20181119.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/09/09/1546344576907.html
+:page-created: 1536489420000
+:page-modified: 1546347664220
+:toc:
+
+今天室友重装系统，所有软件重新安装，然后安装到 eclipse
+的时候，发现快捷方式无法打开，但是在 eclipse 的目录下可以打开
+eclipse.exe，很是奇怪。
+
+== 问题
+
+打开快捷方式报错如下：
+
+image::https://resources.echocow.cn/image/blog/questions/eclipse1.1.png[错误啦]
+
+然后我将 eclipse.exe 复制到桌面也不行，报错如下：
+
+image::https://resources.echocow.cn/image/blog/questions/eclipse1.2.png[错误啦]
+
+但是打开安装目录的 eclipse.exe 是没有问题的:
+
+image::https://resources.echocow.cn/image/blog/questions/eclipse1.3.jpg[成功打开]
+
+== 解决办法
+
+查看出错原因，发现问题
+
+image::https://resources.echocow.cn/image/blog/questions/eclipse1.4.jpg[查看原因]
+
+去寻找目录，对比文件
+
+image::https://resources.echocow.cn/image/blog/questions/eclipse1.5.png[对比]
+
+发现文件夹名不对，修改文件夹的名字
+
+image::https://resources.echocow.cn/image/blog/questions/eclipse1.6.png[修改]
+
+再次打开，成功！
+
+image::https://resources.echocow.cn/image/blog/questions/eclipse1.7.jpg[修改]
+

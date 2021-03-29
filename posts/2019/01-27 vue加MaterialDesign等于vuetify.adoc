@@ -1,0 +1,187 @@
+= vue 加 Material Design 等于 vuetify
+:page-description: vue 加 Material Design 等于 vuetify
+:page-category: vue
+:page-image: https://img.hacpai.com/bing/20180704.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2019/01/27/1548583400911.html
+:page-created: 1548588886402
+:page-modified: 1548591313205
+:toc:
+
+最近一段时间，莫名从一个后端码农走了前端，越来越多的时间接触前端，从一个只会
+html + css 布局的小菜鸟到一些易上手的库，再到现在接触最多的
+vue，逐渐发现前端的世界广阔无比，比起后端有过之而无不及。自己定义自己希望成为一个全栈，但是后来渐渐发现自己理解的全栈似乎并不是前后端贯通，而似乎是一种渴求新知识的精神，或许自己也需要仔细思考一下这个问题。
+
+== 絮絮叨叨
+
+我本身不是一个安分的人，所以在使用 vue
+中一直寻找着一个易用组件库，能够满足我需求的同时，有着良好的交互，注意这里说的是交互，而不是简单的样式等等。自己以前封装过一点，但是代码可读性实在太差，自己写起来也费时费力，并且有基础不扎实等诸多原因，最后自己没有完成。然而寻找的路程却一直没有放弃，这段时间我用过效果好的两套组件库分别是
+http://element-cn.eleme.io/#/zh-CN[element ui] 和
+https://www.iviewui.com/[iview]，相比起来我更加喜欢 iview，在他发布 3.0
+以后也一直关注，相比起 element
+他拥有更多的灵活性，`render 函数`也让他的可定制性提高了很多。不过前段时间找组件的时候无意中发现一款国外的组件库
+——
+https://vuetifyjs.com/zh-Hans/[vuetify]，简直大爱，特别是他的交互，真的让我身心舒畅。在视觉上的设计的确出类拔萃，而且组件的多样化也让我十分激动，很多东西我需要在前面两个框架中使用都是需要自己自定义组件一部分的，可是
+vuetify 为我们准备好了很多，举几个例子：
+
+* 表格的可编辑
+* 输入框组交互/动画
+* 时间轴
+* 大量的数据嵌套/目录树
+* ……
+
+这些在前两个框架中都需要耗费时间去自定义的，然而在 vuetify
+却轻松无比。组件库的存在不正就是解决开发时间和效率的问题吗？在这前提下有着更好的交互和视觉，为什么不选择呢？有个不算缺点的缺点就是中文文档实在太少，然而这何尝不是一种挑战。而且
+vuetify 诞生至今不过一年却在
+https://github.com/vuetifyjs/vuetify[github] 上面拥有了 16K
+star，社区也十分活跃，更新也很积极，可以看看他的版本记录
+
+image::https://resources.echocow.cn//file/2019/01/d1e997304f1c497faaa2b332f3ea6b52_image.png[imagepng]
+
+== Material Design
+
+而且更为重要的一点，就是 `vuetify` 完全根据
+https://material.io/[原质化设计 Material Design]
+规范开发。每个组件都是手工制作的。Material Design 其实 14
+年就已经提出，我也是上个月才知晓，后悔当初不好好学习=-=
+
+他**强调了物理定律的扁平化设计**，将设计的重心从仅仅关注表面转移到了人与设计之间的交互。而这种风格正中我下怀，真的让我爱不释手，国外高使用频率的
+app 大多都采用了这种规范进设计，比起国内的 ios 风格个人更加愿意花时间在
+MD 上面，而且 MD
+是官方的设计规范，大方向上并不会错的。说实话真正让我喜欢 md 的来源于
+http://v.youku.com/v_show/id_XNzMxNzUyNzQ0[谷歌安卓Material主题 Google
+Material design], 看了后真心喜欢。虽然自己还不能够实际完全符合 Material
+Design 的 ui 界面，但是自己也在不断努力与尝试。
+
+而 `vue + Material Design` 诞生了 `vuetify`，同时预计今年二月会迎来 1.5
+release，现在已经发布了 1.5 测试的第三个版本,2.0
+也在积极开发中。今天他就是我们的主角。
+
+== 搭建一个 vuetify 环境
+
+我们将要使用 vue-cli 3 进行搭建，并且最重要的，使用他的 ui
+界面进行管理我们的 vuetify 应用
+
+=== 在这之前
+
+你需要安装 `npm` 或者 `yarn` ，通过这两个工具安装 `vue cli 3`
+
+....
+~$ yarn global add @vue/cli
+// 或者
+~$ npm install @vue/cli -g
+....
+
+=== 开始
+
+开启 `vue cli 3` 的 `web` 管理界面
+
+....
+~$ vue ui
+....
+
+然后他会自动打开浏览器并跳转到 `http://localhost:8000/project/select`
+
+image::https://resources.echocow.cn//file/2019/01/4614573e36d041bd993d4c7b8c9bd910_image.png[imagepng]
+
+=== 创建
+
+我们创建一个 `vue cli 3` 项目
+
+image::https://resources.echocow.cn//file/2019/01/9897b78b9e6e4527a6c3da0fe7ebf383_image.png[imagepng]
+
+image::https://resources.echocow.cn//file/2019/01/71097e29c15b410e80d5d8bd38b0087b_image.png[imagepng]
+
+image::https://resources.echocow.cn//file/2019/01/c28678c5a7c44475a19a4da747b474f5_image.png[imagepng]
+
+image::https://resources.echocow.cn//file/2019/01/100948748d67499a95b9fa7f9280ad2e_image.png[imagepng]
+
+image::https://resources.echocow.cn//file/2019/01/533ff1da1bb94b7cbcad8bb349713cbb_image.png[imagepng]
+
+耐心等待
+
+image::https://resources.echocow.cn//file/2019/01/d419d3f3e724462a8fcb126a87e485c3_image.png[imagepng]
+
+=== 引入
+
+初始化完成项目后
+
+image::https://resources.echocow.cn//file/2019/01/a2e0e9965c824b858da9cd125907b740_image.png[imagepng]
+
+添加插件
+
+image::https://resources.echocow.cn//file/2019/01/73047d23ebd8406e9690ce9bba7f9b1b_image.png[imagepng]
+
+image::https://resources.echocow.cn//file/2019/01/35eaf42145ae477ca096811b7db13de4_image.png[imagepng]
+
+image::https://resources.echocow.cn//file/2019/01/0f627f779c9245fe94e12ff125b2a75c_image.png[imagepng]
+
+image::https://resources.echocow.cn//file/2019/01/78e9cf5ba3c04c339b28123570aabdeb_image.png[imagepng]
+
+image::https://resources.echocow.cn//file/2019/01/38b9aa7c92ab4a54b146afaa1d451986_image.png[imagepng]
+
+=== 运行
+
+image::https://resources.echocow.cn//file/2019/01/eb9b78ad7eec4b1c965422392a047d24_image.png[imagepng]
+
+运行查看下，在创建项目的时候，他自动帮我们用选择的构建工具下载好了依赖，直接运行借口
+
+....
+npm run dev
+// 或者
+yarn serve
+....
+
+不过如果你使用了
+eslint，那么运行会直接报错的，因为插件修改后的文件格式不符合默认的 elint
+规范的
+
+image::https://resources.echocow.cn//file/2019/01/19bea1ef09f04874b954fe2d62126c52_image.png[imagepng]
+
+修改后运行
+
+image::https://resources.echocow.cn//file/2019/01/dcd7afa96c7c4b21965b8163c5b65220_image.png[imagepng]
+
+访问测试
+
+image::https://resources.echocow.cn//file/2019/01/c3ae74f70aa641a2b1922056fa0c8b1b_image.png[imagepng]
+
+=== 其它
+
+[arabic]
+. 全局 stylus 引入
+
+发现使用 `loaderOptions` 方式可以引入
+
+....
+// vue.config.js
+css: {
+  loaderOptions: {
+  stylus: {
+    import:  path.resolve(__dirname, './src/styles/index.styl')
+  }
+}
+....
+
+但是查看网页代码会发现引入了很多次，所以我换了一种方式。在 `App.vue`
+中引入
+
+image::https://resources.echocow.cn//file/2019/01/f0c95c10ee1846faaa4cfb10cba9486c_image.png[imagepng]
+
+[arabic, start=2]
+. vuetify 默认给页面加了滚动条
+
+Vuetify默认开启了html滚动条，页面即使没有超出屏幕高度，他都是拥有滚动条的
+
+image::https://resources.echocow.cn//file/2019/01/2b5868f1d9234bc094030e4b8ca9b722_image.png[imagepng]
+
+`App.vue` 中覆盖样式即可
+
+image::https://resources.echocow.cn//file/2019/01/e656015eb62646a79c197e89bb1c899a_image.png[imagepng]
+
+== 回看
+
+总的来说搭建非常简单，使用也是及其简单，可能因为英语原因造成一点困难不过不碍事。上个月就想用了，不过项目已经上了
+element UI 且时间紧，所以没办法，后面是用了一段时间的
+iview，在这次的另外一个项目中果断换了
+vuetify，希望谈能够带给我惊喜。也希望通过它提高一下自己网页设计。
+

@@ -1,0 +1,36 @@
+= [rhce] 5 自定义用户环境
+:page-description: 自定义用户环境
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20180309.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/17/1546344577581.html
+:page-created: 1518804720000
+:page-modified: 1546346614697
+:toc:
+
+____
+在系统server0和desktop0上创建自定义命令为qstat
+,此自定义命令将执行以下命令： - /bin/ps -Ao pid,tt,user,fname,rsz -
+此命令对系统中的所有用户有效。
+____
+
+== 操作
+
+默认使用bash shell，所以就修改它的配置文件。配置文件一般存在于： 1.
+/etc/bashrc 全局生效 2. /home/用户家目录/.bashrc当前用户生效。
+
+这里要求对所有用户生效，明显是修改前者。
+
+*vim /etc/bashrc* 增加如下配置至文件末尾
+
+....
+alias qstat='/bin/ps -Ao pid,tt,user,fname,rsz'
+....
+
+*source /etc/bashrc* 重新加载一下，使得当前bash生效。
+
+== 测试自定义的命令
+
+`qstat`
+
+image:https://resources.echocow.cn/image/rhce/5.1.png[image]
+

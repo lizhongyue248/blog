@@ -1,0 +1,62 @@
+= tomcat9 配置问题 403 Access Denied
+:page-description: tomcat9 配置问题 403 Access Denied
+:page-category: 归档
+:page-image: https://img.hacpai.com/bing/20180531.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/05/08/1546344578486.html
+:page-created: 1525778700000
+:page-modified: 1546346507343
+:toc:
+
+____
+tomcat9.0 管理页面如：http://10.10.10.10:8080/manager/html出现如下错误：
+____
+
+____
+*403 Access Denied*
+____
+
+== 1.需要配置：
+
+Tomcat/conf/tomcat-users.xml加入：
+
+[source,xml]
+----
+ <role rolename="manager"/>     
+  <role rolename="admin"/> 
+  <role rolename="admin-gui"/>
+  <role rolename="manager-gui"/>
+  <user username="xxx" password="***" roles="admin-gui,manager-gui"/>
+----
+
+以上配置好后本地可以访问，http://127.0.0.1:8080/manager/html
+
+== 2.另外，需要修改Tomcat/webapps/manager/META-INF/context.xml文件：
+
+[source,xml]
+----
+<Context antiResourceLocking="false" privileged="true" >
+  <!--
+    Remove the comment markers from around the Valve below to limit access to
+    the manager application to clients connecting from localhost
+  -->
+  
+  <Valve className="org.apache.catalina.valves.RemoteAddrValve"
+
+         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1|\d+\.\d+\.\d+\.\d+" />
+  -</Context>
+----
+
+或注释Value节点（tomcat9.0以下默认是注释的，所以不需修改）
+
+[source,xml]
+----
+<!--
+  <Valve className="org.apache.catalina.valves.RemoteAddrValve"
+         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1" />
+  -->
+----
+
+____
+参考tomcat9.0文档：http://tomcat.apache.org/tomcat-9.0-doc/config/valve.html#Remote_Address_Filter
+____
+

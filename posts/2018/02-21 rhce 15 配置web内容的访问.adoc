@@ -1,0 +1,75 @@
+= [rhce] 15 配置 web 内容的访问
+:page-description: rhce 15 配置 web 内容的访问
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20180608.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/21/1546344577105.html
+:page-created: 1519206720000
+:page-modified: 1546346111004
+:toc:
+
+[source, bash]
+____
+在你的 serverX 上的 web 服务器的 DocumentRoot 目录下创建一个名为 private
+的目录，要求如下： - 从
+http://classroom.example.com/materials/private.html
+下载一个文件副本到这个目录，并且重命名为 index.html -
+不要对这个文件的内容作任何修改。 - 从 systemX 上，任何人都可以浏览
+private
+的内容，但是从其他系统就不能访问这个目录的内容。（注意题目要求谁可以访问，灵活变化）
+____
+
+____
+*备注，此题是接着上一题，所以这里的 DocumentRoot 指的就是上面的
+/var/www/virtual/。*
+____
+
+== 操作
+
+创建文件夹
+
+....
+mkdir /var/www/virtual/private
+....
+
+获取文件
+
+....
+wget -O /var/www/virtual/private/index.html http://classroom.example.com/materials/private.html
+....
+
+编辑虚拟主机配置文件
+
+....
+vim www47.conf
+....
+
+添加配置
+
+[source,xml]
+----
+<VirtualHost *:80>
+  ServerName www47.example.com
+  DocumentRoot "/var/www/virtual"
+  <Directory "/var/www/virtual">
+    Require all granted
+  </Directory>
+  <!--添加一下内容-->
+  <Directory "/var/www/virtual/private">
+    Require all granted
+    Require local
+  </Directory>
+</VirtualHost>
+----
+
+测试配置是否有误
+
+....
+apachectl  configtest
+....
+
+然后重启服务
+
+....
+systemctl  restart   httpd
+....
+

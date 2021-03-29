@@ -39,7 +39,7 @@ const PostSimple: FC<Node> = (node) : ReactElement => {
       </Grid>
       <Grid item xs className='flex flex-col h-72 md:h-52 mt-7 px-4 md:px-0 lg:mt-0'>
         <div className='flex-none'>
-          <h1 className='text-3xl md:text-4xl mt-0 cursor-pointer hover:text-blue-400 duration-500 transition-colors' onClick={toPost}>
+          <h1 className='text-2xl font-bold text-black mt-0 cursor-pointer hover:text-blue-400 duration-500 transition-colors' onClick={toPost}>
             {
               pageAttributes.sort && <PublishIcon className='align-top text-4xl' />
             }
@@ -86,16 +86,14 @@ export default PostList
 
 export const pageQuery = graphql`
   query pageQuery($skip: Int!, $limit: Int!) {
-    allAsciidoc(sort: {order: [ASC, DESC], fields: [pageAttributes___sort, revision___date]}, limit: $limit, skip: $skip) {
+    allAsciidoc(sort: {order: [ASC, DESC], fields: [pageAttributes___sort, fields___birthTime]}, limit: $limit, skip: $skip) {
       edges {
         node {
           id
           fields {
             slug
-          }
-          revision {
-            date
-            number
+            birthTime(formatString: "YYYY-MM-DD")
+            modifiedTime(formatString: "YYYY-MM-DD")
           }
           author {
             fullName

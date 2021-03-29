@@ -1,0 +1,250 @@
+= Phpstorm + Docker / Docker Compose + xdebug 环境搭建
+:page-description: Phpstorm + Docker / Docker Compose + xdebug 环境搭建
+:page-category: 归档
+:page-image: https://resources.echocow.cn/file/2020/8/1/image-20200731211328720.png?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2020/08/01/1596268325013.html
+:page-created: 1596268325192
+:page-modified: 1596268325192
+:toc:
+
+刚换笔记本，不想搞太多环境，什么 Apache、Mysql 啥的，想全部交给 Docker
+管理，复杂一点的直接 Docker compose
+编排一下就好了。乐得清闲，升级又容易，php
+的环境也不例外，所以将它搭建一下：
+
+== 环境准备
+
+* 开发工具：Phpstorm
+* 必备环境：Docker 或 Docker Compose
+** https://docs.docker.com/docker-for-windows/install/[Windows 安装]
+** https://docs.docker.com/docker-for-mac/install/[Mac 安装]
+
+不需要安装 php，不需要安装 apach，也不需要配置 xdebug，啥都不用，安排。
+
+== 开始
+
+创建一个 phpstrom 空项目，然后创建一个 `index.php` 文件
+
+[source,php]
+----
+<?php
+$world = "World";
+echo "hello,", $world;
+----
+
+== Docker 方式
+
+两种方式拉去镜像
+
+* 去 https://hub.docker.com/[Docker Hub] 搜索 phpstorm 下的
+https://hub.docker.com/u/phpstorm/[php 镜像]
+* 去 https://github.com/JetBrains/phpstorm-docker-images[Phpstorm
+Github] 查找相应版本的 Docker 镜像
+
+主要提供两种类型的镜像（以 7.4 php 为例，*注意：7.4 版本官方没有传到
+Docker Hub，可以使用 7.3 的*）：
+
+* `php-74-cli-xdebug-29`：主要提供基础的 `php 7.4` + `xdebug 2.9` +
+`mysqli` 环境，不提供web环境与端口暴露。
+* `php-74-apache-xdebug-29`：主要提供 `php 7.4` + `xdebug 2.9` +
+`mysqli`+ `apache2` 环境，同时安装了 `php` 部分依赖（见
+https://github.com/phpearth/docker-php/blob/master/docker/7.4-apache.Dockerfile[Docker
+官方构建文件]），提供web环境，内部暴露端口 `80`。
+
+本次以 `php-74-apache-xdebug-29`
+为例，在**项目所在的目录**启动并拉取容器：
+
+[source,shell]
+----
+docker run --name php-web-dev -p 80:80 -e XDEBUG_CONFIG=remote_host=host.docker.internal -v $(pwd):/var/www/html -d phpstorm/php-73-apache-xdebug-27
+----
+
+具体参数不做解释啦，能安装 `Docker` 的应该都能明白，可以通过 `man`
+查一下。
+
+____
+需要注意以下两点：
+
+[arabic]
+. 其中的 `${pwd}` 是获取当前的工作目录路径，可以自己手动指定。或者
+* 对于 `Windows` 的 `cmd` 可以是 `%cd%`
+* 对于 `Windows` 的 `powershell` 可以不变。如果不行可以尝试 `${PWD}`
+. 通过 `-e` 设置的环境变量 `XDEBUG_CONFIG` 指定了远程的主机地址，对于
+`windows` 和 `Mac` 来说，`host.docker.internal` 即是主机地址（参考
+https://docs.docker.com/docker-for-windows/networking/[官网文档1] 与
+https://docs.docker.com/docker-for-mac/networking/[官网文档2]）。而对于
+Linux，则是**无法进行识别**的（参考
+https://github.com/docker/for-linux/issues/264[Github
+Issue]），这个时候可以使用 *主机名* 来指定（通过 `hostname`
+获取），请自己根据情况修改 。
+____
+
+然后直接访问 http://127.0.0.1[127.0.0.1]，结果如下：
+
+image::https://resources.echocow.cn/file/2020/8/1/image-20200731211328720.png[image-20200731211328720]
+
+这样就跑起来啦。
+
+== Docker Compose 方式
+
+____
+注意：如果你是一步一步的来，请先停止上一步的容器：
+
+[source,shell]
+----
+docker stop php-web-dev
+----
+____
+
+项目根目录创建一个 `docker-compose.yml` 文件，如下：
+
+[source,yaml]
+----
+version: '3.8'
+services:
+  webserver:
+    image: phpstorm/php-73-apache-xdebug-27
+    ports:
+      - "80:80"
+    volumes:
+      - ./:/var/www/html
+    environment:
+      XDEBUG_CONFIG: remote_host=host.docker.internal
+----
+
+对于 `Linux` ，修改 `environment`
+
+[source,yaml]
+----
+   ...
+    environment:
+      XDEBUG_CONFIG: remote_host=<hostname>
+----
+
+____
+注意：Docker Compose 和 Docker 的版本有所关系，具体参见
+https://docs.docker.com/compose/compose-file/compose-versioning/[官方文档]。
+____
+
+创建完成直接运行即可
+
+image::https://resources.echocow.cn/file/2020/8/1/image-20200731212509592.png[image-20200731212509592]
+
+____
+Tips: `phpstorm` 和 `idea` 一样，都有 `services`，可以直接通过
+`services` 进行容器管理。
+
+image::https://resources.echocow.cn/file/2020/8/1/image-20200731212534550.png[image-20200731212534550]
+____
+
+访问测试 http://127.0.0.1[127.0.0.1]，结果同上。
+
+== Debug
+
+浏览器安装 `xdebug` 扩展插件，见
+https://www.jetbrains.com/help/phpstorm/browser-debugging-extensions.html?_ga=2.160701439.351768353.1596075455-1678276671.1595950120[官方文档]，`Zend Debugger`
+没有试过。
+
+访问 http://127.0.0.1[127.0.0.1] ，开启插件 `debug` 模式
+
+image::https://resources.echocow.cn/file/2020/8/1/image-20200731214409388.png[image-20200731214409388]
+
+上述两种方式的 Debug 的方式都是一样的，所以一起说啦。首先打断点
+
+image::https://resources.echocow.cn/file/2020/8/1/image-20200731212639298.png[image-20200731212639298]
+
+开启 `phpstorm` 的 `debug` 监听
+
+(开启前)
+
+image::https://resources.echocow.cn/file/2020/8/1/image-20200731212753466.png[image-20200731212753466]
+
+(开启后)
+
+image::https://resources.echocow.cn/file/2020/8/1/image-20200731212834049.png[image-20200731212834049]
+
+无论上述两种的那种运行方式，直接访问
+http://127.0.0.1[127.0.0.1]，会弹出如下界面：
+
+image::https://resources.echocow.cn/file/2020/8/1/image-20200731213100779.png[image-20200731213100779]
+
+选择当前项目，`ACCEPT` 即可！随后就可以看到效果啦
+
+image::https://resources.echocow.cn/file/2020/8/1/image-20200731213555345.png[image-20200731213555345]
+
+== 发生了什么
+
+其实这个过程很好理解，通过查看他的构建方式就知道，主要有以下几步：
+
+[arabic]
+. 拉取 `php7.4` 镜像，完成基本的依赖安装、`apache` 、`xdebug`安装
+. 指定当前工作目录映射到容器内的 `apache` 下，端口 `80` 进行映射
+. *指定 `xdebug` 的主机地址为我们宿主机*
+. 开启 `phpstorm` 的监听，以及文件的 `debug`映射
+
+这里需要提一下，其实我们在倒数第二部 `ACCEPT` 那里，主要是配置了一个
+`php server`：
+
+image::https://resources.echocow.cn/file/2020/8/1/image-20200731214550471.png[image-20200731214550471]
+
+这个配置是十分重要的，你可以提前将它配置好，然后倒数第二部里面进行选择即可。如果是
+`Zend Debugger` ，无非就是修改 `Debugger`，但是*没有官方镜像支持*。
+
+== Docker Compose 编排
+
+下面我们加上另外一个容器：Mysql8，很简单：
+
+[source,yaml]
+----
+version: '3.8'
+services:
+  mysql-php-dev:
+    container_name: mysql-php-dev
+    image: mysql:8
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+    networks:
+      - php-mysql
+  webserver:
+    container_name: php-web-dev-1
+    depends_on:
+      - mysql-php-dev
+    image: phpstorm/php-73-apache-xdebug-27
+    ports:
+      - "80:80"
+    volumes:
+      - ./:/var/www/html
+    environment:
+      XDEBUG_CONFIG: remote_host=host.docker.internal
+    networks:
+      - php-mysql
+
+networks:
+  php-mysql:
+----
+
+修改代码：
+
+[source,php]
+----
+<?php
+$world = "World";
+echo "Hello，", $world;
+$servername = "mysql-php-dev";
+$username = "root";
+$password = "123456";
+
+$conn = mysqli_connect($servername, $username, $password);
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+echo "连接成功";
+----
+
+访问测试一下：
+
+image::https://resources.echocow.cn/file/2020/8/1/image-20200731215831768.png[image-20200731215831768]
+
+搞定！
+

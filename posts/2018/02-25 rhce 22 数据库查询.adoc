@@ -1,0 +1,119 @@
+= [rhce] 22 数据库查询
+:page-description: rhce 22 数据库查询
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20180624.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/25/1546344582745.html
+:page-created: 1519520940000
+:page-modified: 1546346340954
+:toc:
+
+____
+在系统 system1 上使用数据库 Contacts ，并使用相应的SQL
+查询以回答下列问题： 1. 密码是 tangerine 的人的名字？ 2.
+有多少人的姓名是 John 同时居住在 Santa Clara ？
+____
+
+== 操作
+
+登录数据库，查看表和表结构
+
+....
+    [root@system1 ~]# mysql -uroot -p
+    Enter password:
+    Welcome to the MariaDB monitor.  Commands end with ; or \g.
+    Your MariaDB connection id is 16
+    Server version: 5.5.35-MariaDB MariaDB Server
+
+    Copyright (c) 2000, 2013, Oracle, Monty Program Ab and others.
+
+    Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+    MariaDB [(none)]> SHOW DATABASES;
+    +--------------------+
+    | Database           |
+    +--------------------+
+    | information_schema |
+    | Contacts           |
+    | mysql              |
+    | performance_schema |
+    +--------------------+
+    4 rows in set (0.01 sec)
+
+    MariaDB [(none)]> USE Contacts;
+    Reading table information for completion of table and column names
+    You can turn off this feature to get a quicker startup with -A
+
+    Database changed
+    MariaDB [Contacts]> SHOW TABLES;
+    +--------------------+
+    | Tables_in_Contacts |
+    +--------------------+
+    | u_loc              |
+    | u_name             |
+    | u_passwd           |
+    +--------------------+
+    3 rows in set (0.00 sec)
+
+    MariaDB [Contacts]> DESC u_loc;
+    +----------+-------------+------+-----+---------+----------------+
+    | Field    | Type        | Null | Key | Default | Extra          |
+    +----------+-------------+------+-----+---------+----------------+
+    | uid      | int(11)     | NO   | PRI | NULL    | auto_increment |
+    | location | varchar(50) | NO   |     | NULL    |                |
+    +----------+-------------+------+-----+---------+----------------+
+    2 rows in set (0.00 sec)
+
+    MariaDB [Contacts]> DESC u_name;
+    +-----------+-------------+------+-----+---------+----------------+
+    | Field     | Type        | Null | Key | Default | Extra          |
+    +-----------+-------------+------+-----+---------+----------------+
+    | userid    | int(11)     | NO   | PRI | NULL    | auto_increment |
+    | firstname | varchar(50) | NO   |     | NULL    |                |
+    | lastname  | varchar(50) | NO   |     | NULL    |                |
+    +-----------+-------------+------+-----+---------+----------------+
+    3 rows in set (0.00 sec)
+
+    MariaDB [Contacts]> DESC u_passwd;
+    +----------+-------------+------+-----+---------+----------------+
+    | Field    | Type        | Null | Key | Default | Extra          |
+    +----------+-------------+------+-----+---------+----------------+
+    | uid      | int(11)     | NO   | PRI | NULL    | auto_increment |
+    | password | varchar(50) | NO   |     | NULL    |                |
+    +----------+-------------+------+-----+---------+----------------+
+    2 rows in set (0.00 sec)
+....
+
+第一问，只需要用到 u_name 和 u_passwd 表就可以
+
+....
+    //嵌套子查询
+    MariaDB [Contacts]> SELECT firstname FROM u_name WHERE userid=(SELECT uid FROM u_passwd WHERE password = "tangerine");
+    +-----------+
+    | firstname |
+    +-----------+
+    | Georgexx  |
+    +-----------+
+    1 row in set (0.00 sec)
+
+    //多表查询
+    MariaDB [Contacts]> select firstname from u_name,u_passwd where u_name.userid=u_passwd.uid and u_passwd.password='tangerine';
+    +-----------+
+    | firstname |
+    +-----------+
+    | Georgexx  |
+    +-----------+
+    1 row in set (0.00 sec)
+....
+
+第二问，只需要用到 u_name 和 u_loc 表就可以
+
+....
+    MariaDB [Contacts]> SELECT COUNT(*) FROM u_loc l,u_name n WHERE l.uid = n.userid and n.firstname = 'John' and l.location = 'Santa Clara';
+    +----------+
+    | COUNT(*) |
+    +----------+
+    |        4 |
+    +----------+
+    1 row in set (0.01 sec)
+....
+

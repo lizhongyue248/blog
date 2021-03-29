@@ -1,0 +1,185 @@
+= [rhce] 21 部署 mariadb 数据库
+:page-description: rhce 21 部署 mariadb 数据库
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20171126.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/24/1546344582926.html
+:page-created: 1519474080000
+:page-modified: 1546346325739
+:toc:
+
+____
+在 system1上创建一个Maria DB数据库，名为Contacts，并符合以下条件： 1.
+数据库应该包含来自数据库复制的内容，复制文件的URL为 +
+http://server.group8.example.com/pub/users.mdb ，数据库只能被 localhost
+访问 2. 除了root用户，此数据库只能被用户Luigi查询，此用户密码为 redhat
+3. root 用户的数据库密码为 redhat，同时不允许空密码登录
+____
+
+== 操作
+
+安装 mariadb 所需组件，为了防止遗漏，此处全部安装
+
+....
+    yum install  mariadb*
+    //设置开机启动并开启服务
+    [root@system1 ~]# systemctl enable mariadb.service
+    ln -s '/usr/lib/systemd/system/mariadb.service' '/etc/systemd/system/multi-user.target.wants/mariadb.service'
+    [root@system1 ~]# systemctl start mariadb.service
+....
+
+mariadb 安装向导，设置 root 密码
+
+....
+    [root@server47 ~]# mysql_secure_installation
+    /usr/bin/mysql_secure_installation: line 379: find_mysql_client: command not found
+
+    NOTE: RUNNING ALL PARTS OF THIS SCRIPT IS RECOMMENDED FOR ALL MariaDB
+          SERVERS IN PRODUCTION USE!  PLEASE READ EACH STEP CAREFULLY!
+
+    In order to log into MariaDB to secure it, we'll need the current
+    password for the root user.  If you've just installed MariaDB, and
+    you haven't set the root password yet, the password will be blank,
+    so you should just press enter here.
+
+    Enter current password for root (enter for none):
+    OK, successfully used password, moving on...
+
+    Setting the root password ensures that nobody can log into the MariaDB
+    root user without the proper authorisation.
+
+    Set root password? [Y/n]
+    New password:
+    Re-enter new password:
+    Password updated successfully!
+    Reloading privilege tables..
+     ... Success!
+
+
+    By default, a MariaDB installation has an anonymous user, allowing anyone
+    to log into MariaDB without having to have a user account created for
+    them.  This is intended only for testing, and to make the installation
+    go a bit smoother.  You should remove them before moving into a
+    production environment.
+
+    Remove anonymous users? [Y/n]
+     ... Success!
+
+    Normally, root should only be allowed to connect from 'localhost'.  This
+    ensures that someone cannot guess at the root password from the network.
+
+    Disallow root login remotely? [Y/n]
+     ... Success!
+
+    By default, MariaDB comes with a database named 'test' that anyone can
+    access.  This is also intended only for testing, and should be removed
+    before moving into a production environment.
+
+    Remove test database and access to it? [Y/n]
+     - Dropping test database...
+     ... Success!
+     - Removing privileges on test database...
+     ... Success!
+
+    Reloading the privilege tables will ensure that all changes made so far
+    will take effect immediately.
+
+    Reload privilege tables now? [Y/n]
+     ... Success!
+
+    Cleaning up...
+
+    All done!  If you've completed all of the above steps, your MariaDB
+    installation should now be secure.
+
+    Thanks for using MariaDB!
+....
+
+获取表结构以及信息
+
+....
+    [root@system1 ~]# wget http://server.group8.example.com/pub/users.mdb
+    --2018-02-28 18:45:37--  http://server.group8.example.com/pub/users.mdb
+    Resolving server.group8.example.com (server.group8.example.com)... 172.24.8.254
+    Connecting to server.group8.example.com (server.group8.example.com)|172.24.8.254|:80... connected.
+    HTTP request sent, awaiting response... 200 OK
+    Length: 4577 (4.5K)
+    Saving to: ‘users.mdb’
+
+    100%[===========================================================================================>] 4,577       --.-K/s   in 0s
+
+    2018-02-28 18:45:37 (234 MB/s) - ‘users.mdb’ saved [4577/4577]
+....
+
+登录数据库，并创建库和导入
+
+....
+    [root@system1 ~]# mysql -uroot -p
+    Enter password:
+    Welcome to the MariaDB monitor.  Commands end with ; or \g.
+    Your MariaDB connection id is 12
+    Server version: 5.5.35-MariaDB MariaDB Server
+
+    Copyright (c) 2000, 2013, Oracle, Monty Program Ab and others.
+
+    Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+    MariaDB [(none)]> CREATE DATABASE Contacts;
+    Query OK, 1 row affected (0.00 sec)
+
+    MariaDB [(none)]> SHOW DATABASES;
+    +--------------------+
+    | Database           |
+    +--------------------+
+    | information_schema |
+    | Contacts           |
+    | mysql              |
+    | performance_schema |
+    +--------------------+
+    4 rows in set (0.00 sec)
+
+    MariaDB [(none)]> USE Contacts;
+    Database changed
+    MariaDB [Contacts]> source /root/users.mdb
+    Query OK, 0 rows affected (0.00 sec)
+
+    ······
+
+    Query OK, 0 rows affected (0.00 sec)
+
+    MariaDB [Contacts]> SHOW TABLES;
+    +--------------------+
+    | Tables_in_Contacts |
+    +--------------------+
+    | u_loc              |
+    | u_name             |
+    | u_passwd           |
+    +--------------------+
+    3 rows in set (0.00 sec)
+....
+
+设置用户权限，通过 ==help grant== 获取帮助
+
+....
+    MariaDB [(none)]> help grant
+    Name: 'GRANT'
+    Description:
+    Syntax:
+
+    ······
+
+    Normally, a database administrator first uses CREATE USER to create an
+    account, then GRANT to define its privileges and characteristics. For
+    example:
+
+    CREATE USER 'jeffrey'@'localhost' IDENTIFIED BY 'mypass';
+    GRANT ALL ON db1.* TO 'jeffrey'@'localhost';
+    GRANT SELECT ON db2.invoice TO 'jeffrey'@'localhost';
+    GRANT USAGE ON *.* TO 'jeffrey'@'localhost' WITH MAX_QUERIES_PER_HOUR 90;
+
+    ······
+
+    MariaDB [Contacts]> GRANT SELECT ON Contacts .* to Luigi@'localhost' IDENTIFIED BY 'redhat'; Query OK, 0 rows affected (0.00 sec)
+....
+
+完成！
+

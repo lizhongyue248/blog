@@ -1,0 +1,387 @@
+= solo 独立部署和 Tomcat 模式自动更新
+:page-description: solo 独立部署和 Tomcat 模式自动更新
+:page-category: 归档
+:page-image: https://img.hacpai.com/bing/20180813.jpg?imageView2/1/w/960/h/540/interlace/1/q/100
+:page-href: /articles/2019/03/12/1552380944073.html
+:page-created: 1552380944230
+:page-modified: 1560074450505
+:toc:
+
+最近很是焦虑啊，有时候想不清楚自己要干嘛。所以干脆懒得想，找点事做吧。自己搭建
+`solo` 也有三个多月了，从 `v2.8.0` 一直到现在的
+`v3.2.0`，一直很喜欢这种社区与博客的交互方式。中间升级过很多版本，自己也有不下五次的升级经历了，修改了很多皮肤，但是头疼的就是更新问题，每次都要上服务器，所以有点难受。自己写了一个自动检测更新。自动更新的，当然是自用的，所以只支持
+`linux 系统`，可以支持 `独立部署` 和 `Tomcat` 部署，我的是 `centos`
+系统。
+
+====
+github 地址： https://github.com/lizhongyue248/solo-auto[solo-auto]
+
+配置在线生成： https://lizhongyue248.github.io/solo-auto-ui/[solo-auto-ui]
+
+UI 地址： https://github.com/lizhongyue248/solo-auto-ui[github]
+====
+
+https://vertx.io[image:https://img.shields.io/badge/vert.x-3.6.3-purple.svg[image]]
+
+== 简述
+
+solo 博客独立部署方式自动检测更新。
+
+功能：自动检测版本，自动下载更新，自动解压，自动复制配置文件以及其他的文件。
+
+*目前仅支持 linux 版本。*
+
+== 在这之前
+
+* 仅支持 `linux` 系统下的独立部署、`tomcat` 部署。
+* 建议您先备份数据库以及配置文件，虽然不对数据库进行任何操作，但是定时备份是好习惯。
+* 为避免不必要的错误，请务必使用 `root` 用户运行。
+* 独立部署仅支持系统命令，不能使用别名定义的命令。
+* 独立部署请检查 `pkill -9 -f org.b3log.solo.Starter`
+命令是否能够杀死你的 `solo` 进程。
+
+== 使用
+
+获取最新版本
+
+* https://github.com/lizhongyue248/solo-auto/releases[github]
+* http://downloads.echocow.cn/solo/soloauto-1.2.0-SNAPSHOT-fat.jar[七牛云]
+
+== 使用记录
+
+* 2019-3-26 早 九点四十六，`centos + 独立部署`，自动升级至 v3.4.0
+版本成功
+** [line-through]*警告：DNS
+解析出现一些小问题，不影响使用，但是可以改进。*
+** 解决办法：不使用 `vertx` 自带的 dns 解析，使用本地 dns 解析
+** 思路：每次更新都要上去修改 banner 图片的 url
+** 解决办法：直接配置 `solo-auto`
+移动复制功能覆盖皮肤下的图片就好啦=-=好笨还去改 css
+
+image::https://resources.echocow.cn/file/2019/3/24/201903261159171111111.png[v3.4.0]
+
+* 2019-3-18 晚 十二点，`centos + 独立部署`，自动升级至 v3.3.0 版本成功
+** [line-through]*已知问题：点对点会由于下载比较慢的问题将错误信息的写入日志*
+** 解决办法：完全丢弃超时响应
+** [line-through]*已知问题：现在 favicon 可以自由配置*
+** 解决办法：所以应该删除默认复制的两个文件
+
+image::https://resources.echocow.cn/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190318085800.png[v3.3.0]
+
+== 更新记录
+
+=== 2019-3-18 v1.2.0-SNAPSHOT
+
+* 删除默认复制的 `favicon` 两个文件，见
+https://github.com/b3log/solo/issues/12706?utm_source=hacpai.com[issue]
+* 默认检测时间由 `6` 小时变为 `1` 小时
+* 默认版本修改为 `v3.3.0`
+* 延长 `EventBus` 超时等待时间
+
+____
+*注意：这可能是 `v3` 版本最后一次更新 `solo-auto`，因为作为一个辅助
+`solo` 的存在，不应该让他像 `solo`
+一样频繁更新。并且现在已有的功能已经适用大多情况，所以以后只要 `solo`
+不进行大版本的更新或者 `solo-auto` 出现重大 `bug`，将不再更新此项目。*
+____
+
+=== 2019-3-13 v1.1.0-SNAPSHOT
+
+* 添加 `tomcat` 部署方式自动检测更新
+* 现 `homeDir` 末尾可以不添加文件分隔符 `/`
+* 现 `startCommand` 开头可以不添加英文分号 `;`
+* 添加 `debug` 参数开启运行时的文件路径获取详情
+
+=== 2019-3-12 v1.0.0-SNAPSHOT
+
+* 独立模式部署
+
+== 配置
+
+在线配置生成：https://lizhongyue248.github.io/solo-auto-ui/[solo-auto-ui]
+
+image:https://resources.echocow.cn/solo/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190609170931.png[image]
+
+____
+注意，你的配置将会完全覆盖默认配置！配置文件为 `json` 格式
+____
+
+[width="100%",cols="25%,25%,25%,25%",options="header",]
+|===
+|属性名 |类型 |默认值 |描述
+|latestUrl |String
+|https://api.github.com/repos/b3log/solo/releases/latest |最新版本 solo
+的 github restful 接口地址
+
+|homeDir |String |/root/ |解压后的文件夹路径，结尾必须有文件分隔符
+`/`，当前版本以及新版本都会存放在此目录
+
+|deploy |String |solo |部署方式，可选 `tomcat`，其他值无效
+
+|tomcatDir |String |solo |`tomcat` 部署在 `webapps` 目录下的 `solo`
+的文件名称
+
+|interval |Number |6 |几小时检测一次版本更新
+
+|version |String |v3.3.0 |当前已经部署的版本号，格式必须与 github 上相同
+
+|timeOut |Number |30 |Event Bus 等待时间
+
+|otherFiles |Array |[``favicon.ico'', favicon.png"]
+|其他的需要移动的文件名称
+
+|startCommand |Stirng
+|`;nohup java -cp WEB-INF/lib/*:WEB-INF/classes org.b3log.solo.Starter >/dev/null 2>&1 &`
+|启动命令，前面必须加英文符分号 `;`
+|===
+
+== 运行
+
+____
+请注意：建议以 root 身份运行，否则可能会出现权限问题无法执行命令的情况。
+____
+
+* 前台运行，假设配置文件与 `jar` 包位于同一目录且名称为 `solo-auto.json`
+
+`java -jar soloauto-1.0.0-SNAPSHOT-fat.jar -conf solo-auto.json`
+
+* 后台运行，假设配置文件与 `jar` 包位于同一目录且名称为 `solo-auto.json`
+
+`nohup java -jar soloauto-1.0.0-SNAPSHOT-fat.jar -conf solo-auto.json >/dev/null 2>&1 &`
+
+____
+建议，先前台运行，检查控制台输出中的配置文件是否有配置错误，确认无误且不报错后，再后台运行。
+____
+
+=== 独立部署注意事项
+
+[arabic]
+. 正在运行的 `solo` 的文件夹的目录名称必须类似为 `solo-v3.1.0` 形式。
+. 建议以 `root` 方式运行。
+
+=== tomcat 部署注意事项
+
+[arabic]
+. 请注意填写以下属性
+
+[cols=",",options="header",]
+|===
+|属性 |注意
+|`homeDir` |`tomcat` 的 `webapps` 目录
+|`deploy` |`tomcat`
+|`tomcatDir` |`tomcat` 的 `webapps` 下的部署 `solo` 的文件夹名称
+|===
+
+== 其它
+
+Q: 为什么会写这个？
+
+A: 从 `V2.8.0` 开始用 `solo`，至今到了
+`V3.2.0`，以前除了部署应用的时候上一下服务器，其他时候都用不上，`hexo`
+这些博客基本很少更新。现在每次更新都要上去重复一边操作，实在太麻烦了。但是又特别喜欢
+`solo` 这样活跃的博客与社区，所以遇到问题当然是想自己解决下问题。
+
+Q: 为什么不用 `docker`？
+
+A: 服务器资源有限，除了 `solo` 还运行者其他的应用，运行 `docker`
+就会有一些资源被占用，并且想自己 `DIY`
+部分主题比较麻烦，每次都要进服务器，再进容器里面改，为了运行 `solo`
+直接上 `docker` 觉得没必要。如果后面还有应用使用 `docker` 会换，或者 D
+大说的会重写 `Docker` 镜像构建的时候可能会换。
+
+Q: 为什么不用 `tomcat`？
+
+A: `tomcat` 跑着其它应用，没做负载均衡，并且担心访问速度，所以直接用
+`独立容器 + nginx` 部署了。v1.1.0 版本已经可以使用tomcat
+
+== 示例
+
+=== 独立部署
+
+* 运行在指定端口：请修改 `startCommand`, *前面一定要加分号 `;`*
+
+[source,json]
+----
+{
+  "startCommand":";nohup java -cp 'WEB-INF/lib/*:WEB-INF/classes' org.b3log.solo.Starter -lp 8765 >/dev/null 2>&1 &"
+}
+----
+
+* 如果你需要复制其它文件，可以采用这个配置：请修改 `otherFiles`
+
+[source,json]
+----
+{
+  "homeDir": "/root/",
+  "version": "v3.3.0",
+  "otherFiles": [
+    "favicon.ico",
+    "favicon.png",
+    "background.jpg"
+  ]
+}
+----
+
+解释如下:
+
+[width="100%",cols="40%,30%,30%",options="header",]
+|===
+|属性名　 |值 |　解释
+|homeDir |/home/echocow/
+|解压后的文件夹路径，结尾必须有文件分隔符，当前版本以及新版本都会存放在此目录
+
+|version |v3.3.0 |当前已经启动且部署好的 solo 版本
+
+|otherFiles |[``favicon.ico'', ``favicon.png'', ``background.jpg'']
+|其它需要复制的文件，一旦填写，就会覆盖默认的，所以这里要加上默认的，然后多加了
+`background.jpg`
+|===
+
+* 如果你不需要复制其它文件，可以采用这个配置
+
+[source,json]
+----
+{
+  "homeDir": "/home/echocow",
+  "version": "v3.2.0"
+}
+----
+
+解释如下:
+
+[cols=",,",options="header",]
+|===
+|属性名　 |值 |　解释
+|homeDir |/home/echocow/
+|解压后的文件夹路径，结尾必须有文件分隔符，当前版本以及新版本都会存放在此目录，默认
+/root/
+
+|version |v3.2.0 |当前已经启动且部署好的 solo 版本
+|===
+
+=== `Tomcat` 部署
+
+* 假设我现在已经部署好了 `solo`，并且路径为
+`/home/echo/Other/apache-tomcat-9.0.16/webapps/solo`，配置文件如下：
+
+[source,json]
+----
+{
+  "homeDir": "/home/echo/Other/apache-tomcat-9.0.16/webapps/",
+  "deploy": "tomcat",
+  "tomcatDir": "solo",
+  "version": "v3.2.0",
+  "otherFiles": [
+    "favicon.ico",
+    "favicon.png",
+    "background.jpg"
+  ]
+}
+----
+
+其中 `deploy` 和 `tomcatDir` 必填
+
+== 说明
+
+使用 vertx 事件驱动，使用 `Event Bus` 点对点消息模式，`MainVerticle`
+获取默认配置，再获取用户配置以覆盖默认配置。然后分别部署两个
+`Verticle`。
+
+* `WebClientVerticle` 定时检测版本
+* `FileVerticle` 处理文件下载、移动操作
+
+'''''
+
+=== 独立部署
+
+[arabic, start=0]
+. `WebClientVerticle`
+检测当前最新版是否与配置中的版本匹配，如果不匹配，携带请求的部分信息通知
+`FileVerticle`。
+. `FileVerticle`
+使用类名注册一个处理器以接受请求，收到通知以后，获取最新版本。
+. 下载最新版本的 `war` 包，解压，然后移动用户自定义的文件（配置文件中
+`otherFiles`）。
+. 移动 `solo`
+配置文件：`local.properties`，`latke.properties`，`solo.properties`.
+. 复制完毕后，使用 `pkill -9 -f org.b3log.solo.Starter` 杀死以前的
+`solo` 进程，
+. 使用
+`cd 解压后的路径;nohup java -cp WEB-INF/lib/*:WEB-INF/classes org.b3log.solo.Starter >/dev/null 2>&1 &`
+命令启动
+`solo`，后面的启动命令用户可以自定义，*请注意：自定义启动命令前请务必加上分号！*
+. `FileVerticle` 执行完毕，回复 `WebClientVerticle`
+，`WebClientVerticle` 收到回复日志记录。
+
+=== Tomcat 部署
+
+这个过程不会重启 tomcat。
+
+* 0-3 同上
+* 修改原来版本的 `solo` 的文件夹名称为 `tomcatDir配置的名称+当前时间`
+* 修改新下载的 `solo` 的文件夹名称为 `tomcatDir` 所配置的参数
+* `FileVerticle` 执行完毕，回复 `WebClientVerticle`
+，`WebClientVerticle` 收到回复日志记录。
+
+== 我的配置
+
+2019 年 3 月 26 日
+
+* `solo-auto.json`
+
+[source,json]
+----
+{
+    "startCommand":";nohup java -cp 'WEB-INF/lib/*:WEB-INF/classes' org.b3log.solo.Starter -lp 8765 >/root/solo-auto/soloInfo.log 2>&1 &",
+    "version":"v3.4.0",
+    "otherFiles":[
+        "skins/Finding/images/header-bg.jpg"
+    ]
+}
+----
+
+* 启动命令
+
+[source,bash]
+....
+nohup java -jar soloauto-1.2.0-SNAPSHOT-fat.jar -conf solo-auto.json >/dev/null 2>&1 &
+....
+
+== 未来
+
+[arabic, start=0]
+. 目前没有写 `windows` 的打算。
+. 打算加入邮件或者短信通知，以能够更好的感知博客更新变化。
+. 考虑是否加入 `web` 页面，但是觉得没必要。
+. 想过做成 `solo`
+插件，但是文档太少，并且感觉局限性比较大且自己水平有限，所以放弃了。
+
+== 构建
+
+测试:
+
+[source,bash]
+....
+./mvnw clean test
+....
+
+打包
+
+[source,bash]
+....
+./mvnw clean package
+....
+
+运行
+
+[source,bash]
+....
+./mvnw clean exec:java
+....
+
+== 结语
+
+也不知道能不能帮助到您，不过还是希望这个小东西能够为您带来方便，如果有问题请在
+https://github.com/lizhongyue248/solo-auto/issues[github]
+上提出；如果对您有帮助，欢迎给个 star 哈。
+

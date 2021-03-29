@@ -1,0 +1,141 @@
+= [rhce] 4 配置链路聚合
+:page-description: 配置链路聚合
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20190228.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/16/1546344579957.html
+:page-created: 1518789120000
+:page-modified: 1546346626101
+:toc:
+
+____
+注意：此题最好切换成英文模式，查看一下其需要的模式是什么 - 在 serverX 和
+desktopX 之间按以下要求配置： - 此链路使用接口 eth1 和 eth2 -
+此链路在一个接口失效时仍然能工作 - 此链路在 serverX 使用下面的地址
+192.168.0.101/255.255.255.0 - 此链路在 desktopX 使用下面的地址
+192.168.0.102/255.255.255.0 - 此链路在系统重启之后依然保持正常状态
+____
+
+模式：activebackup
+
+可能出现 roundrobin
+
+两台主机之间可以互 ping
+
+在练习前，需要启动网桥实验环境
+
+[source,bash]
+----
+lab teambridge setup
+----
+
+image:https://resources.echocow.cn/image/rhce/4.1.png[链路] 存在 eno1 和
+eno2，下面开始配置链路聚合，由于此链路在一个接口失效时仍然能工作，模式为
+*activebackup*
+
+== 方法一：修改配置文件
+
+从提供的文件复制过来，查看已提供的参考文件：
+
+[source,bash]
+----
+cd /usr/share/doc/teamd-1.9/example_ifcfgs
+----
+
+image::https://resources.echocow.cn/image/rhce/4.2.png[链路]
+
+分别对应不同模式的配置文件
+
+1 —-> roundrobin
+
+2 —-> lacp
+
+3 —-> activebackup
+
+需要的是 activebackup ，复制其下的三个文件到网络配置文件夹下
+
+[source,bash]
+----
+cp -r  3 /etc/sysconfig/network-scripts/
+----
+
+然后移除并修改其名称与网卡对应，网卡名为 eno1、eno2
+
+[source,bash]
+----
+mv ifcfg-eth1  ../ifcfg-eno1
+mv ifcfg-eth2  ../ifcfg-eno2
+mv ifcfg-team_test0 ../ifcfg-team_test0
+----
+
+由于名称改变了，进入对应的配置文件修改为对应的名称
+
+image::https://resources.echocow.cn/image/rhce/4.3.png[链路]
+
+image::https://resources.echocow.cn/image/rhce/4.4.png[链路]
+
+同时修改网桥的 ip 地址以及 TEAM_CONFIG
+
+image::https://resources.echocow.cn/image/rhce/4.5.png[链路]
+
+然后重启网络以及网络管理
+
+[source,bash]
+----
+systemctl restart network
+systemctl restart NetworkManager
+----
+
+然后 ip a 查看配置情况
+
+image::https://resources.echocow.cn/image/rhce/4.6.png[链路]
+
+再尝试 ping 一下
+
+image::https://resources.echocow.cn/image/rhce/4.7.png[链路]
+
+成功
+
+== 方法二：nmcli 命令修改
+
+添加一个team类型的接口，配置名叫team0，接口名叫team0，JSON配置，由于需要一个接口失效的时候，依然能工作，所以指定的是
+activebackup。
+
+[source,bash]
+----
+nmcli connection add type team con-name team0 ifname team0 config '{"runner":{"name":"activebackup"}}‘
+----
+
+将eno1和eno2添加进，team0。
+
+[source,bash]
+----
+nmcli connection add type team-slave con-name team0-eth1 ifname eth1 master team0
+nmcli connection add type team-slave con-name team0-eth2 ifname eth2 master team0
+----
+
+修改IP地址
+
+[source,bash]
+----
+nmcli connection modify team0 ipv4.method manual ipv4.addresses '192.168.0.101/24'
+----
+
+重启网络服务 `systemctl restart network`
+
+检验`ip addr` 和 `teamdctl <team name> state`
+
+image::https://resources.echocow.cn/image/rhce/4.8.png[链路]
+
+image::https://resources.echocow.cn/image/rhce/4.9.png[链路]
+
+'''''
+
+== 补充 常用的网卡绑定模式
+
+[cols=",",options="header",]
+|===
+|类型 |描述
+|activebackup |自动备援模式
+|loadbalance |负载均衡模式
+|roundrobin |轮换模式
+|===

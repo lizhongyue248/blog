@@ -1,0 +1,107 @@
+= vmware 克隆 CentOS7 后 网络配置
+:page-description: vmware 克隆 CentOS7 后 网络配置
+:page-category: 归档
+:page-image: https://img.hacpai.com/bing/20181002.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/09/11/1546344581641.html
+:page-created: 1536616800000
+:page-modified: 1546347657839
+:toc:
+
+____
+在上一篇文章中说到了新建虚拟机，然后进行配置 主机名 + 静态
+IP。这一篇我们将要使用 vmware 的克隆功能进行虚拟机的克隆以及重新配置 IP
+地址。
+____
+
+环境： - 已配置好网络的虚拟机一台 - 配置好的 nat
+
+== 克隆虚拟机
+
+=== 1. 关闭虚拟机，右键创建克隆
+
+image:https://resources.echocow.cn/image/blog/hodoop/2.1.png[image]
+
+=== 2. 克隆
+
+==== 2.1. 克隆向导
+
+image::https://resources.echocow.cn/image/blog/hodoop/2.2.png[克隆向导]
+
+==== 2.2. 克隆当前状态（可自己创建快照，创建快照时状态）
+
+image:https://resources.echocow.cn/image/blog/hodoop/2.3.png[image]
+
+==== 2.3. 创建完整克隆
+
+image:https://resources.echocow.cn/image/blog/hodoop/2.4.png[image]
+
+==== 2.4. 设置虚拟机名字
+
+image:https://resources.echocow.cn/image/blog/hodoop/2.5.png[image]
+
+==== 2.5. 开始克隆
+
+image:https://resources.echocow.cn/image/blog/hodoop/2.6.png[image]
+
+==== 2.6. 克隆完成
+
+image:https://resources.echocow.cn/image/blog/hodoop/2.7.png[image]
+
+==== 2.7. 新的一个虚拟机
+
+image:https://resources.echocow.cn/image/blog/hodoop/2.8.png[image]
+
+=== 3. 重新生成 MAC 地址（重要）
+
+==== 3.1. 编辑虚拟机设置
+
+image:https://resources.echocow.cn/image/blog/hodoop/2.9.png[image]
+
+==== 3.2. 选择 NAT - 高级
+
+image:https://resources.echocow.cn/image/blog/hodoop/2.10.png[image]
+
+==== 3.3. 生成
+
+image:https://resources.echocow.cn/image/blog/hodoop/2.11.png[image]
+
+==== 3.4. 记下新的 MAC 地址
+
+image:https://resources.echocow.cn/image/blog/hodoop/2.12.png[image]
+
+=== 4. 打开并登录新的虚拟机，查看网络还是上一台的
+
+image:https://resources.echocow.cn/image/blog/hodoop/2.13.png[image]
+
+=== 5. 配置网络（重要）
+
+==== 5.1. 修改配置文件
+
+image:https://resources.echocow.cn/image/blog/hodoop/2.14.png[image]
+
+==== 5.2. 修改 IP 地址
+
+image:https://resources.echocow.cn/image/blog/hodoop/2.15.png[image]
+
+==== 5.3. 修改 UUID，添加/编辑 MAC 地址
+
+image:https://resources.echocow.cn/image/blog/hodoop/2.16.png[image]
+
+=== 6. 测试
+
+image:https://resources.echocow.cn/image/blog/hodoop/2.17.png[image]
+
+____
+当然，也可以使用 命令行 修改，但是单词太长，命令也长，所以我就不写啦。
+____
+
+== 问题
+
+=== Q 我没记住新的 MAC 地址怎么办？
+
+[arabic]
+. 可以在不关闭虚拟机的情况下，右键虚拟机的名字
+image:https://resources.echocow.cn/image/blog/hodoop/2.18.png[image]
+. 如下所示
+image:https://resources.echocow.cn/image/blog/hodoop/2.19.png[image]
+

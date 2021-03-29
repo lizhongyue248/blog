@@ -1,0 +1,321 @@
+= [阅读] 敏捷软件开发 —— 敏捷设计（二）
+:page-description: [阅读] 敏捷软件开发 —— 敏捷设计（二）
+:page-category: 阅读
+:page-image: https://img.hacpai.com/bing/20180915.jpg?imageView2/1/w/960/h/540/interlace/1/q/100
+:page-href: /articles/2019/03/23/1553311043768.html
+:page-created: 1553311043950
+:page-modified: 1553438365674
+:toc:
+
+有时候觉得读书真的很有用，在文字中的感觉很美好，特别是喜欢朗读出来的感觉，越发的那样，越发能够体验书的境遇。这周的计划依旧被自己推迟，总是拖延症，不知不觉又到了周六，疲惫十分。不过依旧觉得不能放弃继续看这本书。世间太美，诱人的东西太多，有多少人可以面不改色呢？有时候觉得一个人的时候，才是自己变化最大的时候。
+
+== 回顾
+
+上一周的两个原则 ——
+SRP、OCP。都是十分简单但是却偏偏难以满足的，需要不断地去实践。相比较来说，SRP
+更好理解，书中的 OCP 是 C++ 的例子，始终有些懵，网上找了写 java
+其他的例子，也是理解了部分。不过这种的代码，依旧是 C++
+的例子，但是比起来却好理解了一些。
+
+== Listov 替换原则（LSP）
+
+____
+子类型必须能够替换掉他们的基类型。
+____
+
+*替换性质：若对每个类型 S 的对象 o1，都存在一个类型 T 的对象
+o2，使得在所有针对 T 编写的程序 P 中，用 o1 替换 o2 后，程序 P
+行为功能不变，则 S 是 T 的子类型。*
+
+违反 LSP 原则是很严重的，因这常常会导致明显违反 OCP
+原则，就像一条连锁链一样。
+
+=== 一个违反 LSP 的简单例子
+
+书中的代码使用 C++ 完成，我采用 java 类似的完成了一下如下：
+
+[source,java]
+----
+// Point.java
+public class Point {
+    double x;
+    double y;
+}
+----
+
+[source,java]
+----
+// Shape.java ，书中代码使用了枚举，java 可以省略，因为他有更好的判断类型的方式
+// 构造函数使用默认即可
+public class Shape {
+
+}
+----
+
+[source,java]
+----
+// Circle.java  我全部暴露出去，省掉 get/set 方法
+public class Circle extends Shape {
+    public Point itsCenter;
+    public double itsRadius;
+
+    public void draw() {
+        System.out.println("circle");
+    }
+}
+----
+
+[source,java]
+----
+// Square.java 同上
+public class Square extends Shape {
+    public Point itsTopLeft;
+    public double itsSide;
+
+    public void draw() {
+        System.out.println("square");
+    }
+
+}
+----
+
+[source,java]
+----
+// ShapeTest.java
+class ShapeTest {
+
+    @Test
+    void testDrawShape() {
+        drawShapeV1(new Circle());
+    }
+
+    // 按照书上的这样写，先假设这样写。
+    private void drawShapeV1(Shape shape) {
+        if (shape instanceof Circle) {
+            ((Circle) shape).draw();ShapeTest
+        } else if (shape instanceof Square) {
+            ((Square) shape).draw();
+        }
+    }
+}
+----
+
+这样的模型，`drawShape` 函数也就违反 OCP，因为他必须知道所有的 `Shape`
+的派生类，一旦有变化就要来修改此函数，但是我是仿照书上的 C++
+的代码写的，这是一个很明显违反了 LSP 的例子。
+
+=== 微妙的违反 LSP 的例子
+
+下面我们来看一个更为微妙的违反了 LSP
+的方式。现在已有一个正在运行的矩形如下：
+
+[source,java]
+----
+// Rectangle.java
+public class Rectangle {
+    private Point itsTopLeft;
+    private double itsWidth;
+    private double itsHeight;
+
+    public double getItsWidth() {
+        return itsWidth;
+    }
+
+    public void setItsWidth(double itsWidth) {
+        this.itsWidth = itsWidth;
+    }
+
+    public double getItsHeight() {
+        return itsHeight;
+    }
+
+    public void setItsHeight(double itsHeight) {
+        this.itsHeight = itsHeight;
+    }
+}
+----
+
+如果我们现在要添加正方形呢？从一般意义上来讲，一个正方形就是一个矩形，所以把
+`Square` 类视为从 `Rectangle` 类派生是合乎逻辑的。他们存在一种 IS-A
+的关系。当然，IS-A
+这种用法有时会被认为是面向对象分析（OOA）基本技术之一。
+
+当我们在编写代码的时候会注意到一些问题，比如，对于 `Square`
+来说，其实并不同时需要 `itsHeight` 和
+`itsWidth`，但是由于继承的关系，他依旧会获得这两个属性，这显然是一种浪费。我们暂且不在乎内存的问题，换一个角度上看，当
+`Square` 会同事继承 `setItsWidth` 和 `setItsHeight`
+函数，这两个函数其实并不适用于正方形，因为他的长和宽都是相等的，现在我们作出些许改变：
+
+[source,java]
+----
+public class Square extends Rectangle {
+    @Override
+    public void setItsWidth(double itsWidth) {
+        super.setItsWidth(itsWidth);
+        super.setItsHeight(itsWidth);
+    }
+
+    @Override
+    public void setItsHeight(double itsHeight) {
+        super.setItsHeight(itsHeight);
+        super.setItsWidth(itsHeight);
+    }
+}
+----
+
+现在长宽同时改变，保持了 `Square`
+几何上的不变性。接下来我们考虑下面的这个函数。
+
+[source,java]
+----
+void f(Rectangle r){
+    r.setItsWidth(32);
+}
+----
+
+在 java 中这个函数是没有问题，但是在 c++ 中就要将他们声明为 虚函数
+才能正确运行，因而不再讨论。
+
+这样的设计似乎是正确的，但是我们考虑下面的这个函数。
+
+....
+void f(Rectangle r){
+    r.setItsWidth(5);
+    r.setItsHeight(4);
+    assertEquals(20);
+}
+....
+
+这个函数认为传递过来的一定是 `Rectangle`，并调用了他的两个方法，对于
+`Rectangle` 来说是正确的，但是如果是 `Square` 来说确断言错误。函数 `f`
+对于 `Square/Rectangle` 层次结构来说是脆弱的。`f`
+的编写者完全可以对和这个不变的性质进行断言，倒是 `Square`
+违反了这个不变性。然而 `Square` 并没有违反正方形的不变性，违反的应该是
+`Rectangle` 的不变性。。。。（绕晕了=-=）
+
+____
+LSP
+让我们得出一个非常重要的结论，一个模型，如果独立地看，并不具有真正意义上的有效性。模型的有效性只能通过他的客户程序来表现。
+____
+
+=== 基于契约设计（DBC）
+
+许多开发人员可能会对``合理假设''行为方式的概念感到不安，有一种技术可以使合理的假设明确化，从而支持了
+LSP，他被称为基于契约设计（DBC）。
+
+简单的说就是为一个方法增加一个**前置**条件和一个**后置**条件，前置条件必须为真，执行完毕后，该方法要保证后置条件为真。对于
+`Rectangle` 的 `setItsWidth` 的后置条件可以是：
+
+....
+    assert ((this.itsWidth == itsWidth) && (this.itsHeight == old.itsHeight));
+....
+
+后面的介绍有点懵，一段文字中一会儿出现换句话，一会儿出现也就是说。按照我的理解，对于派生类，其前置条件应该更弱，后置条件应该更强。对于
+`Square` 来说，他的 `setItsWidth` 方法违反了基类定下的契约。
+
+不过对于 C++ 和 java 来说，并没有此项语言特征。
+
+但是我们可以选择在单元测试中指定契约，比如 `@BeforeEach` 这些 `junit`
+注解。
+
+=== 抽取公共部分的方法代替继承
+
+在书中举了一个曾经实际开发的一个例子，不过是用 C++
+实现，所以有点晕，不过理解了倒是不难。
+
+提取公共部分是一个设计工具，最好在代码不是很多的应用。
+
+=== 其他
+
+* 完成功能少于其基类的派生类通常是不能替换其基类的，因此就违反了 LSP。
+* 派生类中存在 _退化函数_ 并不总是表示违反了
+LSP，但是当存在这种情况时，还是值得注意一下的。
+* 派生类不应该抛出__异常__。
+
+____
+术语 ``IS-A''
+的含义国语宽泛以至于不能作为子类型的定义。子类型的正确定义是
+``可替换性的''，这里的可替换性可以通过显式或者隐式的契约来定义。
+____
+
+== 依赖倒置原则（DIP）
+
+____
+决不能再让国家的重大利益依赖于那些会动摇人类薄弱意志的众多可能性。
+____
+
+[arabic]
+. 高层模块不应该依赖于底层模块，二者都应该依赖于抽象。
+. 抽象不应该依赖于细节，细节应该依赖于抽象。
+
+举个例子来说，假如我们设计一辆汽车，那么我们需要如下步骤：
+
+[arabic]
+. 先设计轮子
+. 根据轮子大小设计底盘
+. 接着根据底盘设计车身
+. 最后根据车身设计好整个汽车
+
+如上就出现了一个 _依赖_
+的关系：汽车依赖车身，车身依赖底盘，底盘依赖轮子。
+
+image::https://resources.echocow.cn/file/2019/3/24/v2-c68248bb5d9b4d64d22600571e996446_hd.jpg[example]
+
+这样的设计看起来没问题，但是可维护性却很低。假设设计完工之后，上司却突然说根据市场需求的变动，要我们把车子的轮子设计都改大一码。这下我们就蛋疼了：因为我们是根据轮子的尺寸设计的底盘，轮子的尺寸一改，底盘的设计就得修改；同样因为我们是根据底盘设计的车身，那么车身也得改，同理汽车设计也得改——整个设计几乎都得改！
+
+我们现在换一种思路。我们先设计汽车的大概样子，然后根据汽车的样子来设计车身，根据车身来设计底盘，最后根据底盘来设计轮子。这时候，依赖关系就倒置过来了：轮子依赖底盘，
+底盘依赖车身， 车身依赖汽车。
+
+image::https://resources.echocow.cn/file/2019/3/24/v2-e64bf72c5c04412f626b21753aa9e1a1_hd.jpg[example]
+
+这时候，上司再说要改动轮子的设计，我们就只需要改动轮子的设计，而不需要动底盘，车身，汽车的设计了。
+
+这就是依赖倒置原则——把原本的高层建筑依赖底层建筑``倒置''过来，变成底层建筑依赖高层建筑。高层建筑决定需要什么，底层去实现这样的需求，但是高层并不用管底层是怎么实现的。这样就不会出现前面的``牵一发动全身''的情况。
+
+其实刚开始看到这个模式的时候想到的第一个词就是：*面向接口编程*。在 java
+中的表现可以看成下面的几点：
+
+[arabic]
+. 模块间的依赖通过抽象发生，实现类之间不发生直接的依赖关系，其依赖关系是通过接口或抽象产生的。
+. 接口或抽象类不依赖于实现类。
+. 实现类依赖接口或抽象类。
+
+通过找出那些不随具体细节的改变而改变的真理，即抽象。找出这些抽象，倒置这些依赖关系，他就是面向对象的设计的核心。
+
+spring 中的 依赖注入
+正是一种依赖倒置的方法，他依据的依赖倒置的一种实现思路——控制反转（IOC）。通过上层控制下层，*把底层类作为参数传入上层类，实现上层类对下层类的“控制*”。这正是一个
+DIP 的典型例子。
+
+== 接口隔离原则（ISP）
+
+____
+不应该强迫客户依赖于他们不用的方法。
+____
+
+如果强迫客户程序依赖于那些他们不使用的方法，那么这些客户程序就面临着由于这些未使用方法的改变所带来的变更。这无意中导致了所有客户程序之间的耦合。换句话说，如果一个客户程序依赖于一个含有他不使用的方法的类，但是其他的客户程序却要使用该方法，那么当其他客户要求这个类改变时，就会影响到这个客户程序。
+
+如何理解呢？
+
+[arabic]
+. 客户端需要什么接口，就依赖什么接口，不需要的就不要给他。如果依赖了他不需要的接口，那么就代表着他有着未使用的冗余，并且还会因为其他的变更带来其他的危险。
+. 接口应该分离。这个和单一职责有点相似，也就是一个接口就去满足一个类似的功能即可，不应该为他去负责更多的功能。不过单一职责原则主要是类与方法，而接口隔离原则却是对接口而言的。
+
+那么在Java中怎么体现呢？
+
+* 一个类实现多个接口。
+* 功能尽可能的简单单一
+
+这个原则相对来说还是比较好理解的，因为在写代码的时候也多次发现一些使用的地方，所以体会较深且理解比较透彻。
+
+== 总结
+
+这周的其实相比起上周的比较简单，对于 Listov 其实 java
+是有很好的支持，天生没有虚函数的概念的存在还是十分友好的。而后面的依赖倒置原则则是归功于使用
+spring
+后的体会，以至于理解很快，随后医德接口隔离原则则是多次见到一些实现且已经了解过单一职责原则的基础上理解会很快。这周还是很轻松的，不过回顾了一下，面向对象设计的五大原则**SOLID**（**单一职责、开闭原则、里氏替换、接口隔离**以及*依赖反转*）中最难贯彻以及实现的就是**开闭原则**和*单一职责*，还是需要不断的实战来进行学习。
+
+== 参考链接
+
+* https://www.zhihu.com/people/sevenvidia/activities[知乎]
+* https://en.wikipedia.org/wiki/SOLID[维基百科]
+

@@ -1,0 +1,264 @@
+= 我校资源仓库 使用详解
+:page-description: 我校资源仓库 使用详解
+:page-category: 归档
+:page-image: https://img.hacpai.com/bing/20180517.jpg?imageView2/1/w/960/h/540/interlace/1/q/100
+:page-href: /articles/2019/03/01/1551410272344.html
+:page-created: 1551413018404
+:page-modified: 1553735570120
+:toc:
+
+最近在上 分布式应用系统 的课程，在使用 maven、npm、pip
+等这些依赖管理工具的时候，出现了一个很严重的问题，就是我们校园网由于 dns
+的问题，造成了下载依赖的时候总是下不全，dns
+总是要解析第二遍才能成功，为此，我特地利用学校已有的资源服务器，搭建了我们学校的私服仓库，此篇文章就是如何使用的。
+
+____
+*注意：校内私服只有在新校区连接校园网以后才能使用。只连接 wifi
+，不用登录校园网也可以使用。*
+____
+
+'''''
+
+== 私服介绍
+
+通过 nexus3 搭建校内私服，可以在通过 `http://10.100.0.11:5741`
+进行查看和搜索当前私服已经下载的包和仓库，已经开启匿名访问免登陆，如果发现有下载不全的情况，请联系`lzy@echocow.cn`
+，有奖励哦～！现在私服仓库如下：
+
+* ☒ Maven -> 建议配置永久的
+* ☒ Npm -> 建议配置临时的
+* ☒ Pip -> 建议配置临时的
+* ☐ Yum
+* ☐ Epel
+* ☐ Docker
+
+____
+还可以搭建很多，但是都不在计划之内
+____
+
+== 优点
+
+[arabic]
+. 内网传输，可靠性高，速度快
+. 内网无需 DNS
+解析，完美解决学校校园网问题（如果使用阿里云或者其他私服，依旧可能出现
+DNS 解析或者网络缓慢的问题）
+. 可以直接搜索和查看 Maven 私服的库
+
+== Maven
+
+=== 在这之前
+
+在这之前，你需已经成功安装并配置 maven 环境变量，请通过 `mvn -v`
+检测。并且要拥有 maven 的基础知识，你需要选择性的明白以下内容：
+
+* 如果你希望全局使用私服，你需要了解 maven 全局配置文件 `setting.xml`
+* 如果你希望当前项目使用私服，你需要了解当前项目的 maven 配置文件
+`pom.xml`
+* 如果你希望 gradle 项目使用私服，你需要了解当前项目的 gradle 配置文件
+`build.gradle`
+
+____
+maven 私服地址：http://10.100.0.11:5741/repository/maven-public/
+____
+
+*如果你曾经有过未下载完全的依赖，请先删除原来的本地仓库： - windows
+默认目录 `C:/Users/用户名/.m2` 的隐藏文件夹，请直接删除， - linux
+默认目录 `/home/用户名/.m2` ，请直接删除 - 如果你自己在 `setting.xml`
+配置了本地仓库地址，即使用了 `localRepository`
+标签，请找到你指定的文件夹进行删除。*
+
+=== 全局使用私服
+
+你需要找到你当前 maven 的`setting.xml` 配置文件，找到 `<mirrors>`
+标签，添加如下内容即可：
+
+[source,xml]
+----
+    <mirror>
+      <id>com.gzmu</id>
+      <mirrorOf>*</mirrorOf>
+      <name>gzmu-maven</name>
+      <url>http://10.100.0.11:5741/repository/maven-public/</url>
+    </mirror>
+----
+
+*请注意，如果你使用 `IDEA` 进行项目构建，必须使用以下方式进行构建。在
+`windows/linux` 下你需要进入
+`File -> Setting -> Build... ->  Build Tools  -> maven`
+中，有以下几种方式 1. 修改 maven 为你 本地的而不是使用内置的，同时修改
+`User Setting File` 为你本地的。 2. 使用内置的 maven 修改
+`User Setting File` 为你本地的。 3. 都不修改，找到
+`User Setting File`中的文件（没有就自己加一个或者复制过来）然后添加上面的
+配置*。
+
+=== 当前 maven 项目使用私服
+
+如果你使用 maven 进行项目构建，你的 maven 项目根目录下存在一个 `pom.xml`
+依赖管理配置文件，你需要 `project` 标签下添加子标签如下
+
+....
+    <repositories>
+        <repository>
+            <id>com.gzmu</id>
+            <name>gzmu-maven</name>
+            <url>http://10.100.0.11:5741/repository/maven-public/</url>
+        </repository>
+    </repositories>
+....
+
+=== 当前 gradle 项目使用私服
+
+如果你使用 gradle 进行项目构建，你的 gradle 项目根目录下存在一个
+`build.gradle` 项目构建文件，你需要添加 `repositories`
+闭包，设置仓库地址如下：
+
+....
+    repositories {
+        mavenLocal()
+        maven { url "http://10.100.0.11:5741/repository/maven-public/"}
+        // .... 其它maven中心，以备万一
+        mavenCentral()
+    }
+....
+
+=== 验证
+
+[arabic]
+. 使用任何一个 ide，在 maven
+项目添加一个依赖，观察右下角依赖下载地址是否为私服地址。
+. 使用命令行，切换到一个 maven 项目根目录，添加一个依赖，使用
+`mvn install` 进行部署，会自动下载依赖，观察下载地址是否为私服地址。
+
+== Npm
+
+=== 在这之前
+
+在这之前，你需已经成功安装并配置 npm 环境变量(Windows
+安装版会自动配置)，请通过 `npm -v` 检验，并且你需要具有基础的 npm
+知识，你需要选择性的明白以下内容： - 如果你希望全局使用私服，你需要了解
+npm 全局配置文件 `.npmrc`或者 `命令配置` -
+如果你希望临时使用私服，你需要了解 npm 命令
+
+____
+单个项目中也可以指定使用私服，修改 `package.json` 配置文件，修改
+`install` 命令，但是非常不友好，故而不做阐述。
+____
+
+=== 全局使用私服
+
+==== 修改配置文件
+
+你需要找到你的 npm 配置文件目录，默认情况下，他存在于 当前用户的家目录
+下（如果没有可以自行创建或者通过下一种方式安装），例如
+
+* windows：`C:\Users(用户)\用户名\.npmrc`
+* linux/mac：`/home/用户名/.npmrc`
+
+添加如下配置即可
+
+....
+registry=http://10.100.0.11:5741/repository/npm-publilc/
+....
+
+==== 命令配置
+
+运行如下命令即可
+
+....
+// 配置仓库
+npm config set registry http://10.100.0.11:5741/repository/npm-publilc/
+
+// 查看配置
+npm config list
+....
+
+他会自动在家目录里面添加上面提到的配置文件
+
+=== 临时使用私服
+
+只需要一个命令即可
+
+....
+npm --registry http://10.100.0.11:5741/repository/npm-publilc install express
+....
+
+____
+*请注意，此方法的私服的配置是临时的，将会只对当前命令行有效，一旦关闭，下次使用活打开新的命令行还需要重新修改。*
+____
+
+=== 验证
+
+[arabic]
+. 使用任何一个 ide，在 npm
+项目添加一个依赖，观察右下角依赖下载地址是否为私服地址。
+. 使用命令行，安装整个项目依赖，切换到一个 npm
+项目根目录，添加一个依赖，使用 `npm -loglevel info install`
+进行依赖下载，观察下载地址是否为私服地址。
+. 使用命令行，安装单个全局依赖，例如
+`npm -loglevel info i -g @vue/cli`，观察下载地址是否为私服地址。
+
+== Pip
+
+=== 在这之前
+
+在这之前，你需已经成功安装并配置 pip 环境变量(windows
+安装版需要注意勾选加入环境变量选项)，请通过 `pip --version`
+检测。并且要拥有 pip 的基础知识，你需要选择性的明白以下内容：
+
+* 如果你希望全局使用私服，`命令配置` 你的 pip 需要在 10 以上。
+* 如果你希望安装单个库时使用，你需要在每次安装的时候添加参数。
+
+____
+*注意，此处我不使用配置文件进行配置，通过配置文件也可以修改，但是因为他的配置不像
+npm 一样固定，有些系统是不一样的，所以有需要请自行去查找资料。*
+____
+
+=== 全局使用私服
+
+....
+// 配置仓库
+pip config set global.index-url http://10.100.0.11:5741/repository/pypi-public/simple
+
+// 添加信任
+pip config set install.trusted-host 10.100.0.11
+....
+
+他会输出自动写入的配置文件的位置。
+
+=== 安装单个库
+
+....
+pip install --trusted-host 10.100.0.11 -i http://10.100.0.11:5741/repository/pypi-public/simple 库名
+....
+
+例如
+
+....
+pip install --trusted-host 10.100.0.11 -i http://10.100.0.11:5741/repository/pypi-public/simple flask
+....
+
+== Yum
+
+待完成……
+
+== Epel
+
+待完成……
+
+== Docker
+
+待完成……
+
+== 总结
+
+使用以上方式，安装依赖速度快很多，因为服务器 DNS
+是没有问题的，并且外网速度也比校园网给力的。如果遇到问题请及时和我联系！
+
+== 其它
+
+=== Jrebel 激活
+
+除了私服的搭建，我也搭建了 Jrebel
+的激活服务，如果有需要的请自取。http://58.16.40.236:8889/[网页链接]
+

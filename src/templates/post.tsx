@@ -1,7 +1,7 @@
 import { FC, ReactElement, useEffect } from 'react'
 import { useClipboard } from 'use-clipboard-copy'
 import Prism from 'prismjs'
-import { graphql } from 'gatsby'
+import { graphql, Link } from 'gatsby'
 import { useBoolean } from 'ahooks'
 import SpeedDial from '@material-ui/lab/SpeedDial'
 import Alert from '@material-ui/lab/Alert'
@@ -9,7 +9,7 @@ import { ListAlt } from '@material-ui/icons'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
 import { Theme } from '@material-ui/core/styles'
 import Snackbar from '@material-ui/core/Snackbar'
-import { Drawer, Toolbar } from '@material-ui/core'
+import { Divider, Drawer, Toolbar } from '@material-ui/core'
 import NotFoundPage from '../pages/404'
 import { PostProps } from '../interface/asciidoc'
 import PostSimpleInfo from '../components/PostSimpleInfo'
@@ -41,7 +41,8 @@ const Catalogue: FC<CatalogueProps> = ({ list = '', show: drawer, visibleToggle 
   )
 }
 
-const Post: FC<PostProps> = ({ data }): ReactElement => {
+const Post: FC<PostProps> = (props): ReactElement => {
+  const { data, pageContext } = props
   if (data.allAsciidoc.edges.length < 0) return <NotFoundPage />
   const post = data.allAsciidoc.edges[0]
   const [copyStatue, { setTrue: show, setFalse: hide }] = useBoolean(false)
@@ -72,7 +73,7 @@ const Post: FC<PostProps> = ({ data }): ReactElement => {
     })
     document.querySelectorAll('.post img').forEach(block => {
       const element = block as HTMLElement
-      element.classList.add('shadow-image')
+      element.classList.add('shadow-image', 'mb-3')
     })
   })
 
@@ -94,12 +95,40 @@ const Post: FC<PostProps> = ({ data }): ReactElement => {
         <PostSimpleInfo node={post.node} className='text-center my-3' />
         <div className='mt-5'>
           {
-            post.node.pageAttributes.image && <img className='w-full' alt={post.node.document.title} src={post.node.pageAttributes.image} />
+            post.node.pageAttributes.image && <img className='w-full mb-10' alt={post.node.document.title} src={post.node.pageAttributes.image} />
           }
           <div id='post-content' dangerouslySetInnerHTML={{ __html: post.node.html }} />
         </div>
       </article>
-
+      <Divider />
+      <div className='mt-4'>
+        <span>上一篇：</span>
+        {
+        pageContext.previous
+          ? (
+            <Link
+              to={pageContext.previous.fields.slug}
+            >
+              {pageContext.previous.document.title}
+            </Link>
+            )
+          : <span>没有了</span>
+      }
+      </div>
+      <div className='mt-4'>
+        <span>下一篇：</span>
+        {
+        pageContext.next
+          ? (
+            <Link
+              to={pageContext.next.fields.slug}
+            >
+              {pageContext.next.document.title}
+            </Link>
+            )
+          : <span>没有了</span>
+      }
+      </div>
       <Snackbar
         open={copyStatue}
         autoHideDuration={3000}
@@ -122,12 +151,10 @@ export const query = graphql`
           id
           fields {
             slug
+            birthTime(formatString: "YYYY-MM-DD hh:mm:ss")
+            modifiedTime(formatString: "YYYY-MM-DD hh:mm:ss")
           }
           html
-          revision {
-            date
-            number
-          }
           author {
             fullName
             email

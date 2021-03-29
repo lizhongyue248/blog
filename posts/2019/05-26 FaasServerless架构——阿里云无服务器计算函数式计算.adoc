@@ -1,0 +1,198 @@
+= Faas/Serverless 架构 —— 阿里云无服务器计算/函数式计算
+:page-description: Faas/Serverless 架构 —— 阿里云无服务器计算/函数式计算
+:page-category: 兴趣
+:page-image: https://img.hacpai.com/bing/20190402.jpg?imageView2/1/w/960/h/540/interlace/1/q/100
+:page-href: /articles/2019/05/26/1558880702189.html
+:page-created: 1558880702466
+:page-modified: 1561008446022
+:toc:
+
+很早以前就已经知道 Faas/Serverless 架构，当时自己还很菜，只会
+html/css/js 和 ssh
+的小白，随着自己不断的成长，越发的了解架构的重要性。最近开始考虑学习一下
+Serverless
+架构，对于他的解释，网上已经有很多了，我是这样理解他的特点的：
+
+* 不需要去做**任何**运维操作，专注于业务的实现
+* *足够小、足够单一、能够快速启动、运行、卸载*
+* *真正的按需使用*，请求到来时才开始运行，即用即走，不会在服务器/虚拟机中常驻
+* 应用**严重依赖**于特定的云平台、第三方服务
+* 按运行**时间和内存**来算钱的
+* 服务器对用户来说是**透明的**
+
+按 AWS 官方对于 Serverless 的介绍是这样的：
+
+____
+服务器架构是基于互联网的系统，其中应用开发不使用常规的服务进程。相反，它们仅依赖于第三方服务（例如AWS
+Lambda服务），客户端逻辑和服务托管远程过程调用的组合。
+____
+
+== Serverless
+
+对于 Serverless 的开发模式和运行模式，大概向如下这样：
+
+[arabic]
+. 编写业务逻辑代码
+. 上传到 Serverless 平台，设定触发规则
+. 触发规则，创建函数，运行
+
+当请求比较多的时候，他会进行自动的实例的扩展；当请求比较少，就会进行请求的收缩，当没有人访问的时候，就会自动卸载请求。这个函数足够小，他按需装载，自动伸缩，不用你苦逼地去规划硬件，安装软件，还可以按照使用情况付费，是不是有点心动了呢？但是必须要泼一盆冷水，他为了完成这些目标，牺牲了一个很重要的东西：*状态*。
+
+对于一个函数来说，他是没有状态的，这也就意味着他不能够进行状态的存储，因为每次他的启动可能是在另外一个完全不一样的环境下的。所以适合
+Serverless 的应用大多都是无状态的应用。
+
+== 阿里云无服务器计算/函数式计算
+
+原本打算是使用 aws lambda
+的，但是发现注册账号的时候，需要绑定信用卡信息，可是我是一个学生并没有一张信用卡，所以不得已寻找其他的
+Serverless 平台，后来找到了
+https://serverless.aliyun.com/?spm=5176.137990.1214002.bt1.6431224evGXX4i[阿里云无服务器计算]，研究半天，发现对于他来说，整个流程应该是这样的（开通服务等部分省略）：
+
+[arabic]
+. 新建服务：在 阿里云 平台上 *新建一个服务*
+. 新建函数：在 新建的服务之中 *创建一个函数*，设定
+*触发条件*，学习并查看他的 函数编写 API
+. 上传函数：编写好业务的函数代码，上传至 创建好的函数之中
+. 测试函数：对函数进行测试
+. 创建完成：可以通过你设定的触发条件来进行触发函数
+
+目前阿里云支持的环境如下：
+
+* nodejs 6/8 （可在线编辑）
+* python 2.7/3.6 （可在线编辑）
+* php 7.2 （可在线编辑）
+* java 8 （不可在线编辑）
+* C# dotnetcore2.1 （不可在线编辑）
+
+== 开通服务
+
+你需要开通 阿里云无服务器计算 才能使用，开通是免费的
+
+image::https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526222852.png[开通服务]
+
+image::https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526222814.png[开通服务]
+
+== 新建服务
+
+image::https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526223447.png[新建服务]
+
+image::https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526223701.png[新建服务]
+
+== 使用 node 环境
+
+=== 创建函数
+
+image::https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526224033.png[创建函数]
+
+image:https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526224551.png[image]
+
+image:https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526224636.png[image]
+
+image:https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526224731.png[image]
+
+image:https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526224806.png[image]
+
+image:https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526224821.png[image]
+
+=== 编写代码
+
+image:https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526225231.png[image]
+
+[source,javascript]
+----
+var getRawBody = require('raw-body')
+module.exports.handler = function (request, response, context) {
+    // get requset header
+    var reqHeader = request.headers
+    var headerStr = ' '
+    for (var key in reqHeader) {
+        headerStr += key + ':' + reqHeader[key] + '  '
+    }
+    // get request info
+    var url = request.url
+    var path = request.path
+    var queries = request.queries
+    var queryStr = ''
+    for (var param in queries) {
+        queryStr += param + "=" + queries[param] + '  '
+    }
+    var method = request.method
+    var clientIP = request.clientIP
+    // get request body
+    getRawBody(request, function (err, data) {
+        var body = data
+        // you can deal with your own logic here
+        // set response
+        // var respBody = new Buffer('requestURI' + requestURI + ' path' + path +  ' method' + method + ' clientIP' + clientIP)
+        var respBody = new Buffer('requestHeader:' + headerStr + '\n' + 'url: ' + url + '\n' + 'path: ' + path + '\n' + 'queries: ' + queryStr + '\n' + 'method: ' + method + '\n' + 'clientIP: ' + clientIP + '\n' + 'body: ' + body + '\n')
+        // var respBody = new Buffer( )
+        response.setStatusCode(200)
+        response.setHeader('content-type', 'application/json')
+        response.send(respBody)
+    })
+};
+----
+
+=== 测试代码
+
+image:https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526225548.png[image]
+
+image:https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526225701.png[image]
+
+node 的就完成了～！python/php 等都是一样的
+
+== 使用 java 环境
+
+=== 创建函数
+
+image:https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526230006.png[image]
+
+image:https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526230349.png[image]
+
+=== 编写代码
+
+创建一个 maven 项目
+
+image::https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526230823.png[pom]
+
+image::https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526231436.png[Application]
+
+然后打包成 jar 包，可以使用 maven 插件或者直接 IDEA 打包，参见
+https://help.aliyun.com/document_detail/58887.html?utm_source=hacpai.com[函数计算
+JAVA] 我使用 IDEA 打包，点击 `File -> Project Structure`
+
+image:https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190526231926.png[image]
+
+image:https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190526231936.png[image]
+
+image:https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190526231956.png[image]
+
+执行打包操作 `Build -> Build Artifacts -> build` 即可生成 `jar` 包
+
+image:https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190526232240.png[image]
+
+右键 `Copy Path` 可以复制路径
+
+=== 测试代码
+
+image:https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526232439.png[image]
+
+image:https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526232620.png[image]
+
+image:https://resources.echocow.cn/file/2019/05/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190526232734.png[image]
+
+使用 java 的创建就完成了，对于 java 来说还是麻烦了一点。。。
+
+== 总结
+
+感觉用着还是挺不错的，对于解释型语言，编译型语言确实麻烦了一点，不过也不是不能接受吧。后面再慢慢尝试如何让他更加安全的访问。Gateway
+的方式其实相比 http 应该会好很多，但是 http 确实是挺方便的
+
+____
+去年（2018年）年末 AWS 上线了基于 Lambda + API Gateway (+DynamoDB)
+可以构建 WebSocket 应用
+____
+
+不知道阿里云会不会有所动作，serverless
+还是我比较喜欢的，不过无状态确实局限了他太多。有利有弊，需要根据合适的业务场景去选择。
+

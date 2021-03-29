@@ -1,0 +1,98 @@
+= manjaro 笔记
+:page-description: manjaro 笔记
+:page-category: linux
+:page-image: https://img.hacpai.com/bing/20181118.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/09/16/1546344571882.html
+:page-created: 1537050660000
+:page-modified: 1546400963133
+:toc:
+
+____
+这些天有点心力憔悴，被manjaro完虐。
+____
+
+周二的时候不知道抽啥风，可能是忍不了那么乱的 windows
+吧，然后下定决心要直接装 linux，于是在众多的发行版中，选择力 arch 系的
+manjaro。原本第一打算是 ubunto 系的 deepin
+的，但是朋友推荐了这款包管理方面排名第一并且还好用的
+manjaro。不得不说我是一个懒人，在知道他强大的包后，就下定决心安装他了。
+
+来看一张包的对比图（2018-3）
+
+image::https://resources.echocow.cn/image/blog/manjaro/1.1.png[对比]
+
+顺手报了一个计算机二级，本想在二级考完以后再重装，但是实在刷不下去二级的题目，然后在前天忍不住就提前安装了这个系统。然后就一直被虐到今天=-=
+
+先来看看这些天安装下来的成果吧。
+
+== 成果
+
+=== 桌面
+
+目前比较满意的一款，配合右侧工具可随时查看自己电脑的状态
+
+image::https://resources.echocow.cn/image/blog/manjaro/1.4.png[桌面]
+
+=== 浏览器
+
+依旧 chrome ，更醒后这种简洁风简直美如画！
+
+image::https://resources.echocow.cn/image/blog/manjaro/1.5.png[浏览器]
+
+=== ide
+
+自己的开发环境自然要打扮一番！
+
+image::https://resources.echocow.cn/image/blog/manjaro/1.6.png[idea1]
+
+image::https://resources.echocow.cn/image/blog/manjaro/1.8.png[idea2]
+
+=== 配置
+
+系统配置感觉还不错
+
+image::https://resources.echocow.cn/image/blog/manjaro/1.7.png[配置]
+
+== 问题
+
+自己折腾这个系统感觉都花了很长时间，遇到了各种各样的问题，自己也慢慢一个一个解决，选了几个典型的将它记录下来。。。
+
+=== 显卡问题
+
+不得不说，大多数的硬件厂家对 linux 的系统并不是那么友好的，我的配置是 i7
+6700HQ + GTX960M
+的笔记本，在第一次安装的时候顺利得一塌糊涂，就是分区的时候纠结了会儿，这个后面说道，不过第一次真的很顺利的安装成功了。不过后面开机后总是卡死，键盘鼠标没动静。。。后来没办法只有重新安装，而后面的安装出现的第一个问题就是显卡问题，导致进不去安装页面。后来就是各种百度，也一一解决了问题，不过自己也找到了一种解决办法。（用的ubunto的方法）
+
+[arabic]
+. 安装时 在 `BOOT： Manjaro.x86_64 ....` 摁下 `E` ，然后 在`quiet`
+后面添加 `nouveau.modeset=0` ，然后 摁下 F10 即可进入安装界面了。
+. 修改 `/etc/default/grub` ，然后第四行 `quiet` 后面添加
+`nouveau.modeset=0` ，重启即可。
+
+当然我也找到了其他可行的方法，比如修改 driver 为 intel ，或者添加
+acpi_osi 都行，不过网上都有记载就不一一重复了。
+
+=== 双硬盘问题
+
+自己的配置是 `256G + 1T`，但是 manjaro
+提供的只是单硬盘分区，这很烦，系统安装在了 固态
+里面，另外一个机械硬盘当然不能不用，而且 256
+确实很小啊。网上没找到解决方案，就在自己苦恼的时候，突然想到一种方法：
+
+[arabic]
+. 使用 256G 的存放系统
+. 然后 1T 的将它挂载上去，划分逻辑卷
+. 将文档还有占用大的放在 1T 里面，256 就存放系统的所有东西即可。
+
+所以目前我的分区是这样的
+
+image::https://resources.echocow.cn/image/blog/manjaro/1.10.png[分区]
+
+总结下来是这样的 - 500 G —> hdd_software 挂载到 /opt 目录 ——> pacman
+默认安装目录 - 500 G —> hdd_documents 挂载到/documents 目录 ——>
+用来存放大文件的
+
+这样就合理利用起来了 1T 的空间，现在如下
+
+image::https://resources.echocow.cn/image/blog/manjaro/1.11.png[分区]
+

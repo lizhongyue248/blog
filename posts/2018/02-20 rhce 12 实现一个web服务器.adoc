@@ -1,0 +1,66 @@
+= [rhce] 12 实现一个web服务器
+:page-description: rhce 12 实现一个web服务器
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20171217.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/20/1546344585618.html
+:page-created: 1519123320000
+:page-modified: 1546346003968
+:toc:
+
+____
+在 server0 上配置一个站点 http://server0.example.com，然后执行以下步骤:
+- 从 http://classroom.example.com/materials/station.html 下载文件，并且
+- 将文件重命名为 index.html,绝对不能修改此文件的内容。 - 将 index.html
+拷贝到你的 web 服务器的 DocumentRoot 目录下。 - 来自 example.com
+172.25.0.0/24 域的客户端可以访问此 web 站点。 - 来自 my133t.org
+172.17.10.0/24 域的客户端拒绝访问此 web 站点。
+____
+
+____
+*备注：网站的 DocumentRoot 如果题目没有指定，那么随意。*
+____
+
+== 操作
+
+先获取题目指定的 index.html
+
+....
+wget -O /var/www/html/index.html  http://classroom.example.com/materials/station.html
+....
+
+建立一个虚拟主机
+
+....
+vim  /etc/httpd/conf.d/server47.conf
+....
+
+配置文件如下
+
+....
+<VirtualHost *:80>
+  ServerName server47.example.com
+  DocumentRoot "/var/www/html"
+  <Directory "/var/www/html">
+    <RequireAll>
+      Require all granted
+      Require not ip 172.17.10.0/24
+    </RequireAll>
+  </Directory>
+</VirtualHost>
+....
+
+测试配置是否有误
+
+....
+apachectl  configtest
+....
+
+然后重启服务，开放防火墙
+
+....
+systemctl  enable  httpd
+systemctl  restart   httpd
+firewall-cmd  --permanent  --add-service=http
+firewall-cmd  --reload
+....
+

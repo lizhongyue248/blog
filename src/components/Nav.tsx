@@ -71,8 +71,8 @@ const Nav: FC<ArrayProps> = ({ actions: actionProps = [] }): ReactElement => {
       <Bar>
         <AppBar elevation={4} className={`min-h-0 h-16 bg-transparent transition-all duration-700 ${classes.appBar}`}>
           <Toolbar className='h-full min-h-0 max-w-7xl w-full flex justify-between mx-auto'>
-            <Link to='/blog' className='text-white no-underline'>
-              <Typography className='cursor-pointer' variant='h6'>A Yue's Blog</Typography>
+            <Link to='/blog' className='no-underline'>
+              <Typography className='text-white cursor-pointer' variant='h6'>A Yue's Blog</Typography>
             </Link>
             <div className='space-x-1'>
               <Button

@@ -1,0 +1,53 @@
+= 再见 manjaro，你好 deepin
+:page-description: 再见 manjaro，你好 deepin
+:page-category: linux
+:page-image: https://img.hacpai.com/bing/20180706.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2019/01/02/1546399233990.html
+:page-created: 1546400928640
+:page-modified: 1546432344079
+:toc:
+
+从换 manjaro
+到现在三个多月了吧。说实话，这个系统真的很棒，首先就是他的包管理系统真的天强，配合AUR基本都能搜到我想要的，而且装这个系统只要有点经验就挺顺利，或多或少的问题百度google也能帮上忙，不得不说果然是
+arch
+系的佼佼者。可是也带来了一些坏处。就是因为他包更新太过激进，每次都会提醒我该更新了，强迫症患者看到更新两个字我绝对会点的，不点心里一万个难受，三个月的时间，因为滚动更新，滚挂了三次（泪奔）
+
+[arabic]
+. 第一次滚挂桌面，重装manjaro18
+. 第二次滚挂pycharm，anaconda无法正常使用
+. 第三次滚挂tim、wps，影响正常聊天和办公，回家后实在受不了了
+
+在犹豫了半天 https://elementary.io/[elementary OS] 和
+https://www.deepin.org/[deepin] 后，最终选择
+deepin，原因很简单，他是国产有较为完善的中文社区，能够给自己提高很好的帮助。装系统是拿来用的，不是用来折腾的。不过
+deepin 的界面真的好看，不用 mint 是因为不喜欢那个界面，也不知道为什么
+https://distrowatch.com/[distrowatch] 上面为啥 deepin
+排名那么低，一个能闯进distrowatch前10的发行版，要不就是老牌的（比如Debian、Fedora、Opensuse、Ubuntu），要不就是界面让人眼前一亮的（LinuxMint、Zorin、elementary、deepin、Solus），要不就是解决一个优秀发行版的大问题的（比如Manjaro，解决了
+archlinux 安装太麻烦的问题，不过像 mx linux
+这种都能够刷到前三去（他应该和 deepin 换个位置的哈哈哈），distrowatch
+的排名也不太可信了。
+
+折腾 deepin
+只要半天就完事，独显也用起来了，wps、网易云、tim等等都完美运行简直太棒，以前
+manjaro 折腾了三天才完事，感觉自己有点进步了哈哈哈。
+
+== 成果
+
+image::https://resources.echocow.cn//file/2019/01/706cb5bfd8a34df9a82a9cdf861e46c2__20190102113820.png[_20190102113820png]
+
+image::https://resources.echocow.cn//file/2019/01/8193efb218a948dbad1b8098d284889a__20190102114251.png[_20190102114251png]
+
+image::https://resources.echocow.cn//file/2019/01/2ac791f2e89446dbae4e8311986a47ce__20190102114312.png[_20190102114312png]
+
+image::https://resources.echocow.cn//file/2019/01/65b6ef6707a04006a15418cee672a19d__20190102114625.png[_20190102114625png]
+
+== 其它
+
+[arabic]
+. deepin 其实也出现了一些问题，安装时卡住，和 manjaro
+一样修改启动项解决，进入系统后直接用显卡管理切换闭源的即可。
+. tim 有时会崩溃
+. 下方 dock 有时会突然消失
+. 应用商店的应用有些过老了，而且安装真的没有 manjaro 方便。。。
+. 桌面特效方面不及 manjaro kde 的
+

@@ -1,0 +1,75 @@
+= idea Error:failed to create a child event loop.
+:page-description: idea Error:failed to create a child event loop.
+:page-category: 归档
+:page-image: https://img.hacpai.com/bing/20180321.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/09/09/1546344585141.html
+:page-created: 1536448020000
+:page-modified: 1546347667853
+:toc:
+
+今天学弟安装 idea 的时候遇到一个问题：*idea Error:failed to create a
+child event loop.*
+
+image::https://resources.echocow.cn/image/blog/other/1.1.png[idea错误]
+
+然后日志报错： > Cannot start internal HTPP server…..
+
+image::https://resources.echocow.cn/image/blog/other/1.2.png[日志错误]
+
+== 解决办法
+
+按照提示，应该是被防火墙拦截了，于是寻找 windows 的防火墙
+
+image::https://resources.echocow.cn/image/blog/other/1.3.png[firewall]
+
+检查防火墙状态
+
+image:https://resources.echocow.cn/image/blog/other/1.4.jpg[image]
+
+点击左侧 允许应用或功能通过 windows defender 防火墙
+
+image:https://resources.echocow.cn/image/blog/other/1.5.jpg[image]
+
+点击右下侧 允许其他程序，添加 idea。
+
+按道理来说这样就可以了，但是后面给学弟运行的时候 jdk
+又报错，还是需要重复的操作配置 jdk。于是想用其他的办法解决。
+
+== 其他办法
+
+点击左侧 启用或关闭 windows defender 防火墙
+
+image:https://resources.echocow.cn/image/blog/other/1.6.jpg[image]
+
+我将它们全部禁用
+
+image:https://resources.echocow.cn/image/blog/other/1.7.jpg[image]
+
+然后发现，可以运行了
+
+image:https://resources.echocow.cn/image/blog/other/1.8.png[image]
+
+但是不可能禁用他的防火墙啊，因为还是希望使用到的，所以我又使用推荐设置开启了防火墙
+
+image:https://resources.echocow.cn/image/blog/other/1.9.jpg[image]
+
+防火墙自动开启
+
+image:https://resources.echocow.cn/image/blog/other/1.10.jpg[image]
+
+开启以后发现，idea 依旧可以正常使用
+
+== 总结
+
+其实我也不太清楚原因，我的猜测是
+先去添加应用通过，添加了后，idea是可以的，但是后面发现 jdk报错，检查 jdk
+是在 d
+盘，我还要单独配置jdk通过防火墙配置，很麻烦。于是，我尝试先关闭了防火墙，让idea能够建立了连接能够通过防火墙，然后再开启防火墙，他就默认能够通过防火墙了。这样防火墙还是在的。
+
+== 问题
+
+如果 windows
+更新，或者其他的防火墙操作，那么这个就会失效，还会报一样的错。
+
+如果有哪位大佬能够解决，望告知。！
+

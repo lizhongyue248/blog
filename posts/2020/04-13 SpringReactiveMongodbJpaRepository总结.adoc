@@ -1,0 +1,415 @@
+= Spring Reactive Mongodb Jpa Repository 总结
+:page-description: 上一篇中提到了 Reactive data Jpa 的一个强大功能：审计。而这篇文章则是对于 Repository implement 使用方式的总结。
+:page-category: spring
+:page-image: https://img.hacpai.com/bing/20190430.jpg?imageView2/1/w/960/h/540/interlace/1/q/100
+:page-href: /articles/2020/04/13/1586760856276.html
+:page-created: 1586760856338
+:page-modified: 1586761258962
+:toc:
+
+上一篇中提到了 `Reactive data Jpa`
+的一个强大功能：审计。而这篇文章则是对于 Repository implement
+使用方式的总结。
+
+在我们使用 `Jpa` 的时候，有如下几种个人觉得比较规范的方式来进行使用：
+
+[arabic]
+. https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#jpa.query-methods[从方法名称派生查询]
+. https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#jpa.query-methods.at-query[使用
+`@Query` 注解自定义]
+. 对于复杂的数据查询，可以使用
+https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#query-by-example[QueryByExampleExecutor]
+接口
+. 对于复杂的数据操作，我们有
+https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#specifications[JpaSpecificationExecutor]
+接口，也可以使用
+https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#core.extensions[`Querydsl`
+扩展]
+. 我们如果需要职责分离，希望将数据库的操作 *完全* 封装到 Repository
+里面，我们可以 https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#repositories.single-repository-behavior[自定义某个
+Repository 的复杂操作]
+. 当然，也可以自定义一个 https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#repositories.customize-base-repository[类似于
+JpaRepository 的 BaseRepository]
+. 直接使用 `EntityManager`
+
+有了以上这些方式就完全够我们大部分需求了。但是为什么还会有这篇文章呢？原因和上篇文章一样，因为
+`Reactive`。
+
+对于 Reactove Mongo
+来说，传统的七点都是可以继续使用的，他们实现的方式和以前都是大同小异。我们可以直接使用
+`ReactiveMongoOperations` 来替代 `EntityManager` 进行数据库的。
+
+== 从方法名派生查询
+
+这个是最为常用的一种，也是最为方便的使用方式。
+
+[source,kotlin]
+----
+  /**
+   * 通过 [ids] 查询
+   */
+  fun findAllByIdContaining(ids: List<String>): Flux<E>
+
+  /**
+   * 查询 isEnable 字段为 true 的数量
+   */
+  fun countAllByIsEnableTrue(): Mono<Long>
+----
+
+唯一不同的就是返回值了，同时需要注意的是，在 Reactive
+的环境中，他是没有办法获取到分页的对象的，文档中明确指出：
+
+____
+The `Page` return type (as in `Mono`) is not supported by reactive
+repositories.
+
+在 Reactive 仓库中 Page 类型的返回值（作为 Mono）是不被支持的。
+____
+
+所以我们写出来的分页方法如下：
+
+[source,kotlin]
+----
+/**
+ * 分页查询，名称不能直接写 findAll，否则会报错，必须至少一个条件
+ */
+fun findAllByIsEnableIsTrue(pageable: Pageable): Flux<E>
+----
+
+那么分页怎么写呢？Kotlin 里面自然就可以用协程了
+
+[source,kotlin]
+----
+  override suspend fun page(pageable: Pageable): Page<E> {
+    val content = repository.findAllByIsEnableIsTrue(pageable).collectList().awaitSingle()
+    val count = repository.countAllByIsEnableTrue().awaitSingle()
+    return PageImpl(content, pageable, count)
+  }
+----
+
+当然你也可以用 `mono` 将它包裹起来，返回值就变成了 `Mono<Page<E>>`
+了。如果不使用协程，需要操作两个不同类型的 Mono，我们可以使用 `Mono.zip`
+方法来完成
+
+[source,kotlin]
+----
+  override suspend fun page(pageable: Pageable, entity: E): Mono<Page<E>> =
+    Mono.zip(repository.findAllByIsEnableIsTrue(pageable).collectList(), repository.countAllByIsEnableTrue()) { content, count ->
+      PageImpl(content, pageable, count)
+    }
+----
+
+使用起来和以前方式还是有些许区别。
+
+== 使用 `@Query` 自定义
+
+这种就没啥可以说的了
+
+[source,kotlin]
+----
+  /**
+   * Get menu by [roles].
+   * If one of the lines contains one of the [roles], will match.
+   */
+  @Query("{ 'roles': { '\$in': ?0 }}")
+  fun searchByRoles(roles: List<Long>): Flux<Route>
+----
+
+当然，在以前，我们可以在里面写更新、创建的操作，但是在 Mongo
+中是不可以的。
+
+== 使用 `ReactiveQueryByExampleExecutor` 接口
+
+我们只需要构建一个 `Example` 过去就可以查询了
+
+[source,kotlin]
+----
+val all: Flux<User> = repository.findAll(Example.of(entity));
+----
+
+但是他却没有提供分页的接口，例如我想要的
+
+[source,kotlin]
+----
+fun findAll(example: Example<E>, pageable: Pageable): FLux<E>
+----
+
+他就没有，后面会说咋自定义。
+
+当然还有一种用法，对于动态条件匹配，我们可以预先准备一个自定义的匹配器
+https://docs.spring.io/spring-data/mongodb/docs/current/reference/html/#query-by-example.matchers[ExampleMatcher]：
+
+[source,kotlin]
+----
+  private fun getPageMatcher() = ExampleMatcher.matching()
+      // 以下字段模糊匹配
+      .withMatcher("name", ExampleMatcher.GenericPropertyMatcher().contains())
+      .withMatcher("spell", ExampleMatcher.GenericPropertyMatcher().contains())
+      .withMatcher("remark", ExampleMatcher.GenericPropertyMatcher().contains())
+      // 忽略为 null 字段
+      .withIgnoreNullValues()
+----
+
+也是可以满足我们部分需求了的。
+
+== 使用 ReactiveQuerydslPredicateExecutor
+
+Reactive 是没有 `Specification` 的，所以只能是Spring 是整合的
+https://http://www.querydsl.com%22[Querydsl] ，值得注意的是，这个是在
+*2.2* 版本以后才引入的支持，在之前的版本，是不支持 Reactive
+的。所以需要引入以下它的依赖：
+
+[source,markdown]
+----
+groupId：com.querydsl
+artifactId：querydsl-apt
+----
+
+它的使用流程先生成 `@Entity` 注解下的实体类，编译以后会生成 `Q`
+开头的实体类，通过这个实体类进行 DSL 操作。不过他目前只支持 maven
+插件以及 gradle 5 以下的插件注解生成，见
+https://github.com/ewerk/gradle-plugins[github] ：
+
+[cols=",,,",options="header",]
+|===
+|Plugin |≥ 2.1 |≥ 3.3 |≥ 5.0
+|annotation-processor-plugin |≤1.0.3 |≥1.0.4 |ø
+|artifactory-deb-publish-plugin |≤1.0.1 |≥1.0.2 |ø
+|auto-value-plugin |≤1.0.7 |≥1.0.8 |ø
+|dagger-plugin |≤1.0.7 |≥1.0.8 |ø
+|integration-test-plugin |≤1.0.8 |≥1.0.9 |ø
+|jaxb2-plugin |≤1.0.2 |≥1.0.3 |ø
+|querydsl-plugin |≤1.0.7 |≥1.0.8 |`INCUBATING`
+|===
+
+对于 Gradle 大于 5.0
+的是正在开发中的，所以目前是无法进行注解生成的，不过
+https://stackoverflow.com/questions/54134455/java-11-querydsl-4-gradle-5-springboot-2-1-not-generating-qclasses[stackoverflow]
+上面有些许解决办法，但我尚未尝试。``曲线救国'' 的方式就是使用 IDEA
+的注解处理器，如果是 Kotlin 的就可以使用 Kapt
+注解处理器。当然这里就不做演示了，具体可以参见
+http://www.querydsl.com/static/querydsl/latest/reference/html/[官方文档]。
+
+== 自定义某个 Repository 的复杂操作
+
+这种方式个人觉得是不太好用的一种方式，有以下原因
+
+[arabic]
+. 指定定义一个 Repository 的复杂操作
+. 需要实现那个 Repository
+接口，那么就必须实现它的所有方法，就会失去根据名称派生查询优势
+
+这种比较鸡肋，比如有几个 Repository 具有同一个方法，但是其他的
+Repository
+又没有，同时这个方法又没法自动推断或者是更新、删除等操作，这个时候才会抽出一个部分共用的的
+Repository 来实现。但是有个问题就是几个 Repsitory
+对应的实体都是不一样的，那么抽出来的实体只能是 BaseEntity
+的子类，也就是公共实体，而 BaseEntity 又是所有 Entity
+的父类，那就是通用的了，那我为啥还要抽出来=-=
+
+所以个人想到的只有一个场景，你有一个 Repsoitory，但是这个 Repsoitory
+的部分方法需要 Jpa
+通过方法名称派生查询，部分方法需要自己去实现，那么就可以单独写一个去用了。
+
+这个实现起来很简单
+
+[source,kotlin]
+----
+interface CustomizedUserRepository {
+  fun someCustomMethod(User user);
+}
+----
+
+[source,kotlin]
+----
+class CustomizedUserRepositoryImpl implements CustomizedUserRepository {
+
+  fun someCustomMethod(User user) {
+    // Your custom implementation
+  }
+}
+----
+
+____
+*注意：实现类必须以 `Impl`
+结尾*，如果不是需要修改注解参数 `@EnableReactiveMongoRepositories(repositoryImplementationPostfix = "Impl")`
+，默认是 `Impl`
+____
+
+== 类似于 JpaRepository 的 BaseRepository
+
+这种方式个人觉得非常常用，在我的项目中我写了两个 `BaseRepository`。
+
+* `ExpandRepository`：用来自定义各种实现的方法，继承
+`ReactiveMongoRepository`
+* `BaseRepository`： 用来通过方法名派生查询的方法，继承
+`ExpandRepository`和 `ReactiveQuerydslPredicateExecutor`
+
+这样就能够很方便的定义许多操作。来说说他们的实现吧
+
+=== `ExpandRepository`
+
+接口很简单，这里我们写一个他 `ReactiveQueryByExampleExecutor`
+没有提供的方法，也就是分页
+
+[source,kotlin]
+----
+@NoRepositoryBean
+interface ExpandRepository<E: BaseEntity<E>>: ReactiveMongoRepository<E, String> {
+
+  /**
+   * Find all by [example] and [pageable].
+   */
+  fun findAll(example: Example<E>, pageable: Pageable): Flux<E>
+
+}
+----
+
+然后定一个实现类
+
+[source,kotlin]
+----
+class ExpandRepositoryImpl<E : BaseEntity<E>>(
+    private val entityInformation: MongoEntityInformation<E, String>,
+    private val mongoOperations: ReactiveMongoOperations
+) : SimpleReactiveMongoRepository<E, String>(entityInformation, mongoOperations), ExpandRepository<E> {
+
+  override fun findAll(example: Example<E>, pageable: Pageable): Flux<E> =
+      mongoOperations.find(
+          Query(Criteria().alike(example))
+              .collation(entityInformation.collation)
+              .with(pageable),
+          example.probeType,
+          entityInformation.collectionName
+      )
+
+}
+----
+
+最后修改注解就可以了
+
+[source,kotlin]
+----
+@EnableReactiveMongoRepositories(repositoryBaseClass = ExpandRepositoryImpl::class)
+----
+
+=== `BaseRepository`
+
+这就是一个通过方法名或者 `@Query` 派生的接口
+
+[source,kotlin]
+----
+@NoRepositoryBean
+interface BaseRepository<E : BaseEntity<E>> : ExpandRepository<E>, ReactiveQuerydslPredicateExecutor<E> {
+
+  fun findAllByIdContaining(ids: List<String>): Flux<E>
+
+  fun countAllByIsEnableTrue(): Mono<Long>
+
+}
+----
+
+=== 高级用法
+
+当然，还有一个高级用法，就是我们可以自定义它的工厂以及工厂 Bean
+
+[source,kotlin]
+----
+/**
+ * This bean will be injected in [cn.edu.gzmu.university.common.MongodbConfig].
+ * It will give a [cn.edu.gzmu.university.common.base.ExpandRepository] implement and
+ * a [ExpandMongoRepositoryFactory] to create repository.
+ *
+ * @author <a href="https://echocow.cn">EchoCow</a>
+ * @date 2020/4/12 下午7:14
+ */
+class ExpandRepositoryFactoryBean<T : Repository<E, String>, E : BaseEntity<E>>(
+    repositoryInterface: Class<out T>
+) : ReactiveMongoRepositoryFactoryBean<T, E, String>(repositoryInterface) {
+
+  /**
+   * Get customize factory instance.
+   */
+  override fun getFactoryInstance(operations: ReactiveMongoOperations): RepositoryFactorySupport =
+      ExpandMongoRepositoryFactory<E>(operations)
+
+  @Suppress("UNCHECKED_CAST")
+  private class ExpandMongoRepositoryFactory<E : BaseEntity<E>>(
+      private val mongoOperations: ReactiveMongoOperations
+  ) : ReactiveMongoRepositoryFactory(mongoOperations) {
+
+    /**
+     * Get our customize repository base class.
+     */
+    override fun getRepositoryBaseClass(metadata: RepositoryMetadata): Class<*> = ExpandRepositoryImpl::class.java
+
+    /**
+     * Get target repository.
+     */
+    override fun getTargetRepository(information: RepositoryInformation): Any {
+      val entityInformation: MongoEntityInformation<*, Serializable> = getEntityInformation(information.domainType)
+      return ExpandRepositoryImpl(entityInformation as MongoEntityInformation<E, String>, mongoOperations)
+    }
+
+  }
+}
+----
+
+当然，不要忘记添加如下注解：
+
+[source,kotlin]
+----
+@EnableReactiveMongoRepositories(repositoryFactoryBeanClass = ExpandRepositoryFactoryBean::class)
+----
+
+这个是最简单的一个实现。`ExpandRepositoryFactoryBean` 会注入一个
+`ExpandMongoRepositoryFactory` ，然后他就可以生产我们的 repository base
+class 来完成自定义 repository
+实现。为什么需要这个高级用法呢？一个最明显的栗子就是在它的父类
+`ReactiveMongoRepositoryFactoryBean` 中，有一个创建工厂的方法：
+
+[source,java]
+----
+@Override
+protected RepositoryFactorySupport createRepositoryFactory() {
+
+    RepositoryFactorySupport factory = getFactoryInstance(operations);
+
+    if (createIndexesForQueryMethods) {
+        factory.addQueryCreationListener(new IndexEnsuringQueryCreationListener(
+            collectionName -> IndexOperationsAdapter.blocking(operations.indexOps(collectionName))));
+    }
+
+    return factory;
+}
+----
+
+`createRepositoryFactory` 是用来创建工厂的，他在这里加入了一个
+`IndexEnsuringQueryCreationListener`，他会去检查
+`RepositoryQuery`，并且为它的属性创建索引。那么我们自然可以模仿他去创建一些其他的监听器并作出一些实现。再比如我们可以通过
+`addRepositoryProxyPostProcessor` 添加
+`RepositoryProxyPostProcessor`，在进行代理之前操作工厂。
+
+同时我们也可以通过工厂的 `getQueryLookupStrategy`
+方法自定义工厂的查询查找策略，默认是 `MongoQueryLookupStrategy`。
+
+[source,java]
+----
+    @Override
+    protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable Key key,
+            QueryMethodEvaluationContextProvider evaluationContextProvider) {
+        return Optional.of(new MongoQueryLookupStrategy(operations, evaluationContextProvider, mappingContext));
+    }
+----
+
+这些都是一些可以进行自定义的高级操作。在某些场合还是非常有用的。
+
+== 总结
+
+Jpa 实在是太过方便，除了上面几种我们还可以直接注入
+`ReactiveMongoOperations`、`ReactiveMongoTemplate`
+来直接操作数据库也是十分方便，事实上 Repository
+他们的底层其实也就是这两样。总的来说 Jpa
+给我们提供太多的方便，对于许多地方的自定义配置都留了很大很大的空间。个人喜欢
+Jpa 比喜欢 Mybatis 好多了！
+

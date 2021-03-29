@@ -1,0 +1,136 @@
+= [rhce] 8 通过 SMB 共享目录
+:page-description: rhce 8 通过 SMB 共享目录
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20181227.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/19/1546344574210.html
+:page-created: 1519042500000
+:page-modified: 1546346570847
+:toc:
+
+____
+在 serverX 上配置 SMB 服务 - 您的 SMB 服务器必须是 STAFF
+工作组的一个成员 - 共享 /common 目录，共享名必须为 common - 只有
+example.com 域内的客户端可以访问 common 共享 - common 必须是可以浏览的 -
+用户 rob，samba 密码为 redhat，只读权限访问 common 共享 - 用户
+brian，samba 密码为 redhat，读写权限访问 common 共享
+____
+
+____
+备注：考试时，用户名和密码根据题目实际情况进行设定，有的时候题目简单一点，测试用户早已建立，有的时候题目较难一点，用户和密码都必须自己设定。
+____
+
+== 操作
+
+安装 samba 和 samba-client
+
+....
+yum install samba samba-client
+....
+
+通过 camba-client 查看分享出来的目录
+
+....
+smbclient -L server47 -U brian
+....
+
+image::https://resources.echocow.cn/image/rhce/8.1.png[查看]
+
+查看是否存在用户 rob 和 brain
+
+....
+id rob
+id brian
+....
+
+倘若不存在，创建用户，由于只仅限于 samba
+的系统用户，所以必须锁定密码并防止直接用户登录和 ssh 远程登录。
+
+....
+useradd -s /sbin/nologin rob
+useradd -s /sbin/nologin brian
+....
+
+再次查看同时记录下 uid
+
+....
+id rob
+id brian
+....
+
+image::https://resources.echocow.cn/image/rhce/8.2.png[查看]
+
+image::https://resources.echocow.cn/image/rhce/8.3.png[查看]
+
+因为用户作为 samba 用户，所以为 samba 用户库添加 rob 和brain
+冰壶并设置密码。
+
+....
+smbpasswd -a rob
+smbpasswd -a brian
+....
+
+创建共享挂载目录 /common**（注意根据题目要求）**
+
+....
+mkdir /common
+....
+
+将目录共享文件添加至 SELinux 策略中，也就是为他们打标签
+
+....
+semanage fcontext -a -t samba_share_t '/common(/.*)?'
+....
+
+使其目录立刻采用 SELinux 规则，F 代表强制重置文件环境，R
+代表递归的变更文件和目录的文件标签，v 代表显示变更情况。
+
+....
+restorecon -RFv /common/
+....
+
+为 samba 用户设置 ACL 权限
+
+rob 只能读，*但目录下的文件没有被执行的权限，所以为
+X*，代表目录可以被访问。所以为 r-X brian 可读可写，所以为 rwx
+
+....
+setfacl -m u:rob:r-X /common/setfacl -m u:brian:rwx /common/
+....
+
+修改配置文件，按照题目要求，将工作组设置为 STAFF
+
+....
+vim /etc/samba/smb.conf
+
+
+workgroup = STAFF
+security = user
+....
+
+image::https://resources.echocow.cn/image/rhce/8.4.png[查看]
+
+image::https://resources.echocow.cn/image/rhce/8.5.png[查看]
+
+配置共享目录
+
+....
+[common]
+path = /common                             //共享目录
+write list = brian                              //可写的用户列表，默认 read-only
+browseable = yes                           //是否可浏览
+hosts allow = 172.25.47.0/24         //允许访问的域，必须使用 IP 地址
+....
+
+image::https://resources.echocow.cn/image/rhce/8.6.png[查看]
+
+开启服务以及设置服务开机启动、开启防火墙
+
+....
+systemctl enable smb.service  nmb.service
+systemctl start smb.service  nmb.service
+firewall-cmd --permanent --add-service=samba
+firewall-cmd --reload
+....
+
+服务器端 SMB 配置完成
+

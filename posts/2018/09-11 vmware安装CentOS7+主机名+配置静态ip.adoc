@@ -1,0 +1,186 @@
+= vmware 安装 CentOS7 + 主机名 + 配置静态 ip
+:page-description: vmware 安装 CentOS7 + 主机名 + 配置静态 ip
+:page-category: 归档
+:page-image: https://img.hacpai.com/bing/20181215.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/09/11/1546344587216.html
+:page-created: 1536613080000
+:page-modified: 1546347660678
+:toc:
+
+____
+学习 Hadoop ，第一件事就是需要有 linux 环境，因为他最好的运行环境是
+linux，而我们的选择，是在服务器端占有一席之地的 centos7
+操作系统。作为老牌稳定的服务器系统，是非常值得我们花时间去学习的。
+____
+
+环境说明： - 虚拟机：vmware - 操作系统：centos7 - 网络连接：NAT -
+网络配置：静态 ip
+
+== 在这之前
+
+我们需要稍微配置下 vmware 的 nat （why？为了以后出现问题方便统一纠正）
+
+=== 1. 打开编辑
+
+image::https://resources.echocow.cn/image/blog/hodoop/1.1.png[编辑]
+
+=== 2. 打开虚拟网络编辑器
+
+image::https://resources.echocow.cn/image/blog/hodoop/1.2.png[虚拟网络编辑器]
+
+=== 3. 修改子网 IP
+
+image::https://resources.echocow.cn/image/blog/hodoop/1.3.png[修改子网
+IP]
+
+=== 4. 修改 DHCP
+
+修改 DHCP 设置的 IP 地址段
+
+image::https://resources.echocow.cn/image/blog/hodoop/1.4.png[DHCP 设置]
+
+=== 5. 修改 NAT 设置的网关 IP
+
+image::https://resources.echocow.cn/image/blog/hodoop/1.5.png[NAT 设置]
+
+=== 6.新建虚拟机
+
+image::https://resources.echocow.cn/image/blog/hodoop/1.6.png[新建]
+
+____
+虚拟机的简历过程我就不多赘述。重点在于网络配置
+____
+
+== CentOS7 安装
+
+=== 1. 查看网卡配置是否为 NAT
+
+image::https://resources.echocow.cn/image/blog/hodoop/1.7.png[编辑虚拟机设置]
+
+image::https://resources.echocow.cn/image/blog/hodoop/1.8.png[查看网络适配器]
+
+=== 2. 选择最小化安装
+
+image::https://resources.echocow.cn/image/blog/hodoop/1.9.png[最小化]
+
+=== 3. 选择安装硬盘
+
+image::https://resources.echocow.cn/image/blog/hodoop/1.10.png[安装硬盘]
+
+=== 4. 配置网络（重点）
+
+image::https://resources.echocow.cn/image/blog/hodoop/1.11.png[点击网络配置]
+
+==== 4.1 configure
+
+点击右下角 configure
+
+image::https://resources.echocow.cn/image/blog/hodoop/1.12.png[configure]
+
+==== 4.2 配置 ipv4
+
+image::https://resources.echocow.cn/image/blog/hodoop/1.13.png[配置
+ipv4]
+
+==== 4.3 具体配置
+
+选择方式，设置 ip、掩码、网关、dns，配置完成后，右下角 save
+
+image::https://resources.echocow.cn/image/blog/hodoop/1.14.png[具体配置]
+
+==== 4.4 开启网络
+
+获取IP地址（图上多打了一个i），设置主机名，左上角保存
+
+image::https://resources.echocow.cn/image/blog/hodoop/1.15.png[开启网络]
+
+=== 5. 开始安装
+
+image::https://resources.echocow.cn/image/blog/hodoop/1.16.png[开始安装]
+
+=== 6. 添加密码
+
+image::https://resources.echocow.cn/image/blog/hodoop/1.17.png[添加密码]
+
+== 检查网络
+
+如果你 *电脑通网的* ，尝试
+`ping www.baidu.com`，出现如下信息，网络配置成功
+
+image:https://resources.echocow.cn/image/blog/hodoop/1.18.png[image]
+
+== 问题
+
+=== Q：忘记了第四步就安装了怎么办？
+
+==== 解决办法一：修改配置文件
+
+[arabic]
+. 切换到网卡文件目录 `cd /etc/sysconfig/network-scripts/`，查看目录文件
+`ls`
+image:https://resources.echocow.cn/image/blog/hodoop/1.20.png[image]
+. 编辑文件 `vim ifcfg-ens33`，按下 `i`
+进入编辑模式，修改`BOOTPROTO="dhcp"` 为 `BOOTPRTO=none`
+image:https://resources.echocow.cn/image/blog/hodoop/1.21.png[image]
+. 下方添加如下内容，其中 IPADDR 可以自定义 128-255 区间
+image:https://resources.echocow.cn/image/blog/hodoop/1.22.png[image]
+. 重启网络，尝试 `ping www.baidu.com`
+image:https://resources.echocow.cn/image/blog/hodoop/1.23.png[image]
+
+==== 解决办法二：使用命令修改
+
+此方法只要一条命令即可，如下
+
+[source,shell]
+----
+nmcli con modify ens33 ipv4.method static ipv4.addr 192.168.112.159/24 ipv4.gateway 192.168.112.2 ipv4.dns 192.168.112.2 connection.autoconnect yes
+----
+
+然后重启网络，ping 一下即可
+
+....
+systemctl restart network
+ping www.baidu.com
+....
+
+=== Q：vi 如何保存退出？
+
+==== 解决办法
+
+当你编辑完成后，按下 `ESC` ，然后输入冒号 `:` ，再输入
+`wq`，即可保存退出。
+
+=== Q：主机名忘记修改如何修改？
+
+查看主机名
+
+image:https://resources.echocow.cn/image/blog/hodoop/1.24.png[image]
+
+或者输入 `hostname`
+
+image:https://resources.echocow.cn/image/blog/hodoop/1.25.png[image]
+
+==== 解决办法一：修改配置文件
+
+[arabic]
+. 修改配置文件 `vi /etc/hostname`,保存退出 `:wq`
+. 重启即可
+
+==== 解决办法二：使用命令修改
+
+[arabic]
+. 使用如下命令
+
+....
+hostnamectl set-hostname 主机名
+....
+
+[arabic, start=2]
+. 重启即可
+
+=== Q：ping 以后一直跳出 64 byte…？
+
+==== 解决办法
+
+你只要 按下 `ctrl + c` 即可结束 ping。
+

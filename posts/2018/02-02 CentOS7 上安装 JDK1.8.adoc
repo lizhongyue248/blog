@@ -1,0 +1,101 @@
+= [归档] CentOS7 上安装 JDK1.8
+:page-description: CentOS7 上安装 JDK1.8
+:page-category: 归档
+:page-image: https://img.hacpai.com/bing/20190221.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/02/1546344578809.html
+:page-created: 1517530080000
+:page-modified: 1546346890931
+:toc:
+
+[arabic]
+. 通过 SecureCRT 连接到阿里云 CentOS7 服务器；
+. 进入到目录 /usr/local/ 中：
+
+[source,bash]
+....
+cd /usr/local/
+....
+
+[arabic, start=3]
+. 创建目录 tools：
+
+[source,bash]
+....
+ mkdir -p tools
+....
+
+[arabic, start=4]
+. 进入到目录 /usr/local/tools 中：
+
+[source,bash]
+....
+ cd tools/
+....
+
+[arabic, start=5]
+. 下载 jdk-8u91-linux-x64.tar.gz：
+* wget –no-check-certificate –no-cookies –header ``Cookie:
+oraclelicense=accept-securebackup-cookie''
+http://download.oracle.com/otn-pub/java/jdk/7u71-b14/jdk-7u71-linux-x64.rpm
+* http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html[官网地址]，找到需要的，然后加上头既可
+. 加压缩 jdk-8u91-linux-x64.tar.gz 文件：
+
+[source,bash]
+....
+ tar -zxvf jdk-8u91-linux-x64.tar.gz
+....
+
+[arabic, start=7]
+. 返回到上一级并创建 /usr/local/jdk 目录： ```
+
+[source,bash]
+....
+cd .. mkdir -p jdk
+....
+
+[arabic, start=8]
+. 进入到 tools 目录后将 jdk1.8.0_91 移动到 jdk 目录中：
+
+[source,bash]
+....
+cd ../tools/ mv jdk1.8.0_91/ ../jdk/
+
+....
+[arabic, start=9]
+. 打开 /etc/ 目录下的 profile 文件：
+
+[source,bash]
+....
+vi /etc/profile
+....
+
+[arabic, start=10]
+. 将如下代码追加到 profile 文件末尾：
+
+[source,bash]
+....
+
+# idea - jdk8 settings start 2016-05-01
+
+JAVA_HOME=/usr/local/jdk/jdk1.8.0_91
+JRE_HOME=$JAVA_HOME/jre
+PATH=$PATH:$JAVA_HOME/bin:$JRE_HOME/bin
+CLASSPATH=:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JRE_HOME/lib/dt.jar
+export JAVA_HOME JRE_HOME PATH CLASSPATH
+
+# idea - jdk8 settings end - 2016-05-01
+....
+
+[arabic, start=11]
+. 按 Esc 键、输入 wq! 回车，保持并退出。即可启用新的配置：`source /etc/profile`
+
+[arabic, start=12]
+. 输入 java -version 查看 JDK 的版本：
+
+[source,bash]
+....
+ [root@iZ94hws2fzlZ jdk1.8.0_91]# java -version
+ java version "1.8.0_91"
+ Java(TM) SE Runtime Environment (build 1.8.0_91-b14)
+ Java HotSpot(TM) 64-Bit Server VM (build 25.91-b14, mixed mode)
+....

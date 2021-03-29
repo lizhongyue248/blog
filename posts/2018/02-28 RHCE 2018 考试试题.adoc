@@ -1,0 +1,214 @@
+= RHCE 2018 考试试题
+:page-description: RHCE 2018 考试试题
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20181126.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/28/1546344573952.html
+:page-created: 1519755720000
+:page-modified: 1546346360095
+:toc:
+
+____
+yum源地址为：http://server.group8.example.com/yum
+____
+
+== 1. 配置SELINUX
+
+修改 selinux 的状态为 Enforcing 模式
+
+== 2. 配置SSH访问控制
+
+按以下要求配置SSH访问： > 1.用户能够从域 group8.example.com
+内的客户端通过SSH远程访问您的两个虚拟机系统 > 2.在域
+my133t.org（172.13.8.0/24）内的客户端不能访问您的两个虚拟机系统
+
+== 3. 自定义用户环境
+
+在系统 system2 和 system1 上创建自定义命令名为 qstat
+，此自定义命令将执行以下命令： > /bin/ps -Ao pid,tt,user,fname,rsz
+
+此命令对系统中所有用户有效
+
+== 4. 配置端口转发
+
+在系统 system2 配置端口转发，要求如下： > 1. 在 172.24.8.0/24
+网络中的系统，访问 system2 的本地端口 5423 将被转发到 80 > 2.
+此设置必须永久有效
+
+== 5. 配置链路聚合
+
+在 system2 和 system1 之间按以下要求配置一个链路： > 1. 此链路使用接口
+eth1 和 eth2 > 2. 此链路在一个接口失效时仍然能工作 > 3. 此链路在 system2
+使用下面的地址 172.16.3.20/255.255.255.0 > 4. 此链路在 system1
+使用下面的地址 172.16.3.25/255.255.255.0 > 5.
+此链路在系统重启之后依然保持正常状态
+
+== 6. 配置 IPV6 地址
+
+在您的考试系统上配置接口eth0 使用下列IPV6地址： > 1. system1
+上的地址应该是2003:ac18::305/64 > 2. system2
+上的地址应该是2003:ac18::30a/64 > 3. 两个系统必须能与网络 2003:ac18/64
+内的系统通信 > 4. 地址必须在重启后依然生效 > 5. 两个系统必须保持当前的
+IPV4 地址并能通信
+
+== 7. 配置本地邮件服务
+
+在系统 system2 和 system1 上配置邮件服务，满足以下要求： >
+1.这些系统不接受外部发送来的邮件 >
+2.在这些系统上本地发送的任何邮件都会自动路由到 mail.group8.example.com >
+3.从这些系统上发送的邮件显示来自于 server.group8.example.com >
+4.您可以通过发送邮件到本地用户’dave’来测试您的配置. >
+5.已经配置把此用户的邮件转到下列URL
+：server.group8.example.com/pub/received_mail/ >
+你只需看到对应用户名文件的大小有变化即可
+
+== 8.通过 SMB 共享目录
+
+在 system1 上配置SMB服务 > 您的 SMB 服务器必须是 STAFF 工作组一个成员 >
+共享 /common 目录，共享名必须为 common > 只有 group8.example.com
+域内的客户端可以访问 common 共享,且 common 必须是可以浏览的 > 用户 andy
+必须能够读取共享中的内容，需要的话，验证密码是 redhat
+
+== 9. 配置多用户 SMB 挂载
+
+在 system1 共享通过 SMB 目录 /devops 满足下列要求： > 1.共享名为 devops
+> 2.共享目录 devops 只能 group8.example.com 域中的客户端使用 >
+3.共享目录 devops 必须可以被浏览 > 4.用户 silene
+必须能以读的方式访问此共享，访问密码是 redhat > 5.用户 akira
+必须能以读写的方式访问此共享，访问密码是 redhat > 6.此共享永久挂载在
+system2.group8.example.com 上的 /mnt/dev 目录，并使用用户 silene
+作为认证任何用户，可以通过用户 akira 来临时获取写的权限
+
+== 10. 配置NFS服务
+
+在system1配置NFS服务，要求如下： >
+1.以只读的方式共享目录/public，同时只能被group8.example.com域中的系统访问
+>
+2.以读写的方式共享目录/protected，需要通过Kerberos安全加密，您可以使用下面URL提供的密钥
+http://server.group8.example.com/pub/keytabs/system1.keytab >
+3.目录/protected应该包含名为project拥有人为andres的子目录 >
+4.用户andres能以读写方式访问/protected/project
+
+== 11. 挂载一个NFS共享
+
+在system2上挂载一个system1.group8.example.com的NFS共享,并符合下列要求：
+> 1、/public挂载在下面的目录上：/mnt/nfsmount /protected
+挂载在下面的目录上：/mnt/nfssecure 并使用安全的方式，密钥下载URL如下： +
+http://server.group8.example.com/pub/keytabs/system2.keytab >
+2、用户andres能够在/mnt/nfssecure/project上创建文件 >
+3、这些文件系统在系统启动时自动挂载
+
+== 12. 实现一个 web 服务器
+
+在 system1 上配置一个站点 http://system1.group8.example.com/
+然后执行下述步骤： > 1、 从
+http://server.group8.example.com/pub/system1.html
+下载文件，并且将文件重名为 index.html 不要修改此文件的内容 > 2、 将文件
+index.html 拷贝到您的 web 服务器的 DocumentRoot 目录下 > 3、 来自于
+group8.example.com 域的客户端可以访问此web服务 > 4、 来自于 my133t.org
+域的客户端拒绝访问此web服务
+
+== 13. 配置安全web服务
+
+为站点 http://system1.group8.example.com 配置TLS加密， >
+一个已签名证书从
+http://server.group8.example.com/pub/tls/certs/system1.crt 获取 >
+此证书的密钥从
+http://server.group8.example.com/pub/tls/private/system1.key 获取 >
+此证书的签名授权信息从
+http://server.group8.example.com/pub/tls/certs/ssl-ca.crt 获取
+
+== 14：配置虚拟主机
+
+在 system1 上扩展您的web服务器，为站点 http://www8.group8.example.com
+创建一个虚拟主机，然后执行下述步骤： > 1.设置 DocumentRoot 为
+/var/www/virtual > 2.从 http://server.group8.example.com/pub/www8.html >
+3.下载文件重名为index.html 不要对文件index.html 中的内容做任何修改 >
+4.将文件 index.html 放到虚拟主机的 DocumentRoot 的目录下 > 5.确保 andy
+用户能够在 /var/www/virtual 目录下创建文件
+
+注意：原始站点 http://system1.group8.example.com/
+必须仍然能够访问，名称服务器 server.group8.example.com 提供对主机名
+www8.group8.example.com 的域名解析。
+
+== 15. 配置web内容的访问控制
+
+在您的system1
+上的web服务器的DocumentRoot目录下，创建一个名为private的目录，要求如下：
+> 1.从 http://server.group8.example.com/pub/private.html
+下载一个文件副本到这个目录，并且重命名为index.html. >
+2.不要对这个文件的内容做任何修改 > 3.从system1
+上，任何人都可以浏览private的内容，但是从其它系统不能访问这个目录的内容
+
+== 16，实现动态WEB 内容
+
+在 system1 上配置提供动态web内容，要求如下： > 1. 动态内容由名为
+wsgi.group8.example.com 的虚拟主机提供 > 2. 虚拟主机侦听在端口 8909 > 3.
+从 http://server.group8.example.com/pub/webinfo.wsgi
+下载一个脚本，然后放在适当的位置，无论如何不要求修改此文件的内容 > 4.
+客户端访问 http://wsgi.group8.example.com:8909/
+时，应该接收到动态生成的web页面 > 5. 此
+http://wsgi.group8.example.com:8909/ 必须能被 group8.example.com
+域内的所有系统访问
+
+== 17. 创建一个脚本
+
+在system1上创建一个名为/root/foo.sh的脚本，让其提供下列特性： > 1.
+当运行/root/foo.sh redhat,输出为fedora > 2. 当运行/root/foo.sh
+fedora,输出为redhat > 3.
+当没有任何参数或者参数不是redhat或者fedora时，其错误输出产生以下的信息：/root/foo.sh
+redhat:fedora
+
+在考试的时候注意看题目要求的创建的文件名称，如果不带sh后缀则不要加后缀，否则不得分。
+
+== 18. 创建一个添加用户的脚本
+
+在system1上创建一个脚本，名为 /root/mkusers
+,此脚本能实现为系统system1创建本地用户，并且这些用户的用户名来自一个包含用户名列表的文件，同时满足下列要求：
+> 1. 此脚本要求提供一个参数，此参数就是包含用户名列表的的文件 > 2.
+如果没有提供参数，此脚本应该给出下面的提示信息Usage：/root/mkusers然后退出并返回相应的值
+> 3. 如果提供一个不存在的文件名，此脚本应该给出下面的提示信息Input file
+not found 然后退出并返回相应的值 > 4. 创建的用户登录shell为/bin/false >
+5. 此脚本不需要为用户设置密码 > 6.
+您可以从下面的URL中获取用户名列表作为测试用
+http://server.group8.example.com/pub/userlist
+
+在考试的时候注意看题目要求的创建的文件名称，如果不带sh后缀则不要加后缀，否则不得分。
+
+== 19. 配置ISCSI服务端
+
+配置system1提供一个ISCSI 服务磁盘名为 iqn.2014-08.com.example:system1
+并符合下列要求： > 1. 服务端口为3260 > 2.
+使用iscsi_store作其后端卷名称，其大小为3G > 3.
+此服务只能被system2.group8.example.com访问
+
+== 20. 配置ISCISI的客户端
+
+配置system2使其能链接在system1上提供的 iqn.2014-08.com.example:system1
+并符合以下要求： > 1. ISCISI设备在系统启动的期间自动加载 > 2.
+块设备ISCISI上包含一个大小为2100MIB的分区，并格式化为ext4 > 3.
+此分区挂载在/mnt/data上 同时在系统启动的期间自动挂载
+
+== 21. 配置一个数据库
+
+在 system1上创建一个Maria DB数据库，名为Contacts，并符合以下条件： > 1.
+数据库应该包含来自数据库复制的内容，复制文件的URL为 +
+http://server.group8.example.com/pub/users.mdb ，数据库只能被 localhost
+访问 > 2. 除了root用户，此数据库只能被用户Luigi查询，此用户密码为 redhat
+> 3. root 用户的数据库密码为 redhat，同时不允许空密码登录
+
+== 22. 数据库查询
+
+在系统 system1 上使用数据库 Contacts ，并使用相应的SQL
+查询以回答下列问题： > 1. 密码是 tangerine 的人的名字？ > 2.
+有多少人的姓名是 John 同时居住在 Santa Clara ？
+
+'''''
+
+____
+关于题库的重要提醒：
+1、考试时，有关url路径、用户名、密码、域名、ip等一定会不一样，请注意！
+2、有些目录比如/public等在考试时可能已经创建好，不需要再创建，请注意！
+3、有些软件包在考试时可能已经安装好，不需要再安装，请注意！
+一句话，就是一定不要死记题库中的目录、用户名、路径等这些可能变化的东西，而是记住解题步骤、思路，验证、及排错方法！
+____
+

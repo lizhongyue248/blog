@@ -1,0 +1,512 @@
+= Spring Security Oauth2 从零到一完整实践（六）踩坑记录
+:page-description: 时隔半年，终于要来填坑了。不过经过这段时间的学习和实践，确实解决了不少问题。现在在这里一一记录一下。
+:page-category: spring
+:page-image: https://img.hacpai.com/bing/20181116.jpg?imageView2/1/w/960/h/540/interlace/1/q/100
+:page-href: /articles/2020/01/20/1579503807596.html
+:page-created: 1579503807648
+:page-modified: 1587795903960
+:toc:
+
+[IMPORTANT]
+*注意注意：本文章适用于5.3以前的spring security以及spring boot 2.3.x
+以前的 oauth，以下内容应该为过时！spring 提供新的 oauth2
+授权服务器。目前正在https://spring.io/blog/2019/11/14/spring-security-oauth-2-0-roadmap-update[实验性阶段]*
+
+时隔半年，终于要来填坑了。不过经过这段时间的学习和实践，确实解决了不少问题。现在在这里一一记录一下。
+
+不过在这之前，还是需要说一下19年11月一件关于 spring security oauth
+的大事，参见官网文章
+https://spring.io/blog/2019/11/14/spring-security-oauth-2-0-roadmap-update[Spring
+Security OAuth 2.0 Roadmap Update]。主要有以下两个点：
+
+[arabic]
+. *不再支持 OAuth2 授权服务器*。
+. spring security oauth 迁移至 spring security 中
+
+*但是由于第一点收到了太多用户的反馈，建议继续支持授权服务器，所以现在进行重新决议，目前正在决议中。另外还有一个项目生命周期的维护：*
+
+[NOTE]
+The currently supported branches are 2.3.x and 2.4.x. The 2.3.x line
+will reach EOL in March 2020. We will support the 2.4.x line at least
+one year after reaching feature parity.
+
+目前官方支持的两个版本就是 spring security oauth 2.3.x 和
+2.4.x，其中，2.3.x 版本会在 2020 年 3 月的时候停止支持和维护，而 2.4.x
+会至少一年后停止支持和维护。
+
+在 spring security oauth 的项目中的 master
+分支（即2.4.x版本），相关的注解如
+`EnableAuthorizationServer`，都被标记为了 *过时* 。并给出了迁移 spring
+security 的 wiki
+链接：https://github.com/spring-projects/spring-security/wiki/OAuth-2.0-Migration-Guide[OAuth-2.0-Migration-Guide]。
+
+但是现在的主要依赖（如现在的spring boot 2.2.3）都还是 spring security
+oauth 的 2.3.x 分支，也就是说目前还是可以使用的。预计在三月，会使用它的
+2.4.x
+分支了。但是个人觉得自定义授权服务器还是非常重要的，很多场景下都适用，并且可以自己规划非常方便。所以也是希望他继续支持授权服务器的，并且在近一年内，spring
+security oauth 的授权服务器都会继续使用，我也在我们学校搭建了一个 oauth2
+的授权中心：https://github.com/gzmuSoft/authorization-server[authorization-server]。这段时间也踩了不少坑，记录一下。
+
+____
+注意：以下内容依旧使用 spring security oauth 项目。
+____
+
+== 系列文章
+
+[arabic]
+. https://echocow.cn/articles/2019/07/14/1563082088646.html[较为详细的学习
+oauth2 的四种模式其中的两种授权模式]
+. https://echocow.cn/articles/2019/07/14/1563082247386.html[spring boot
+oauth2 自动配置实现]
+. https://echocow.cn/articles/2019/07/14/1563096109754.html[spring
+security oauth2 授权服务器配置]
+. https://echocow.cn/articles/2019/07/20/1563611848587.html[spring
+security oauth2 资源服务器配置]
+. https://echocow.cn/articles/2019/07/30/1564498598952.html[spring
+security oauth2 自定义授权模式（手机、邮箱等）]
+. spring security oauth2 踩坑记录
+
+== REFRESH_TOKEN 第一次有效
+
+在刷新 token 的时候，携带 `refresh_token` 去请求 `/oauth/token`
+端点，会生成新的 `access_token` 和
+`refresh_token`，但是你会发现，*只有第一次的 `refresh_token`
+可以使用，后面的都不能够使用*。这个问题主要原因来自于授权服务器端点配置，*默认情况下，授权服务器的端点配置会有这么一个属性：`reuseRefreshToken`
+表示重复使用刷新令牌*。也就是说会一直重复使用第一次请求到的
+`refresh_token`，而后面的 `refresh_token` 就是无效的了。
+
+____
+参见
+`org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer`
+____
+
+所以我们需要修改一下这个设置
+
+[source,java]
+----
+public class Oauth2AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter{
+    // ...
+    @Override
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
+        endpoints..reuseRefreshTokens(false);
+    }
+    // ...
+}
+----
+
+== 自定义客户端信息
+
+很多时候我要从数据库中读取客户端信息，但是不希望使用它的表结构来创建表，这个时候需要我们去自定义客户端信息。就像自定义用户信息一样，需要实现
+`org.springframework.security.oauth2.provider.ClientDetailsService`
+接口。它的返回值是
+`org.springframework.security.oauth2.provider.ClientDetails`。所以这里有两种实现方式
+
+* 第一种实体类实现 `ClientDetails` 接口
+* 第二种就是在写一个转换的方法，把你的 `ClientDetails` 转换为它的
+`ClientDetails`
+
+第一种可以参见： https://github.com/xkcoding/spring-boot-demo/blob/dev/spring-boot-demo-oauth/spring-boot-demo-oauth-authorization-server/src/main/java/com/xkcoding/oauth/entity/SysClientDetails.java[*SysClientDetails*]
+
+这里我使用的是第二种。
+
+[source,java]
+----
+public org.springframework.security.oauth2.provider.ClientDetails buildSpringClientDetails() {
+    BaseClientDetails details = new BaseClientDetails(clientId, resourceIds, scope, grantTypes, authorities, redirectUrl);
+    details.setClientSecret(clientSecret);
+    details.setAutoApproveScopes(Collections.singletonList(autoApproveScopes));
+    details.setAccessTokenValiditySeconds(accessTokenValidity);
+    details.setRefreshTokenValiditySeconds(refreshTokenValidity);
+    details.setAdditionalInformation(JSON.parseObject(additionalInformation));
+    return details;
+}
+----
+
+然后将我们写的实现 `ClientDetailsService` 接口的 service 配置进去即可：
+
+[source,java]
+----
+public class Oauth2AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
+    // ......
+    @Override
+    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+        // 从数据库读取我们自定义的客户端信息
+        clients.withClientDetails(sysClientDetailsService);
+    }
+    // ......
+}
+----
+
+== 多类型混合存储
+
+我的一个需求就是，客户端信息我需要持久化存储，存在 `postgresql`
+里面，而我的 `token` 相关的需要频繁取出或者修改，所以我希望他存在
+`redis` 里面并且需要使用 jwt
+非对称密钥转换。那么我就要从两个不同的地方取出不同的东西。所以我们需要给他两个东西
+
+[arabic]
+. `RedisTokenStore`：从 Redis 中获取 token
+. `ClientDetailsService` ：从 Postgresql 中获取客户端信息
+
+这个时候 `JwtTokenStore` 不是必须的，需要的是 `JwtAccessTokenConverter`
+来进行令牌的转换。
+
+[source,java]
+----
+@Bean
+@Primary
+public TokenStore tokenStore() {
+    return new RedisTokenStore(redisConnectionFactory);
+}
+
+@Bean
+public JwtAccessTokenConverter jwtAccessTokenConverter() {
+    final JwtAccessTokenConverter accessTokenConverter = new JwtAccessTokenConverter();
+    accessTokenConverter.setKeyPair(keyPair());
+    return accessTokenConverter;
+}
+
+@Bean
+public KeyPair keyPair() {
+    KeyStoreKeyFactory keyStoreKeyFactory = new KeyStoreKeyFactory(new ClassPathResource("oauth.jks"), "123456".toCharArray());
+    return keyStoreKeyFactory.getKeyPair("oauth");
+}
+----
+
+同样，在有其他的组合需求的时候也只需要提供相应的实现就可以了。
+
+== 授权服务器、资源服务器共存
+
+这个是比较头疼的地方了。头疼在哪里呢？就是头疼在 `CSRF` 这么个东西。
+
+[TIP]
+参见：
+ https://zh.wikipedia.org/zh/%E8%B7%A8%E7%AB%99%E8%AF%B7%E6%B1%82%E4%BC%AA%E9%80%A0%5D(https://zh.wikipedia.org/zh/跨站请求伪造)[CSRF
+跨站请求伪造]
+
+我希望我的项目即是资源服务器，又是授权服务器。说白了他能够提供令牌发放的功能，但是也通过简单的一些查询的功能。*但是当他作为授权服务器的时候，使用授权码模式的时候，他是一个使用模板引擎的前后端未分离的项目，而当他作为资源服务器的时候，他是一个前后端分离的提供
+API 服务的项目。那么这个时候 CSRF 就比较棘手了*。
+
+在前后端未分离的情况下，需要提交 post 请求的时候都要经过 `CSRF`
+认证才可以进行提交，所以你不能够简单粗暴的直接关闭
+`CSRF`，因为他可能带来安全问题。而在前后端分离的情况下我们使用了 JWT
+非对称加密，所以是不存在 `CSRF` 安全的问题的，
+
+就目前而言，我并没有找到一个好的方式来处理 POST 请求下的 CSRF
+问题，一个方法就是，不使用 `@EnableResourceServer`
+自己编写一个资源服务器的相关配置。但是太过于复杂了。当然还有其他曲线救国的方法，比如自己定义一些过滤规则，或者自己手动加上
+`csrf_token` 等，不过都是有一定的代码量的。
+
+个人认为最佳的实践就是，授权服务器提供部分资源服务器的功能，比如查询一些相关的数据，也就是只提供
+GET
+方法，而修改数据则是单独用一个资源服务器来完成。授权服务器只提供发放、校验令牌和一些信息的查询功能，*不提供增删改等复杂的功能*，这样也能够减少授权服务器的压力。
+
+== 资源服务器安全配置顺序
+
+当我配置资源服务器的时候，会涉及到 spring security 相关的配置和 spring
+security oauth resource server
+相关的配置。这里需要非常注意他们的顺序问题：
+
+* spring secruity 需要继承 `WebSecurityConfigurerAdapter` ，order 为 100
+* spring security oauth resource server 需要继承
+`ResourceServerConfigurerAdapter`， order 为 3
+
+他们两个都会对安全进行控制，所以要很好的调配。个人建议完全只交给一个去完成安全的控制，order
+越小，优先级越高。
+
+== 安全退出
+
+什么是安全退出呢？我个人的理解就是点击退出以后，它的 `token`
+完全失效了。举个栗子：
+
+[arabic]
+. 小明在家登录了，获取了一个令牌 `access_token1`。
+. 小明在家没有退出，去公司又登录了，获取到了同一个令牌 `access_token1`
+. 晚上小明回家了，突然想起公司的电脑还保留自己的登录状态，但是又不能够叫别人帮忙退出登录或者删除登录状态。
+. 他只需要在家安全退出，那么 `access_token1`
+将会被完全销毁，在家、在公司，都不再保持登录状态。
+. 他在家安全退出后再次登录，获取了一个新的令牌 `access_token2`。
+
+总结就是 ``**一处退出，处处退出**''。当然，这种模式只有在 *授权码模式*
+有效，非授权码模式客户端只要删除本地存储的令牌即可，但是没有办法做到安全退出的。
+
+在授权码模式下，我们登录是要在授权服务器这边进行登录的，所以在授权服务器这边存在用户相关的
+`session`，因此退出的时候我们也要来授权服务器这边进行一次退出，再去客户端那边进行一次退出。因此我们需要客户端那边传递一个退出完成的回调地址给我们进行跳转，我们主要有如下步骤：
+
+[arabic]
+. 自定义退出端点
+. 自定义退出页面
+. 自定义退出成功处理器
+. spring security 配置
+
+=== 自定义退出端点
+
+就是写一个控制器
+
+[source,java]
+----
+@Controller
+@RequestMapping("/oauth")
+@RequiredArgsConstructor
+public class OauthController {
+    @GetMapping("/logout")
+    public ModelAndView logoutView(
+            @RequestParam("redirect_url") String redirectUrl,
+            // 如果存在客户端 id，就是安全退出，否则只是普通退出
+            @RequestParam(name = "client_id", required = false) String clientId,
+            // 登录用户的信息
+            Principal principal) {
+        if (Objects.isNull(principal)) {
+            // 如果用户的 session 已经失效，那么授权服务器这边是已经没有用户信息了的
+            // 直接重定向到回调地址
+            return new ModelAndView(new RedirectView(redirectUrl));
+        }
+        ModelAndView view = new ModelAndView();
+        // 视图名称
+        view.setViewName("logout");
+        /// 用户名称
+        view.addObject("user", principal.getName());
+        view.addObject("redirectUrl", redirectUrl);
+        view.addObject("clientId", clientId);
+        return view;
+    }
+}
+----
+
+=== 自定义退出页面
+
+页面各有不同，可以参考我写的
+https://github.com/gzmuSoft/authorization-server/blob/master/src/main/resources/templates/logout.html[logout.html]。注意
+POST 提交需要携带 `csrf_token`。
+
+=== 自定义退出成功处理器
+
+[source,java]
+----
+@Slf4j
+@Component
+@AllArgsConstructor
+public class AuthLogoutSuccessHandler implements LogoutSuccessHandler {
+    private final @NonNull Oauth2Helper oauth2Helper;
+
+    @Override
+    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
+        String redirectUrl = request.getParameter("redirectUrl");
+        // 一般来说回调地址是必填的，不会有为空的情况
+        // 但是如果用户直接浏览器输入授权服务器的退出地址，就可能不存在
+        // 所以需要判断一下，如果没有就让他重定向到登录页面
+        if (StringUtils.isBlank(redirectUrl)) {
+            redirectUrl = "/oauth/login";
+        }
+        String clientId = request.getParameter("clientId");
+        // 如果客户端 id 不为空，就是安全退出，需要清除内存或者redis中的当前用户的令牌信息
+        if (StringUtils.isNoneBlank(clientId)) {
+            oauth2Helper.safeLogout(clientId, authentication);
+        }
+        // 设置状态码和重定向地址
+        response.setStatus(HttpStatus.FOUND.value());
+        response.sendRedirect(redirectUrl);
+    }
+}
+----
+
+安全推出的逻辑
+
+[source,java]
+----
+@Component
+@RequiredArgsConstructor
+public class Oauth2Helper {
+    private final TokenStore tokenStore;
+    /**
+     * 如果携带了 clientId，清除 令牌 信息
+     * 实现 一处退出，处处退出
+     *
+     * @param clientId       clientId
+     * @param authentication authentication
+     */
+    public void safeLogout(String clientId, Authentication authentication) {
+        tokenStore
+                .findTokensByClientIdAndUserName(clientId, authentication.getName())
+                .forEach(oAuth2AccessToken -> {
+                    tokenStore.removeAccessToken(oAuth2AccessToken);
+                    tokenStore.removeRefreshToken(oAuth2AccessToken.getRefreshToken());
+                });
+    }
+}
+----
+
+=== spring security 配置
+
+前面说道资源服务器安全配置的顺序，这里我是完全交给了 spring security
+来管理，配置一下相关信息：
+
+[source,java]
+----
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                // ......
+                .formLogin()
+                .loginPage("/oauth/login")
+                .loginProcessingUrl("/authorization/form")
+                .failureHandler(authFailureHandler)
+                .successHandler(authSuccessHandler)
+                .and()
+                // 退出登录相关
+                .logout()
+                // 退出登录的 url，post 方法
+                .logoutUrl("/oauth/logout")
+                // 推出登录成功处理器
+                .logoutSuccessHandler(authLogoutSuccessHandler);
+    }
+----
+
+=== 效果
+
+自己写了一个简单的 demo，前后端分离，前端使用vue，后端就是spring
+boot，授权服务器就是我们学校的授权服务器。*注意看 URL 的变化*。
+
+image::https://resources.echocow.cn/file/2020/01/20logout.gif[logout]
+
+== JWK 端点
+
+在 spring secruity oauth 迁移 spring security
+的过程中，我发现资源服务器和客户端都支持 jwk 端点了。所以引入一下 jwk
+端点：
+
+你可能需要引入如下依赖：
+
+[source,bash]
+....
+group id: org.wso2.orbit.com.nimbusds
+artifactId: nimbus-jose-jwt
+....
+
+添加如下端点：
+
+[source,java]
+----
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import net.minidev.json.JSONObject;
+import org.springframework.security.oauth2.provider.endpoint.FrameworkEndpoint;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.security.KeyPair;
+import java.security.interfaces.RSAPublicKey;
+
+@FrameworkEndpoint
+@AllArgsConstructor
+public class JwkEndpoint {
+    // 这是前面 @Bean 添加的非对称加密的密钥对
+    private final @NonNull KeyPair keyPair;
+
+    @GetMapping("/.well-known/jwks.json")
+    @ResponseBody
+    public JSONObject getKey() {
+        RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
+        // 注意 包 别引错
+        RSAKey key = new RSAKey.Builder(publicKey).build();
+        return new JWKSet(key).toJSONObject();
+    }
+
+}
+----
+
+当然，目前 JWK 是完全暴露出来的，个人认为还是需要进行 BASIC
+认证的，但是目前还没找到在哪儿加的好。
+
+== 自定义端点路径
+
+目前 spring security oauth 提供的端点都是
+`/oauth/token`，`/oauth/token_key`
+之类的，如果我们需要自定义呢？配置如下：
+
+[source,java]
+----
+public class Oauth2AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
+    @Override
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
+        // ......
+        endpoints.pathMapping("/oauth/token", "/auth/token");
+        // ......
+    }
+
+}
+----
+
+== RBAC 动态权限控制
+
+目前找到两种比较好的权限控制：
+
+[arabic]
+. 自定义 `FilterInvocationSecurityMetadataSource` 和
+`AccessDecisionManager`
+. 自定义权限表达式
+
+我使用的是第一种，安全配置如下：
+
+[source,java]
+----
+private final FilterInvocationSecurityMetadataSource securityMetadataSource;
+private final AuthAccessDecisionManager authAccessDecisionManager;
+// ......
+http
+    .authorizeRequests()
+    .withObjectPostProcessor(new ObjectPostProcessor<FilterSecurityInterceptor>() {
+        @Override
+        public <O extends FilterSecurityInterceptor> O postProcess(O o) {
+            o.setSecurityMetadataSource(securityMetadataSource);
+            o.setAccessDecisionManager(authAccessDecisionManager);
+            return o;
+        }
+    }).anyRequest().permitAll()
+----
+
+具体实现可以参见
+https://github.com/gzmuSoft/lesson-cloud/tree/master/lesson-cloud-auth/src/main/java/cn/edu/gzmu/auth/res[res]。
+
+当然，在第二个项目中我使用了第二种方式，不过是基于 webflux 的，参见
+https://github.com/gzmuSoft/authorization-center-web/blob/master/src/main/kotlin/cn/edu/gzmu/center/config/ResourceConfig.kt[ResourceConfig]。
+
+== 传统项目的过渡
+
+如何对传统项目进行添加 token
+解析呢？直接将他们作为一个资源服务器肯定是不行的，光是 CSRF
+问题就是比较难处理的了。我们完全可以手动解析
+TOKEN，比较好的一种方式就是自定义一个过滤器，放在
+`org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter`
+之前进行用户的验证，如果请求头中有 `AUTHORIZATION` 并且是以 `Bearer`
+开头的，那么就进行手动解析一下然后存在安全上下文之中就可以了。
+
+可以参考我写的
+https://github.com/gzmuSoft/authorization-server/blob/master/src/main/java/cn/edu/gzmu/authserver/auth/res/SecurityMetadataSource.java#L141[AuthToken]
+。
+
+== 测试
+
+它的测试比较复杂，我只会写它的集成测试，对于单元测试涉及到的东西太多了，所以不会。。。
+
+集成测试中，就是向授权服务器获取
+token，通过密码模式获取最为简单，授权码模式涉及到 `csrf_token`
+的问题比较复杂，并且不止一个请求。自己也写了一些以供参考
+
+* 密码模式获取令牌： https://github.com/gzmuSoft/lesson-cloud/blob/master/lesson-cloud-core/src/test/java/cn/edu/gzmu/integration/Oauth2RestTemplate.java[Oauth2RestTemplate]
+* 授权码模式获取授权码： https://github.com/xkcoding/spring-boot-demo/blob/master/spring-boot-demo-oauth/spring-boot-demo-oauth-authorization-server/src/test/java/com/xkcoding/oauth/oauth/AuthorizationCodeGrantTests.java#L66[testCodeAcquisitionWithCorrectContext]
+
+个人觉得开发的时候用密码模式就好，目前我们的测试是继承
+Oauth2RestTemplate 就可以获取到已经拥有 access_token 的restTemplate
+直接请求数据即可。
+
+== 总结
+
+这是目前能够想到的，其实在实践的过程中还有很多的坑，自己也被很多问题卡了很久。庆幸的是后面都过来了。其实预计这个是这个系列的最后一篇文章，但是计划赶不上变化，spring
+security oauth 客户端和资源服务器已经开始迁移到了 spring security 5.2
+里面去了。所以可能后面还要写一篇博客来学习吧，在实践的过程中确实发现其实迁移过后的资源服务器更加简单，并且定制起来非常容易。相比起原来其实好了很多。不管是
+servlet 的也好，还是 webflux
+的也好，都比以前高度可定制了很多。后面会继续更新的～
+

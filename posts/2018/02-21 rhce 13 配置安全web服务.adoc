@@ -1,0 +1,59 @@
+= [rhce] 13 配置安全web服务
+:page-description: rhce 13 配置安全web服务
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20171217.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/21/1546344572836.html
+:page-created: 1519164660000
+:page-modified: 1546346055538
+:toc:
+
+____
+站点 http://serverX.example.com 配置 TLS 加密。 - 一个已经签名证书从
+http://classroom.example.com/pub/tls/certs/server47.crt 获取 -
+此证书的密钥从 http://classroom.example.com/pub/tls/private/server47.key
+获取 - 此证书的授权信息从
+http://classroom.example.com/pub/example-ca.crt 获取
+____
+
+____
+*备注：由于这里说法比较模糊，理解成为上一题配置加密 https 即可 *
+____
+
+== 操作
+
+安装 mod_ssl
+
+....
+yum install mod_ssl
+....
+
+获取证书
+
+....
+wget -O /etc/pki/tls/certs/server47.crt http://classroom.example.com/pub/tls/certs/server47.crt
+wget -O /etc/pki/tls/private/server47.key http://classroom.example.com/pub/tls/private/server47.key
+wget -O /etc/pki/tls/certs/example-ca.crt http://classroom.example.com/pub/example-ca.crt
+....
+
+修改 ssl.conf
+
+....
+vim /etc/httpd/conf.d/ssl.conf
+....
+
+修改为获取的路径以及名称
+
+....
+SSLCertificateFile /etc/pki/tls/certs/server47.crt
+SSLCertificateKeyFile /etc/pki/tls/private/server47.key
+SSLCACertificateFile /etc/pki/tls/certs/example-ca.crt
+....
+
+重启服务，添加服务
+
+....
+systemctl  restart   httpd
+firewall-cmd  --permanent  --add-service=https
+firewall-cmd  --reload
+....
+

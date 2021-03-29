@@ -1,0 +1,1859 @@
+= Spring Security Oauth2 从零到一完整实践（五） 自定义授权模式（手机、邮箱等）
+:page-description: Spring Security Oauth2 从零到一完整实践（五） 自定义授权模式（手机、邮箱等）
+:page-category: spring
+:page-image: https://img.hacpai.com/bing/20171113.jpg?imageView2/1/w/960/h/540/interlace/1/q/100
+:page-href: /articles/2019/07/30/1564498598952.html
+:page-created: 1564498599003
+:page-modified: 1587796030706
+:toc:
+
+____
+*注意注意：本文章适用于5.3以前的spring security以及spring boot 2.3.x
+以前的 oauth，以下内容应该为过时！spring 提供新的 oauth2
+授权服务器，目前正在https://spring.io/blog/2019/11/14/spring-security-oauth-2-0-roadmap-update[实验性阶段]，同时资源服务器由
+oauth 模块迁移到 spring security 之内。*
+____
+
+很多时候我们需要做自定义的操作，这些自定义的操作能够让框架更加的符合我们的项目需求。那么对于
+Spring secruity oauth2
+来说，自定义的过程是怎么样的呢？这一节我们就来详细探讨下。
+
+====
+GitHub 地址： https://github.com/lizhongyue248/spring-security-oauth2-demo[spring-security-oauth2-demo]
+
+博客地址： https://echocow.cn[echocow.cn]
+====
+
+== 系列文章
+
+[arabic]
+. https://echocow.cn/articles/2019/07/14/1563082088646.html[较为详细的学习
+oauth2 的四种模式其中的两种授权模式]
+. https://echocow.cn/articles/2019/07/14/1563082247386.html[spring boot
+oauth2 自动配置实现]
+. https://echocow.cn/articles/2019/07/14/1563096109754.html[spring
+security oauth2 授权服务器配置]
+. https://echocow.cn/articles/2019/07/20/1563611848587.html[spring
+security oauth2 资源服务器配置]
+. spring security oauth2 自定义授权模式（手机、邮箱等）
+. https://echocow.cn/articles/2020/01/20/1579503807596.html[spring
+security oauth2 踩坑记录]
+
+== Spring security oauth2 授权模式
+
+在我们前面学习与使用授权服务器的时候，我们使用到他的授权端点的三种授权模式
+
+* 授权码模式
+* 密码模式
+* 刷新授权（注意：RFC 中只有四种，是没有这个的，这是 Spring security
+oauth2 自己添加的）
+
+除了这三种还有两种授权模式：
+
+* 客户端模式
+* 简化模式
+
+当然这两种授权模式要不太过简单不够安全要不就是只适合一些特殊场景，所以我没有提到。那么我们希望再添加自己的授权模式呢？比如我们希望通过手机或者邮箱来完成认证（手机验证码、邮箱验证码），这个怎么完成呢？对于这种情况，我们提供两种方式来完成：
+
+[arabic]
+. 添加自定义端点，单独的授权
+. 原有基础上，添加授权模式，强烈推荐
+
+____
+内容较长，如果你只希望知道如何添加授权模式，可以直接查看最后的
+https://echocow.cn/articles/2019/07/30/1564498598952.html#b3_solo_h2_18[推荐：添加授权模式]
+____
+
+两种方式各有好坏，不过在那之前，我们需要做一件事：验证码。对于手机或者邮箱，我们都是只能够通过验证码的方式进行验证，最主要的原因是用来确认用户身份的。在数据手机或者邮箱后，要提供相应的手机验证码和邮箱验证码进行验证方可，所以
+*发送-验证* 这个过程 是必不可少，我们接下来就来一步一步的分析，
+
+== 验证码
+
+*手机和邮箱登录的过程无非就是需要用户填入手机号或者邮箱号，然后我们下发一条短信或者一封邮件，内容就是验证码，然后授权授权服务器验证用户输入的验证码是否是我们发送的即可*。我们用一张图来诠释前后端分离的情况下验证码的流程
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190726173141.png[验证码]
+
+[arabic]
+. 用户请求得到登录页面，前端负责
+. 用户填写手机号完毕
+[arabic]
+.. 点击前端获取验证码按钮
+.. 向资源服务器发出验证码获取请求
+.. 资源服务器在内网**携带客户端信息**向授权服务器请求验证码
+.. 授权服务器生成验证码然后存入 Redis 或者内存中
+.. 返回生成结果(可省，一般来说，我们需要向一个运营商申请短信接口，在发短信验证码时如果等待发送结果会造成用户等待时间过长，所以一般不进行等待，如果获取失败，就让用户再获取一次即可)
+. 用户获取验证码，完成表单填写
+[arabic]
+.. 资源服务器**携带客户端**信息向授权服务器请求验证
+.. 返回结果
+
+这个过程比较复杂的就是需要授权服务器作为一个中间人，为什么要这样呢？*在上一篇文章中其实就提过，就是为了保护我们应用的
+客户端信息（即加密后的客户端 id
+和客户端密钥）*。资源服务器是在我们服务器上的，所以由资源服务器发起请求是不会暴露的，但是如果在前端发起就会暴露在用户面前了。
+
+这个过程在授权服务器中需要完成什么呢？
+
+[arabic]
+. 获取验证码
+. 验证验证码
+
+我们来看看第一步的流程图
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190726181157.png[one]
+
+这一步很简单，就是一个 Controller
+就可以完成。但是我们可以发现，出来类型不同，他们其他的房的操作都是相同的，包括生成验证码，存入验证码。那么其实不同的就是如何生成的问题了，这就可以将它抽象出来了。
+
+我们来看看第二步的流程图
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190726181417.png[two]
+
+这一步相对来说多一些流程，我们需要判断一下当前登录的请求是否是需要验证验证码的，然后选择和事验证码处理器金喜处理与验证，当我们验证通过了以后，才将它放行出去，如果不通过直接打回去就可以了。
+
+具体实现后面我们具体再说。
+
+=== 自定义端点
+
+如何理解自定义端点呢？很简单，就是我们直接新建一个端点。我们可以通过过滤器或者控制器直接创建一个新的端点，然后当他需要手机授权的时候访问这个端点即可，在此端点中完成整个验证、生成凭证的过程。比如我们需要的两个端点
+
+* 手机授权的端点我们设置为 `/oauth/sms`
+* 邮箱授权的端点我们设置为 `/oauth/email`
+
+那么当我们需要进行授权的时候直接请求相应的授权端口即可。自定义端点我们提供两种方式实现：
+
+[arabic]
+. 自己定义 `controller` 完成
+. 按照 `spring security` 的流程完成授权
+
+第一种方式是最简单最快捷的方式，第二种方式比较规范化。
+
+=== 添加授权模式
+
+添加授权模式就是在原来的端点 `/oauth/token`
+上，我们需要添加新的授权类型，即 `grant_type` 参数应该要多一个 `sms`
+或者 `email` 。这个十分好理解，例如对于授权码模式，我们参数如下：
+
+* grant_type —— 必须为 `authorization_code`
+* code
+* redirect_uri
+* client_id
+* scope
+
+对于我们的 sms 或者 email 应该如下：
+
+* grant_type —— 必须为 `sms` 或者 `email`
+* code
+* client_id
+* scope
+
+这个是最为标准的实现。
+
+== 验证码
+
+前面说到，验证码需要两个步骤才能够完成：
+
+[arabic]
+. 获取验证码
+. 验证验证码
+
+我们一步一步的来，不过在那之前我们需要创建一个新的模块来完成任务。我们的扩展主要是要在授权服务器上完成的，所以我们就需要创建一个授权服务器。
+
+____
+本节代码见模块：spring-security-oauth2-authorization-more-grant-type
+____
+
+模块添加如下依赖：
+
+[source,xml]
+----
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.security.oauth.boot</groupId>
+        <artifactId>spring-security-oauth2-autoconfigure</artifactId>
+        <version>${spring.boot.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+</dependencies>
+----
+
+我们需要添加 Redis 依赖，来对验证码进行存储。我们的代码可以直接把
+`spring-security-oauth2-authorization`
+模块的复制过来改一下就可以，初始的代码结构如下：
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190727220838.png[all]
+
+记得启动一下项目确保她不会报错且 8000 端口能够正常访问，
+接下来我们再来完成我们接下来的事儿。
+
+=== 获取验证码
+
+我们再来回顾一下流程图：
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190726181157.png[one]
+
+按照流程图我们需要如下几步：
+
+[arabic]
+. *提供验证码处理器*
+. 获取验证码类型
+
+我们一步一步的完成
+
+==== 提供验证码处理器
+
+我们需要提供相应的验证码处理器来对验证码进行处理，我们前面提到流程的时候说过，*整个验证码的过程除了会因为验证码类型不同会选用不同的处理器去完成，其余的操作都一样的*。
+
+所以我们可以考虑使用设计模式来增加我们系统的扩展性。需要考虑如下的点：
+
+[arabic]
+. 面向接口编程
+. 开放封闭原则
+. 提供相同行为的不同实现
+. 提取公共部分代码，子类扩展不同部分
+
+前面三点很好的符合了 *策略设计模式* 的特点，而第四点则是比较适合
+*模板方法模式*，那么我们就将他们结合来用，来完成我们的验证码处理器。两种设计模式的具体作用请自行查找。
+
+我们先准备一个接口，即
+*抽象策略*，各种不同的验证码类型以不同的方式实现这个接口，环境角色使用这个接口调用不同的算法，用来进行验证码处理：
+
+[source,java]
+----
+public interface ValidateCodeProcessor {
+
+    /**
+     * 创建验证码
+     *
+     * @param request 请求
+     * @throws Exception 异常
+     */
+    void create(ServletWebRequest request) throws Exception;
+
+    /**
+     * 验证验证码
+     *
+     * @param request 请求
+     */
+    void validate(ServletWebRequest request);
+
+}
+----
+
+然后我们定义一个抽象的 *模板方法*
+来实现这个抽象策略，*对于公共部分，就是我们的生成和保存操作，最后的发送操作是需要我们自己去自定义的*，所以我们交由子类来实现：
+
+[source,java]
+----
+/**
+ * 模板方法实现抽象策略
+ *
+ * @author <a href="https://echocow.cn">EchoCow</a>
+ * @date 2019/7/28 下午9:48
+ */
+public abstract class AbstractValidateCodeProcessor implements ValidateCodeProcessor {
+    @Override
+    public void create(ServletWebRequest request) throws Exception {
+        String validateCode = generate(request);
+        save(request, validateCode);
+        send(request, validateCode);
+    }
+
+    @Override
+    public void validate(ServletWebRequest request) {
+
+    }
+
+    /**
+     * 发送验证码，由子类实现
+     *
+     * @param request      请求
+     * @param validateCode 验证码
+     */
+    protected abstract void send(ServletWebRequest request, String validateCode);
+
+    /**
+     * 保存验证码，保存到 redis 中
+     *
+     * @param request      请求
+     * @param validateCode 验证码
+     */
+    private void save(ServletWebRequest request, String validateCode) {
+
+    }
+
+    /**
+     * 生成验证码
+     *
+     * @param request 请求
+     * @return 验证码
+     */
+    private String generate(ServletWebRequest request) {
+        return null;
+    }
+
+}
+----
+
+对于不同的实现，比如手机验证码，就来继承这个抽象的策略就行了，也就是
+*具体策略*，如下：
+
+[source,java]
+----
+@Component
+@RequiredArgsConstructor
+public class SmsValidateCodeProcessor extends AbstractValidateCodeProcessor {
+
+    @Override
+    protected void send(ServletWebRequest request, String validateCode) {
+        System.out.println(request.getHeader("sms") +
+                "手机验证码发送成功，验证码为：" + validateCode);
+    }
+
+}
+----
+
+对于邮箱验证码呢？同样的，继承这个抽象策略就好了，他就是另外一种
+*具体策略*，如下
+
+[source,java]
+----
+@Component
+@RequiredArgsConstructor
+public class EmailValidateCodeProcessor extends AbstractValidateCodeProcessor {
+
+    @Override
+    protected void send(ServletWebRequest request, String validateCode) {
+        System.out.println(request.getHeader("email") +
+                "邮箱验证码发送成功，验证码为：" + validateCode);
+    }
+
+}
+----
+
+____
+具体策略我就做了打印，因为我并没有引入相应的 API 和依赖
+____
+
+现在的代码如下：
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190728221036.png[code]
+
+*接下来我们需要做的事情就是完善抽象策略中的公共方法*，包括：
+
+[arabic]
+. 生成验证码
+. 保存验证码
+. 验证验证码（后面再说）
+
+===== 生成验证码
+
+遵循面向对象的单一职责原则，对象不应该承担太多职责，我们为了解除耦合，独立出他的接口来，创建一个接口如下：
+
+[source,java]
+----
+/**
+ * 验证码生成
+ *
+ * @author <a href="https://echocow.cn">EchoCow</a>
+ * @date 2019/7/28 下午10:17
+ */
+public interface ValidateCodeGenerator {
+    /**
+     * 生成验证码
+     *
+     * @param request 请求
+     * @return 生成结果
+     */
+    String generate(ServletWebRequest request);
+
+}
+----
+
+然后对于不同的验证码使用不同的生成策略，先引入一个以前写的随机字符串生成器如下：
+
+[source,java]
+----
+/**
+ * 随机生成 验证码
+ *
+ * @author echo
+ * @version 1.0
+ * @date 19-5-20 15:45
+ */
+public class RandomCode {
+    private static final char[] MORE_CHAR = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+    private static final Random RANDOM = new Random();
+
+    /**
+     * 随机生成验证码
+     *
+     * @param length 长度
+     * @param end    结束长度
+     * @return 结果
+     */
+    private static String random(Integer length, Integer end) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            result.append(MORE_CHAR[RANDOM.nextInt(end)]);
+        }
+        return result.toString();
+    }
+
+    /**
+     * 随机生成验证码
+     *
+     * @param length  长度
+     * @param onlyNum 是否只要数字
+     * @return 结果
+     */
+    public static String random(Integer length, Boolean onlyNum) {
+        return onlyNum ? random(length, 10) : random(length, MORE_CHAR.length);
+    }
+
+    /**
+     * 随机生成验证码
+     *
+     * @param length 长度
+     * @return 结果
+     */
+    public static String random(Integer length) {
+        return random(length, false);
+    }
+}
+----
+
+创建 `ValidateCodeGenerator` 的手机、邮箱实现类如下
+
+[source,java]
+----
+/**
+ * 手机验证码生成器
+ *
+ * @author <a href="https://echocow.cn">EchoCow</a>
+ * @date 2019/7/28 下午10:23
+ */
+@Component
+public class SmsValidateCodeGenerator implements ValidateCodeGenerator {
+
+    @Override
+    public String generate(ServletWebRequest request) {
+        // 定义手机验证码生成策略，可以使用 request 中从请求动态获取生成策略
+        // 可以从配置文件中读取生成策略
+        return RandomCode.random(4, true);
+    }
+
+}
+----
+
+[source,java]
+----
+/**
+ * 邮箱验证码生成器
+ *
+ * @author <a href="https://echocow.cn">EchoCow</a>
+ * @date 2019/7/28 下午10:23
+ */
+@Component
+public class EmailValidateCodeGenerator implements ValidateCodeGenerator {
+
+    @Override
+    public String generate(ServletWebRequest request) {
+        return RandomCode.random(6);
+    }
+
+}
+----
+
+修改抽象策略中的生成方法如下：（代码很简单就不赘述了）
+
+[source,java]
+----
+    /**
+     * 收集系统中所有的 {@link ValidateCodeGenerator} 接口实现。
+     */
+    @Autowired
+    private Map<String, ValidateCodeGenerator> validateCodeGenerators;
+
+
+    /**
+     * 生成验证码
+     *
+     * @param request 请求
+     * @return 验证码
+     */
+    private String generate(ServletWebRequest request) {
+        String type = getValidateCodeType(request);
+        String componentName = type + ValidateCodeGenerator.class.getSimpleName();
+        ValidateCodeGenerator generator = validateCodeGenerators.get(componentName);
+        if (Objects.isNull(generator)) {
+            throw new ValidateCodeException("验证码生成器 " + componentName + " 不存在。");
+        }
+        return generator.generate(request);
+    }
+
+    /**
+     * 根据请求 url 获取验证码类型
+     *
+     * @return 结果
+     */
+    private String getValidateCodeType(String uri) {
+        String uri = request.getRequest().getRequestURI();
+        int index = uri.lastIndexOf("/") + 1;
+        return uri.substring(index).toLowerCase();
+    }
+----
+
+当然，我自定义了一个异常，专门处理验证码的：
+
+[source,java]
+----
+/**
+ * @author <a href="https://echocow.cn">EchoCow</a>
+ * @date 2019/7/28 下午10:34
+ */
+public class ValidateCodeException extends RuntimeException {
+    public ValidationException(String message) {
+        super(message);
+    }
+}
+----
+
+===== 保存验证码
+
+这里就无非是操作 Redis 了，写一个 `repository` 就可以了：
+
+[source,java]
+----
+/**
+ * 验证码资源处理
+ *
+ * @author echo
+ * @date 2019/7/28 下午10:44
+ */
+public interface ValidateCodeRepository {
+
+    /**
+     * 保存
+     *
+     * @param request 请求
+     * @param code    验证码
+     * @param type    类型
+     */
+    void save(ServletWebRequest request, String code, String type);
+
+    /**
+     * 获取
+     *
+     * @param request 请求
+     * @param type    类型
+     * @return 验证码
+     */
+    String get(ServletWebRequest request, String type);
+
+    /**
+     * 移除
+     *
+     * @param request 请求
+     * @param type    类型
+     */
+    void remove(ServletWebRequest request, String type);
+
+
+}
+----
+
+然后一个实现类，代码很简单，就不赘述了。
+
+[source,java]
+----
+/**
+ * redis 验证码操作
+ *
+ * @author <a href="https://echocow.cn">EchoCow</a>
+ * @date 2019/7/28 下午10:44
+ */
+@Component
+@RequiredArgsConstructor
+public class ValidateCodeRepositoryImpl implements ValidateCodeRepository {
+
+    private final @NonNull RedisTemplate<String, String> redisTemplate;
+
+    @Override
+    public void save(ServletWebRequest request, String code, String type) {
+        redisTemplate.opsForValue().set(buildKey(request, type), code,
+                //  有效期可以从配置文件中读取或者请求中读取
+                Duration.ofMinutes(10).getSeconds(), TimeUnit.SECONDS);
+    }
+
+    @Override
+    public String get(ServletWebRequest request, String type) {
+        return redisTemplate.opsForValue().get(buildKey(request, type));
+    }
+
+    @Override
+    public void remove(ServletWebRequest request, String type) {
+        redisTemplate.delete(buildKey(request, type));
+    }
+
+    private String buildKey(ServletWebRequest request, String type) {
+        String deviceId = request.getHeader(type);
+        if (StringUtils.isEmpty(deviceId)) {
+            throw new ValidateCodeException("请求中不存在邮箱号");
+        }
+        return "code:" + type + ":" +  deviceId;
+    }
+}
+----
+
+然后注入到抽象策略中直接使用就好了：
+
+[source,java]
+----
+    @Autowired
+    private ValidateCodeRepository validateCodeRepository;
+
+    /**
+     * 保存验证码，保存到 redis 中
+     *
+     * @param request      请求
+     * @param validateCode 验证码
+     */
+    private void save(ServletWebRequest request, String validateCode) {
+        validateCodeRepository.save(request,validateCode,getValidateCodeType(request));
+    }
+----
+
+这样我们的验证码处理器就算完成一部分了，关于对验证码进行验证我们后面再说，现在我们的目录结构应该是这样的：
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190728225506.png[code]
+
+==== 获取验证码类型
+
+这一步非常简单，提供一个 控制器 即可，我们先编写一个空的控制器如下：
+
+[source,java]
+----
+/**
+ * 动态获取验证码
+ *
+ * @author <a href="https://echocow.cn">EchoCow</a>
+ * @date 2019/7/28 下午10:57
+ */
+@RestController
+@RequiredArgsConstructor
+public class ValidateCodeController {
+
+    /**
+     * 通过 type 进行查询到对应的处理器
+     * 同时创建验证码
+     *
+     * @param request  请求
+     * @param response 响应
+     * @param type     验证码类型
+     * @throws Exception 异常
+     */
+    @GetMapping("/code/{type}")
+    public void creatCode(HttpServletRequest request, HttpServletResponse response,
+                          @PathVariable String type) throws Exception {
+        //
+    }
+
+}
+----
+
+但是我们怎么指导是哪个来具体策略来处理呢？这里其实就是策略模式中的
+*环境类*，在这里决定使用哪一个具体的策略，我们创建一个 *策略分发器*
+来完成这件事，如下：
+
+[source,java]
+----
+/**
+ * 验证码处理分发
+ *
+ * 通过传递过来的类型，从已经依赖注入容器中搜寻符合名称的组件。
+ * 直接通过名称获取对应的 {@link ValidateCodeProcessor} 实现类
+ *
+ * @author <a href="https://echocow.cn">EchoCow</a>
+ * @date 2019/7/28 下午10:59
+ */
+@Component
+@RequiredArgsConstructor
+public class ValidateCodeProcessorHolder {
+
+    private final @NonNull Map<String, ValidateCodeProcessor> validateCodeProcessors;
+
+    /**
+     * 通过验证码类型查找
+     *
+     * @param type 验证码类型
+     * @return 验证码处理器
+     */
+    ValidateCodeProcessor findValidateCodeProcessor(String type) {
+        String name = type.toLowerCase() + ValidateCodeProcessor.class.getSimpleName();
+        ValidateCodeProcessor processor = validateCodeProcessors.get(name);
+        if (Objects.isNull(processor)){
+            throw new ValidateCodeException("验证码处理器" + name + "不存在");
+        }
+        return processor;
+    }
+
+}
+----
+
+然后我们在控制器那里调用一下就可以了：
+
+[source,java]
+----
+    private final @NonNull ValidateCodeProcessorHolder validateCodeProcessorHolder;
+
+    /**
+     * 通过 type 进行查询到对应的处理器
+     * 同时创建验证码
+     *
+     * @param request  请求
+     * @param response 响应
+     * @param type     验证码类型
+     * @throws Exception 异常
+     */
+    @GetMapping("/code/{type}")
+    public void createCode(HttpServletRequest request, HttpServletResponse response,
+                          @PathVariable String type) throws Exception {
+        validateCodeProcessorHolder.findValidateCodeProcessor(type)
+                .create(new ServletWebRequest(request, response));
+    }
+----
+
+我们测试一下访问：
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190728230609.png[get]
+
+然后查看控制台
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190728230619.png[console]
+
+再去看看 Redis
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190728230634.png[reids]
+
+可以看到验证码已经保存进去并且生成了的。
+
+=== 验证验证码
+
+接下来我们需要做的就是验证验证码的过程了，再来回顾一遍流程图
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190726181417.png[two]
+
+所以我们需要通过过滤器来实现，如果是手机或邮箱登录请求，我们就需要检验是否有验证码；如果不是，就放行。
+
+所以第一步我们就需要创建这么一个过滤器：
+
+[source,java]
+----
+/**
+ * 验证码过滤器。
+ *
+ * <p>继承于 {@link OncePerRequestFilter} 确保在一次请求只通过一次filter</p>
+ * <p>需要配置指定拦截路径，默认拦截 POST 请求</p>
+ *
+ * @author <a href="https://echocow.cn">EchoCow</a>
+ * @date 2019/7/28 下午11:15
+ */
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class ValidateCodeFilter extends OncePerRequestFilter {
+
+    private final @NonNull ValidateCodeProcessorHolder validateCodeProcessorHolder;
+    private Map<String, String> urlMap = new HashMap<>();
+    private AntPathMatcher antPathMatcher = new AntPathMatcher();
+
+    @Override
+    public void afterPropertiesSet() throws ServletException {
+        super.afterPropertiesSet();
+        // 路径拦截
+        urlMap.put("/oauth/sms", "sms");
+        urlMap.put("/oauth/email", "email");
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String validateCodeType = getValidateCodeType(request);
+        if (!StringUtils.isEmpty(validateCodeType)) {
+            try {
+                log.info("请求需要验证！验证请求：" + request.getRequestURI() + " 验证类型：" + validateCodeType);
+                validateCodeProcessorHolder.findValidateCodeProcessor(validateCodeType)
+                        .validate(new ServletWebRequest(request, response));
+            } catch (Exception e) {
+                e.printStackTrace();
+                return;
+            }
+        }
+        filterChain.doFilter(request, response);
+    }
+
+    private String getValidateCodeType(HttpServletRequest request) {
+        if (HttpMethod.POST.matches(request.getMethod())) {
+            Set<String> urls = urlMap.keySet();
+            for (String url : urls) {
+                // 如果路径匹配，就回去他的类型，也就是 map 的 value
+                if (antPathMatcher.match(url, request.getRequestURI())) {
+                    return urlMap.get(url);
+                }
+            }
+        }
+        return null;
+    }
+}
+----
+
+接下来我们就要去完成 验证 的具体逻辑了，回到我们的 *抽象策略* 中来：
+
+[source,java]
+----
+    @Override
+    public void validate(ServletWebRequest request) {
+        String type = getValidateCodeType(request);
+        String code = validateCodeRepository.get(request, type);
+        // 验证码是否存在
+        if (Objects.isNull(code)) {
+            throw new ValidateCodeException("获取验证码失败，请检查输入是否正确或重新发送！");
+        }
+        // 验证码输入是否正确
+        if (!code.equalsIgnoreCase(request.getParameter("code"))) {
+            throw new ValidateCodeException("验证码不正确，请重新输入！");
+        }
+        // 验证通过后，清除验证码
+        validateCodeRepository.remove(request, type);
+    }
+----
+
+非常简单的验证逻辑，最后我们创建一个控制器来测试：
+
+[source,java]
+----
+@RestController
+@RequestMapping("/oauth")
+public class Oauth2Controller {
+
+    @PostMapping("/sms")
+    public HttpEntity<?> sms() {
+        return ResponseEntity.ok("ok");
+    }
+}
+----
+
+接下来就是把我们写好的过滤器添加到 Spring security 中的过滤链里去：
+
+[source,java]
+----
+    private final @NonNull ValidateCodeFilter validateCodeFilter;
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .authorizeRequests()
+                // 添加路径
+                .antMatchers("/oauth/sms").access("permitAll()")
+                .antMatchers("/oauth/email").access("permitAll()")
+                .antMatchers("/code/*").permitAll()
+                .anyRequest()
+                .authenticated()
+                // 务必关闭 csrf，否则除了 get 请求，都会报 403 错误
+                .and()
+                .csrf().disable();
+
+        // 添加过滤器
+        http
+                .addFilterBefore(validateCodeFilter, AbstractPreAuthenticatedProcessingFilter.class);
+    }
+----
+
+然后我们来测试一下，先是启动后，请求验证码：
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190729173032.png[1]
+
+去控制台看看验证码多少
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190729173059.png[2]
+
+然后携带者设备号和验证码去请求一下测试接口 `/oauth/sms`
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190729173121.png[3]
+
+验证码image:https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190729173137.png[2]
+
+成功
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190729173148.png[3]
+
+看看控制台：
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190729173207.png[5]
+
+接下来我们再请求一次看看：
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190729173240.png[6]
+
+可以看到控制台报错了
+
+image:https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190729173306.png[image]
+
+我们对于异常处理可以创建一个授权失败的异常处理器，然后将它用来接收所有的授权失败的异常。这个我们后面再来说。现在的代码结构如下：
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190729180157.png[all]
+
+=== 小修改
+
+接下来我们要修改前面的一个地方，前面我们的手机号和邮箱号是从请求头中获取的，我们应该从请求体中获取，修改
+`ValidateCodeRepositoryImpl` 类
+
+[source,java]
+----
+    private String buildKey(ServletWebRequest request, String type) {
+        String deviceId = request.getParameter(type);
+        if (StringUtils.isEmpty(deviceId)) {
+            throw new ValidateCodeException("请求中不存在 " + type);
+        }
+        return "code:" + type + ":" + deviceId;
+    }
+----
+
+再修改具体的策略如下：
+
+[source,java]
+----
+@Component
+public class EmailValidateCodeProcessor extends AbstractValidateCodeProcessor {
+
+    @Override
+    protected void send(ServletWebRequest request, String validateCode) {
+        System.out.println(request.getParameter("email") +
+                "邮箱验证码发送成功，验证码为：" + validateCode);
+    }
+
+}
+----
+
+[source,java]
+----
+@Component
+public class SmsValidateCodeProcessor extends AbstractValidateCodeProcessor {
+
+    @Override
+    protected void send(ServletWebRequest request, String validateCode) {
+        System.out.println(request.getParameter("sms") +
+                "手机验证码发送成功，验证码为：" + validateCode);
+    }
+
+}
+----
+
+这样我们就修改完毕了。另外我们修改一下现在的测试 `controller`
+，以防止后面的冲突了。修改 `Oauth2Controller` 为
+`SmsValidateCodeController` ，如下：
+
+[source,java]
+----
+@RestController
+@RequestMapping("/auth")
+public class SmsValidateCodeController {
+
+    @PostMapping("/sms")
+    public HttpEntity<?> sms() {
+        return ResponseEntity.ok("ok");
+    }
+}
+----
+
+修改安全配置 `SecurityConfig`
+
+[source,java]
+----
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .authorizeRequests()
+                .antMatchers("/code/*").access("permitAll()")
+                .antMatchers("/auth/sms").access("permitAll()")
+                .anyRequest().authenticated()
+                .and()
+                .csrf().disable();
+
+
+        http
+                .addFilterBefore(validateCodeFilter, AbstractPreAuthenticatedProcessingFilter.class);
+    }
+----
+
+然后 `ValidateCodeFilter` 过滤器中的路径拦截也修改一下：
+
+[source,java]
+----
+    @Override
+    public void afterPropertiesSet() throws ServletException {
+        super.afterPropertiesSet();
+        // 路径拦截
+        urlMap.put("/auth/sms", "sms");
+    }
+----
+
+修改完毕后务必再测试一次！现在的目录结构如下：
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190729182947.png[now]
+
+=== 回顾
+
+现在我们的验证码也算完成了，回顾一下，我们的类图是这样的
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190729174454.png[uml]
+
+我们整理下如下图：
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190729175414.png[uml]
+
+这个过程就好理解了：
+
+* `ValidateCodeController`
+：决策器，用来决定使用哪一个抽象策略的，同时接收用户请求。
+* `ValidateCodeProcessor` ：抽象策略接口
+* `AbstractValidateCodeProcessor`
+：抽象策略实现类，定义了模板方法和抽象策略
+* `ValidateCodeGenerator` ：抽象策略接口，不同的实现类是不同的具体策略
+
+其余的都是具体的实现类了。这样我们的一个可扩展的验证码就完成了，当我们需要扩展新的验证码时就简单多了，直接实现新的
+`AbstractValidateCodeProcessor` 子类和 `ValidateCodeGenerator`
+接口就可以了。后面我们会做一些改变，具体后面再说。
+
+现在我们已经有的验证码端点如下：
+
+[cols=",,",options="header",]
+|===
+|类型 |请求 url |请求参数-请求体
+|获取手机验证码 |/code/sms |sms
+|获取邮箱验证码 |/code/email |email
+|===
+
+== 自定义端点
+
+我们接下来需要的是添加手机和邮箱登录，我们首先采取的是自定义端点的方式，也就是添加新的端点来接收手机和邮箱验证码的请求。我们前面说到，有两种方式来进行实现
+
+[arabic]
+. 定义 `controller` 完成
+. 按照 `spring security oauth2` 的流程完成授权
+
+第一种较为容易理解且简单，第二种则比较规范化，完全按照他的规范来实现。
+
+=== URL 设计
+
+在那之前我们要先进行 url 的设计。
+
+* 对于我们自己定义 `controller` 来完成的端点
+** 手机登录： `/custom/sms`
+** 邮箱登录： `/custom/email`
+* 对于按照 `spring security` 的流程来完成的端点
+** 手机登录： `/oauth/sms`
+** 邮箱登录： `/oauth/email`
+
+我们来一个一个学习和尝试。
+
+=== 自定义 `controller`
+
+顾名思义，我们需要自己创建 `controller`
+来完成授权，我们先完成不使用验证码的，也就是不加入过滤器中的。创建如下
+`controller` ：
+
+[source,java]
+----
+/**
+ * 自定义 controller 授权端点
+ *
+ * @author <a href="https://echocow.cn">EchoCow</a>
+ * @date 2019/7/29 下午6:40
+ */
+@Slf4j
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/custom")
+public class CustomToken {
+
+    @PostMapping("/{type}")
+    public HttpEntity<?> auth(HttpServletRequest request, @PathVariable String type) {
+        return ResponseEntity.ok(type);
+    }
+
+}
+----
+
+我们这个请求应该是要被验证码的过滤器给拦截的，但是我们现在先不拦截以方便测试。
+
+*如果请求能够到达这个`controller`
+那就代表着他已经通过了验证码过滤器验证了，这个时候的请求是已经登录成功了的，所以我们应该直接给他下发
+token*。
+
+下发 token 的前提就是创建 token，这个 token
+怎么创建的呢？我们来看源码，他的 token 创建的核心类是
+`org.springframework.security.oauth2.provider.token.DefaultTokenServices`
+在这里你可以找到一个 `createAccessToken`
+方法。但是这个方法需要我们传递一个类型为 `OAuth2Authentication`
+的参数；而构建 `OAuth2Authentication` 我们需要 `OAuth2Request` 和
+`Authentication` 这两个参数；而构建 `OAuth2Request` 需要使用
+`TokenRequest#createOAuth2Request` 进行构建，构建 `Authentication`
+需要我们去用它的子类 `UsernamePasswordAuthenticationToken`
+来构建；而构建 `TokenRequest` 需要客户端信息，构建
+`UsernamePasswordAuthenticationToken` 需要 `UserDetails` ；而构建
+`UserDetails` 需要 `UserDetailsService` ，然后注入即可。
+
+这个过程有点复杂，我们用一张图来解释：
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190729214030.png[all]
+
+所以步骤应该如下：
+
+[arabic]
+. 从请求中获取客户端信息，然后通过 `ClientDetailsService` 构建为
+`ClientDetails`
+. 通过上一步的 `ClientDetails` 构建令牌请求 `TokenRequest`
+. 通过第一、二步的 `ClientDetails` 和 `TokenRequest` 构建 oauth2
+令牌请求 `OAuth2Request`
+. 通过 `UserDetailsService` 获取当前手机/邮箱号对应用户信息
+`UserDetails`
+. 通过 `UserDetails` 构建 `Authentication` 的实现类
+`UsernamePasswordAuthenticationToken`
+. 通过第三、五步的 `OAuth2Request` 和 `Authentication` 构建 oauth2
+身份验证授权 `OAuth2Authentication`
+. 通过上一步的 `OAuth2Authentication` 和
+`AuthorizationServerTokenServices` 创建 `token`
+
+这些从源码就可以看得出来，只是有些地方层次比较深，需要仔细一点去看看他的具体实现类。由于这个系列以实践为主，所以不会带大家一步一步去找和阅读源码。
+
+现在我们开始来写代码，修改我们的类最后如下：
+
+[source,java]
+----
+@Slf4j
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/custom")
+public class CustomToken {
+
+    private final @NonNull UserDetailsService userDetailsService;
+    private final @NonNull ClientDetailsService clientDetailsService;
+    private final @NonNull PasswordEncoder passwordEncoder;
+    private final @NonNull AuthorizationServerTokenServices authorizationServerTokenServices;
+
+    @PostMapping("/{type}")
+    public HttpEntity<?> auth(HttpServletRequest request, @PathVariable String type) {
+        // 判断是否是我们自定义的授权类型
+        if (!type.equalsIgnoreCase("sms") && !type.equalsIgnoreCase("email")) {
+            throw new UnsupportedGrantTypeException("Unsupported grant type: " + type);
+        }
+
+        log.info(type + " login succeed！");
+        // 1. 获取客户端认证信息
+        String header = request.getHeader("Authorization");
+        if (header == null || !header.toLowerCase().startsWith("basic ")) {
+            throw new UnapprovedClientAuthenticationException("请求头中无客户端信息");
+        }
+
+        // 解密请求头
+        String[] client = extractAndDecodeHeader(header);
+        if (client.length != 2) {
+            throw new BadCredentialsException("Invalid basic authentication token");
+        }
+        String clientId = client[0];
+        String clientSecret = client[1];
+
+        // 获取客户端信息进行对比判断
+        ClientDetails clientDetails = clientDetailsService.loadClientByClientId(clientId);
+        if (clientDetails == null) {
+            throw new UnapprovedClientAuthenticationException("客户端信息不存在：" + clientId);
+        } else if (!passwordEncoder.matches(clientSecret, clientDetails.getClientSecret())) {
+            throw new UnapprovedClientAuthenticationException("客户端密钥不匹配" + clientSecret);
+        }
+        // 2. 构建令牌请求
+        TokenRequest tokenRequest = new TokenRequest(new HashMap<>(0), clientId, clientDetails.getScope(), "custom");
+        // 3. 创建 oauth2 令牌请求
+        OAuth2Request oAuth2Request = tokenRequest.createOAuth2Request(clientDetails);
+        // 4. 获取当前用户信息
+        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getParameter(type));
+        // 5. 构建用户授权令牌
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
+        // 6. 构建 oauth2 身份验证令牌
+        OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(oAuth2Request, authentication);
+        // 7. 创建令牌
+        OAuth2AccessToken accessToken = authorizationServerTokenServices.createAccessToken(oAuth2Authentication);
+        return ResponseEntity.ok(accessToken);
+    }
+
+
+    /**
+     * 对请求头进行解密以及解析
+     *
+     * @param header 请求头
+     * @return 客户端信息
+     */
+    private String[] extractAndDecodeHeader(String header) {
+        byte[] base64Token = header.substring(6).getBytes(StandardCharsets.UTF_8);
+        byte[] decoded;
+        try {
+            decoded = Base64.getDecoder().decode(base64Token);
+        } catch (IllegalArgumentException e) {
+            throw new BadCredentialsException(
+                    "Failed to decode basic authentication token");
+        }
+        String token = new String(decoded, StandardCharsets.UTF_8);
+        int delimiter = token.indexOf(":");
+
+        if (delimiter == -1) {
+            throw new BadCredentialsException("Invalid basic authentication token");
+        }
+        return new String[]{token.substring(0, delimiter), token.substring(delimiter + 1)};
+    }
+}
+----
+
+每一步代码我都做了详细的解释，就不赘述了。
+
+____
+Q：为什么有些异常信息是英文的，有些异常信息是中文的？
+
+A：英文的是 Spring
+原本就有的，也就是当出现同样的错误的时候是相同的描述；中文的是因为由我自己自定义的异常信息，Spring
+里是没有的，我希望更加详细，所以使用中文的。
+____
+
+然后我们添加一个手机用户，在 `SecurityConfig` 中配置：
+
+____
+更好的设计是：我们创建 UserDetailsService 的实现类时，自定义一个
+`SmsUserDetailsService` 接口，然实现他的抽象方法 `loadUserBySms`
+，通过这个方法来加载手机用户，这样会更好。不过这已经属于这篇教程之外的东西了，这里从简。
+____
+
+[source,java]
+----
+    @Bean
+    @Override
+    public UserDetailsService userDetailsService() {
+        InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
+        manager.createUser(User.withUsername("user")
+                .password(passwordEncoder().encode("123456"))
+                .authorities("ROLE_USER").build());
+        manager.createUser(User.withUsername("admin")
+                .password(passwordEncoder().encode("admin"))
+                .authorities("ROLE_ADMIN").build());
+        manager.createUser(User.withUsername("13712341234")
+                .password(passwordEncoder().encode("123456"))
+                .authorities("ROLE_ADMIN").build());
+        return manager;
+    }
+----
+
+此时没有添加验证码过滤，我们来测试一下：
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190729220020.png[test]
+
+已经获取到了，这种方式就算完成了。
+
+== 按照 `spring security` 的流程
+
+____
+*请确保在看这种模式之前，你能够理解上一种授权模式的整个流程，这节不再赘述*
+。
+____
+
+____
+请注意：这里是按照 `spring security` 的流程，并不是
+`spring security oauth2` 的流程来实现的，不能弄混淆。
+____
+
+这里就比较复杂，对于上一种方式，我们只要理清如何生成令牌就好了，但是着一种方式要在理清上一种方式的基础上，扩展
+Spring security oauth2
+的授权模式；也就是还需要我们去了解到他是如何决策使用哪一种授权模式的。
+
+同样，我会直接带大家来如何使用。在 Spring security
+中，实现登录校验与授权的过程核心是使用过滤器，通过过滤器对登录请求进行拦截，当是登录请求时，就做处理。而我们过滤器需要继承
+`org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter`
+这个类，它是**基于浏览器的 HTTP
+身份验证请求的抽象处理器**，我们可以参考他的子类
+`UsernamePasswordAuthenticationFilter`
+来写我们自己的过滤器。在那之前，我画一张图，让大家更好的理解整个授权过程：
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_%E9%80%89%E6%8B%A9%E5%8C%BA%E5%9F%9F_20190730123909.png[auth]
+
+[arabic]
+. 过滤器拦截请求，验证请求参数，构建相应的令牌对象
+`SmsAuthenticationToken` 。
+. 授权管理器 `AuthenticationManager` 的子类 `ProviderManager`
+对令牌进行授权。
+. 授权的时候会去查找 `AuthenticationProvider` 的实现类，我们提供了
+`SmsAuthenticationProvider` 来实现。
+. 通过在 `AuthenticationProvider` 使用 `UserDetailsService`
+查找用户信息，如果找到就授权成功。
+. 授权成功后，将授权信息交给授权成功处理器
+`AuthenticationSuccessHandler` 进行处理，构建 token。
+
+这个过程相比起来要复杂一点，因为我们需要自己建一些实现类，总结下来如下：
+
+[arabic]
+. 继承 `AbstractAuthenticationProcessingFilter` 的过滤器
+. 继承 `AbstractAuthenticationToken` 的令牌请求
+. 实现 `AuthenticationProvider` 的授权提供者
+. 继承 `AbstractAuthenticationToken` 的成功处理器
+. 配置过滤器、成功处理器等
+
+我们一步一步的来，先是过滤器：
+
+[source,java]
+----
+/**
+ * 短信登录授权过滤器
+ *
+ * @author <a href="https://echocow.cn">EchoCow</a>
+ * @date 2019/7/29 下午10:50
+ */
+public class SmsAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
+
+    SmsAuthenticationFilter() {
+        // 需要拦截的路径
+        super(new AntPathRequestMatcher("/oauth/sms", HttpMethod.POST.name()));
+    }
+
+    @Override
+    public Authentication attemptAuthentication(HttpServletRequest request,
+                                                HttpServletResponse response) throws AuthenticationException {
+        if (!HttpMethod.POST.matches(request.getMethod())) {
+            throw new AuthenticationServiceException(
+                    "Authentication method not supported: " + request.getMethod());
+        }
+        // 获取参数
+        String sms = obtainSms(request);
+        sms = sms == null ? "" : sms.trim();
+        // 我们需要创建我们自己的授权 token
+        SmsAuthenticationToken authRequest = new SmsAuthenticationToken(sms);
+        setDetails(request, authRequest);
+        // 授权管理器对请求进行授权
+        return this.getAuthenticationManager().authenticate(authRequest);
+    }
+
+    /**
+     * 获取请求中的 sms 值
+     *
+     * @param request 正在为其创建身份验证请求
+     * @return 请求中的 sms 值
+     */
+    private String obtainSms(HttpServletRequest request) {
+        return request.getParameter("sms");
+    }
+
+    /**
+     * 提供以便子类可以配置放入 authentication request 的 details 属性的内容
+     *
+     * @param request     正在为其创建身份验证请求
+     * @param authRequest 应设置其详细信息的身份验证请求对象
+     */
+    private void setDetails(HttpServletRequest request,
+                            SmsAuthenticationToken authRequest) {
+        authRequest.setDetails(authenticationDetailsSource.buildDetails(request));
+    }
+
+}
+----
+
+再是创建我们自己的授权请求 `SmsAuthenticationToken`
+
+[source,java]
+----
+/**
+ * 这里你完全可以使用 {@link UsernamePasswordAuthenticationToken}，他完全满足需求
+ * 只是为了简单和统一，我改个名字并且去掉了 凭证 这个字段
+ *
+ * @author <a href="https://echocow.cn">EchoCow</a>
+ * @date 2019/7/29 下午10:53
+ */
+public class SmsAuthenticationToken extends AbstractAuthenticationToken {
+
+    private static final long serialVersionUID = SpringSecurityCoreVersion.SERIAL_VERSION_UID;
+
+    private final Object principal;
+
+    SmsAuthenticationToken(Object phone) {
+        super(null);
+        this.principal = phone;
+        setAuthenticated(false);
+    }
+
+    SmsAuthenticationToken(Object principal, Collection<? extends GrantedAuthority> authorities) {
+        super(authorities);
+        this.principal = principal;
+        super.setAuthenticated(true);
+    }
+
+    @Override
+    public Object getCredentials() {
+        return null;
+    }
+
+    @Override
+    public Object getPrincipal() {
+        return this.principal;
+    }
+
+    @Override
+    public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+        if (isAuthenticated) {
+            throw new IllegalArgumentException(
+                    "Cannot set this token to trusted - use constructor which takes a GrantedAuthority list instead");
+        }
+        super.setAuthenticated(false);
+    }
+
+    @Override
+    public void eraseCredentials() {
+        super.eraseCredentials();
+    }
+}
+----
+
+接下来就是授权提供者 `SmsAuthenticationProvider`
+
+[source,java]
+----
+/**
+ * 授权提供者
+ *
+ * @author <a href="https://echocow.cn">EchoCow</a>
+ * @date 2019/7/29 下午10:57
+ */
+@Setter
+public class SmsAuthenticationProvider implements AuthenticationProvider {
+
+    private UserDetailsService userDetailsService;
+
+    @Override
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        SmsAuthenticationToken authenticationToken = (SmsAuthenticationToken) authentication;
+        // 获取用户信息
+        UserDetails user = userDetailsService.loadUserByUsername(authenticationToken.getPrincipal().toString());
+        if (user == null) {
+            throw new InternalAuthenticationServiceException("无效认证");
+        }
+        SmsAuthenticationToken authenticationResult = new SmsAuthenticationToken(user, user.getAuthorities());
+        authenticationResult.setDetails(authenticationToken.getDetails());
+        return authenticationResult;
+    }
+
+    @Override
+    public boolean supports(Class<?> authentication) {
+        // 通过类型进行匹配
+        return SmsAuthenticationToken.class.isAssignableFrom(authentication);
+    }
+}
+----
+
+最后就是授权成功处理器，在这里生成
+token，所以直接复制上一种模式的生成方法即可：
+
+[source,java]
+----
+/**
+ * @author <a href="https://echocow.cn">EchoCow</a>
+ * @date 2019/7/29 下午11:03
+ */
+@Slf4j
+@Component
+@SuppressWarnings("Duplicates")
+@RequiredArgsConstructor
+public class SmsSuccessHandler implements AuthenticationSuccessHandler {
+
+    private final @NonNull ClientDetailsService clientDetailsService;
+    private final @NonNull PasswordEncoder passwordEncoder;
+    private final @NonNull AuthorizationServerTokenServices authorizationServerTokenServices;
+    private final @NonNull ObjectMapper objectMapper;
+
+    @Override
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
+
+        log.info("Login succeed！");
+        // 1. 获取客户端认证信息
+        String header = request.getHeader("Authorization");
+        if (header == null || !header.toLowerCase().startsWith("basic ")) {
+            throw new UnapprovedClientAuthenticationException("请求头中无客户端信息");
+        }
+
+        // 解密请求头
+        String[] client = extractAndDecodeHeader(header);
+        if (client.length != 2) {
+            throw new BadCredentialsException("Invalid basic authentication token");
+        }
+        String clientId = client[0];
+        String clientSecret = client[1];
+
+        // 获取客户端信息进行对比判断
+        ClientDetails clientDetails = clientDetailsService.loadClientByClientId(clientId);
+        if (clientDetails == null) {
+            throw new UnapprovedClientAuthenticationException("客户端信息不存在：" + clientId);
+        } else if (!passwordEncoder.matches(clientSecret, clientDetails.getClientSecret())) {
+            throw new UnapprovedClientAuthenticationException("客户端密钥不匹配" + clientSecret);
+        }
+        // 2. 构建令牌请求
+        TokenRequest tokenRequest = new TokenRequest(new HashMap<>(0), clientId, clientDetails.getScope(), "custom");
+        // 3. 创建 oauth2 令牌请求
+        OAuth2Request oAuth2Request = tokenRequest.createOAuth2Request(clientDetails);
+        // 4. 获取当前用户信息（省略，前面已经获取过了）
+        // 5. 构建用户授权令牌 (省略，已经传过来了)
+        // 6. 构建 oauth2 身份验证令牌
+        OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(oAuth2Request, authentication);
+        // 7. 创建令牌
+        OAuth2AccessToken accessToken = authorizationServerTokenServices.createAccessToken(oAuth2Authentication);
+
+        // 直接结束
+        response.setContentType("application/json;charset=utf-8");
+        response.getWriter().write(objectMapper.writeValueAsString(accessToken));
+    }
+
+
+    /**
+     * 对请求头进行解密以及解析
+     *
+     * @param header 请求头
+     * @return 客户端信息
+     */
+    private String[] extractAndDecodeHeader(String header) {
+        byte[] base64Token = header.substring(6).getBytes(StandardCharsets.UTF_8);
+        byte[] decoded;
+        try {
+            decoded = Base64.getDecoder().decode(base64Token);
+        } catch (IllegalArgumentException e) {
+            throw new BadCredentialsException(
+                    "Failed to decode basic authentication token");
+        }
+        String token = new String(decoded, StandardCharsets.UTF_8);
+        int delimiter = token.indexOf(":");
+
+        if (delimiter == -1) {
+            throw new BadCredentialsException("Invalid basic authentication token");
+        }
+        return new String[]{token.substring(0, delimiter), token.substring(delimiter + 1)};
+    }
+}
+----
+
+接下来就是将它配置进去，我们独立出他的配置
+`SmsAuthenticationSecurityConfig`
+
+[source,java]
+----
+/**
+ * sms 配置
+ *
+ * @author <a href="https://echocow.cn">EchoCow</a>
+ * @date 2019/7/29 下午11:33
+ */
+@Component
+public class SmsAuthenticationSecurityConfig
+        extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> {
+
+    @Autowired
+    @SuppressWarnings("all")
+    private  UserDetailsService userDetailsService;
+    @Autowired
+    @SuppressWarnings("all")
+    private SmsSuccessHandler smsSuccessHandler;
+
+    @Override
+    public void configure(HttpSecurity http)  {
+        // 过滤器
+        SmsAuthenticationFilter smsAuthenticationFilter = new SmsAuthenticationFilter();
+        smsAuthenticationFilter.setAuthenticationManager(http.getSharedObject(AuthenticationManager.class));
+        smsAuthenticationFilter.setAuthenticationSuccessHandler(smsSuccessHandler);
+
+        // 授权提供者
+        SmsAuthenticationProvider smsAuthenticationProvider = new SmsAuthenticationProvider();
+        smsAuthenticationProvider.setUserDetailsService(userDetailsService);
+
+        // 过滤器
+        http.authenticationProvider(smsAuthenticationProvider)
+                .addFilterAfter(smsAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+    }
+}
+----
+
+____
+Q：为什么这里使用字段注入呢？
+
+A：不使用构造器注入最主要的原因在于会造成依赖环，因为我们这里注入了
+`UserDetailsService` ，而在使用的时候， `SmsSuccessHandler`
+里面也同样注入了 `UserDetailsService` 而后面我们需要在 安全配置
+`SecurityConfig` 中引入 `SmsAuthenticationSecurityConfig` ，
+`UserDetailsService` 是在 `SecurityConfig`
+创建的，这个时候就会有一个依赖环的问题了。是使用的先呢？还是创建的先？Spring
+就不知道了，但是构造器注入是 Bean 初始化的时候给的，那个时候不一定有
+`UserDetailsService` ，所以使用字段注入，他会在有的时候自动注入进去。
+____
+
+接下来安全配置 `SecurityConfig` ：
+
+[source,java]
+----
+    private final @NonNull SmsAuthenticationSecurityConfig smsAuthenticationSecurityConfig;
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                // 添加进去即可
+                .apply(smsAuthenticationSecurityConfig)
+                .and()
+                .authorizeRequests()
+                .antMatchers("/code/*").permitAll()
+                .antMatchers("/auth/sms").permitAll()
+                .antMatchers("/custom/**").permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .csrf().disable()
+                .formLogin()
+                .and()
+                .httpBasic();
+
+
+        http
+                .addFilterBefore(validateCodeFilter, AbstractPreAuthenticatedProcessingFilter.class);
+    }
+----
+
+运行测试一下：
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190730130906.png[test]
+
+可以看到已经 OK 了
+～！邮箱验证码登录也是类似，完全可以考虑两个结合起来，也是不难的，就不赘述了。现在的代码结构如下：
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190730132103.png[now]
+
+== 推荐：添加授权模式
+
+对于已有的路径 `/oauth/token`
+，他拥有五种授权模式，我们需要在这五种之上，添加两种授权模式：
+
+* sms
+* email
+
+而授权模式的核心接口是 `TokenGranter` ，他拥有一个抽象实现类
+`AbstractTokenGranter` ，我们需要自定义新的 `grant type`
+，就再写一个他的子类即可，如下：
+
+[source,java]
+----
+/**
+ * @author <a href="https://echocow.cn">EchoCow</a>
+ * @date 2019/7/30 下午1:33
+ */
+public class SmsTokenGranter extends AbstractTokenGranter {
+    private static final String GRANT_TYPE = "sms";
+    private UserDetailsService userDetailsService;
+
+    /**
+     * 构造方法提供一些必要的注入的参数
+     * 通过这些参数来完成我们父类的构建
+     *
+     * @param tokenServices tokenServices
+     * @param clientDetailsService clientDetailsService
+     * @param oAuth2RequestFactory oAuth2RequestFactory
+     * @param userDetailsService userDetailsService
+     */
+    public SmsTokenGranter(AuthorizationServerTokenServices tokenServices,
+                           ClientDetailsService clientDetailsService,
+                           OAuth2RequestFactory oAuth2RequestFactory,
+                           UserDetailsService userDetailsService) {
+        super(tokenServices, clientDetailsService, oAuth2RequestFactory, GRANT_TYPE);
+        this.userDetailsService = userDetailsService;
+    }
+
+    /**
+     * 在这里查询我们用户，构建用户的授权信息
+     *
+     * @param client 客户端
+     * @param tokenRequest tokenRequest
+     * @return OAuth2Authentication
+     */
+    @Override
+    protected OAuth2Authentication getOAuth2Authentication(ClientDetails client, TokenRequest tokenRequest) {
+        Map<String, String> params = tokenRequest.getRequestParameters();
+        String sms = params.getOrDefault("sms", "");
+        // 获取用户信息
+        UserDetails userDetails = userDetailsService.loadUserByUsername(sms);
+        if (Objects.isNull(userDetails)) {
+            throw new UsernameNotFoundException("用户不存在");
+        }
+        // 构建用户授权信息
+        Authentication user = new UsernamePasswordAuthenticationToken(userDetails.getUsername(),
+                userDetails.getPassword(), userDetails.getAuthorities());
+        return new OAuth2Authentication(tokenRequest.createOAuth2Request(client), user);
+    }
+}
+----
+
+接下来我们把它添加到配置类 `Oauth2AuthorizationServerConfig` 中去
+
+[source,java]
+----
+    private final @NonNull UserDetailsService userDetailsService;
+
+    @Override
+    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+        clients.inMemory()
+                .withClient("oauth2")
+                    .secret("$2a$10$uLCAqDwHD9SpYlYSnjtrXemXtlgSvZCNlOwbW/Egh0wufp93QjBUC")
+                    .resourceIds("oauth2")
+                    // 注意，这里要添加我们的 sms 授权方式
+                    .authorizedGrantTypes("password", "authorization_code", "refresh_token", "sms")
+                    .authorities("ROLE_ADMIN", "ROLE_USER")
+                    .scopes("all")
+                    .accessTokenValiditySeconds(Math.toIntExact(Duration.ofHours(1).getSeconds()))
+                    .refreshTokenValiditySeconds(Math.toIntExact(Duration.ofHours(1).getSeconds()))
+                    .redirectUris("http://example.com")
+                .and()
+                .withClient("test")
+                    .secret("$2a$10$wlgcx61faSJ8O5I4nLiovO9T36HBQgh4RhOQAYNORCzvANlInVlw2")
+                    .resourceIds("oauth2")
+                    // 注意，这里要添加我们的 sms 授权方式
+                    .authorizedGrantTypes("password", "authorization_code", "refresh_token", "sms")
+                    .authorities("ROLE_ADMIN", "ROLE_USER")
+                    .scopes("all")
+                    .accessTokenValiditySeconds(Math.toIntExact(Duration.ofHours(1).getSeconds()))
+                    .refreshTokenValiditySeconds(Math.toIntExact(Duration.ofHours(1).getSeconds()))
+                    .redirectUris("http://example.com");
+    }
+
+    @Override
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
+        endpoints.authenticationManager(this.authenticationManager);
+        // 添加进去
+        endpoints.tokenGranter(tokenGranter(endpoints));
+    }
+
+    /**
+     * 重点
+     * 先获取已经有的五种授权，然后添加我们自己的进去
+     *
+     * @param endpoints AuthorizationServerEndpointsConfigurer
+     * @return TokenGranter
+     */
+    private TokenGranter tokenGranter(final AuthorizationServerEndpointsConfigurer endpoints) {
+        List<TokenGranter> granters = new ArrayList<>(Collections.singletonList(endpoints.getTokenGranter()));
+        granters.add(new SmsTokenGranter(endpoints.getTokenServices(), endpoints.getClientDetailsService(),
+                endpoints.getOAuth2RequestFactory(), userDetailsService));
+        return new CompositeTokenGranter(granters);
+    }
+----
+
+测试一下
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190730220005.png[test]
+
+邮箱授权同样的道理，不再赘述。
+
+=== 添加验证码验证
+
+现在已经有了新的授权模式，我们要对他把已经写好的验证码验证添加进去。
+
+自定义 controller 的方式很简单，就在 `ValidateCodeFilter` 的
+`afterPropertiesSet` 方法中添加路径即可，如下：
+
+[source,java]
+----
+    @Override
+    public void afterPropertiesSet() throws ServletException {
+        super.afterPropertiesSet();
+        // 路径拦截
+        urlMap.put("/auth/sms", "sms");
+        urlMap.put("/custom/sms", "sms");
+        urlMap.put("/oauth/sms", "sms");
+    }
+----
+
+如果是按照 `spring security oauth2` 的流程，我们就需要再加一个过滤器了
+
+[source,java]
+----
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class ValidateCodeGranterFilter extends OncePerRequestFilter {
+
+    private final @NonNull ValidateCodeProcessorHolder validateCodeProcessorHolder;
+    private RequestMatcher requestMatcher = new AntPathRequestMatcher("/oauth/token", HttpMethod.POST.name());
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        if (requestMatcher.matches(request)){
+            String grantType = getGrantType(request);
+            if ("sms".equalsIgnoreCase(grantType) || "email".equalsIgnoreCase(grantType)){
+                try {
+                    log.info("请求需要验证！验证请求：" + request.getRequestURI() + " 验证类型：" + grantType);
+                    validateCodeProcessorHolder.findValidateCodeProcessor(grantType)
+                            .validate(new ServletWebRequest(request, response));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return;
+                }
+            }
+        }
+        filterChain.doFilter(request, response);
+    }
+
+    private String getGrantType(HttpServletRequest request) {
+        return request.getParameter("grant_type");
+    }
+
+}
+----
+
+同时需要修改一下 `AbstractValidateCodeProcessor`
+获取授权类型的方法，如下：
+
+[source,java]
+----
+    /**
+     * 根据请求 url 获取验证码类型
+     *
+     * @return 结果
+     */
+    private String getValidateCodeType(ServletWebRequest request) {
+        String uri = request.getRequest().getRequestURI();
+        if (uri.contains("/oauth/token")) {
+            return request.getParameter("grant_type");
+        } else {
+            int index = uri.lastIndexOf("/") + 1;
+            return uri.substring(index).toLowerCase();
+        }
+    }
+----
+
+这样就可以了，就不用测试了。
+
+到此为止，我们的这节终于写完了！现在的代码结构如下！
+
+image::https://resources.echocow.cn/file/2019/07/26/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_plasmashell_20190730224714.png[now]
+
+== 总结
+
+啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊，终于把这块写完了！个人觉得这块是最为复杂的一块，同时觉得也是最有价值的一块！因为现在真的没有谁比我总结这两种方式更加详细的了（偷笑
+～），并且每一个方式都对应不同的源码，需要去琢磨源码然后找到对应的文档然后再去实现，实现完后要总结出来画图在表述出来，实在太累了。不过收获很明显，找到了一些新的方法。不过我省略掉了源码分析部分，不然篇幅就太长太长了。从上面的描述中可以看到第三种方式应该是最好的，那么为什么我要说自定义
+controller
+的方式呢？因为这就是我学习的步骤，先是尽量自己实现，然后再用他写的方式来实现，再把他整合进入，如果没有自定义
+controller 那一快，我不可能知道他怎么创建 token
+的，后面都是一样。一开始我只会第一种，年初的时候我用的就是第一种；后面学会了第二种，大概是今年四月份把；然后第三种是写文章的时候才会的，所以我给学校写的授权服务器中是用的第二种，后面要考虑重构一下嘿嘿嘿嘿
+～写文章真的好累好累啊，但是收获不小呢！而且放假了好开心 ～后面加油
+～！考虑要不要写一篇源码分析了哈哈，oauth2
+的源码好多地方抖都翻了好几遍了昂。。。后面考虑整理一下然后写一个源码分析的。加油
+～！！
+

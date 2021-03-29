@@ -1,0 +1,75 @@
+= drcom 校园网教师帐号爆破工具
+:page-description: drcom 校园网教师帐号爆破工具
+:page-category: 归档
+:page-image: https://img.hacpai.com/bing/20180608.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/09/29/1546344583151.html
+:page-created: 1538222040000
+:page-modified: 1546347650084
+:toc:
+
+== DrcomTools
+
+Drcom
+校园网爆破工具，https://github.com/lizhongyue248/DrcomTools[GITHUB] 地址
+
+=== 简述
+
+首先感谢两位大佬 FGR，https://rainss.cn[RAINSS]
+带我，告诉我规律，然后自己抓包分析，解密密码，在得出这个程序，用于暴力破解校园网教师网。
+
+*不过值得注意的是，我删除了网址（每个学校情况不一样）,同时密码加密方式可能不一样，请自行抓包分析。。。*
+
+运行此程序之前，你必须要知道你们教师网的帐号和密码的规律，并知道那几个数字段较多。然后抓包分析加密方式，我们的是加了几个数字然后
+md5 加密，你只需要抓包后反解密就大概能找到规律了。
+
+可以在运行一个 `web` 的时候，运行多个 `server` ，测试同时开五个
+`server`，一个 `web`，十分钟爆破十万个帐号（因电脑性能而异）
+
+____
+注意，最好不要跑太多，不然怕被查水表。
+____
+
+=== 技术选型
+
+* 核心框架：vertx-core
+* 依赖管理：maven
+* 开发工具：idea
+* *java：jdk 8（务必）*
+* web：vertx-web
+* 集群：vertx-hazelcast
+* 日志：JUL
+
+=== 如何运行
+
+[arabic]
+. 找到校园网登录网页，见下方的截图，复制网址至
+`cn.echocow.drcom.utils.Constant` ，替换 url 中的字符串
+. 先运行 `server`，再运行 `web`，可以直接在 `cn.echocow.drcom.web`
+运行，也可以运行多次 `cn.echocow.drcom.Application`。
+. 生成的日志文件存放于当前用户的家目录下
+
+* windows 见 `C：//user/用户名/Drcom.log`
+* linux 见 `/home/用户名/Drcom.log`
+
+运行多个会在 `log` 加.1，例如 Drcom.log.1、Drcom.log.2。
+
+=== 截图
+
+我们的 drcom 官网：
+
+image::https://resources.echocow.cn/image/blog/zaxiang/1.1.png[加密方式]
+
+我校加密方式：
+
+image::https://resources.echocow.cn/image/blog/zaxiang/1.2.png[drcom]
+
+运行结果：
+
+image::https://resources.echocow.cn/image/blog/zaxiang/1.3.png[运行结果]
+
+=== 免责申明
+
+*本程序仅供技术交流，请勿用于商业及非法用途，如产生法律纠纷与本人无关！*
+
+CREATE BY https://echocow.cn[ECHOCOW]
+

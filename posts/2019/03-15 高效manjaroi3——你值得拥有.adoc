@@ -1,0 +1,333 @@
+= 高效 manjaro i3 —— 你值得拥有
+:page-description: 高效 manjaro i3 —— 你值得拥有
+:page-category: linux
+:page-image: https://img.hacpai.com/bing/20171225.jpg?imageView2/1/w/960/h/540/interlace/1/q/100
+:page-href: /articles/2019/03/15/1552649977490.html
+:page-created: 1552649977661
+:page-modified: 1561429624069
+:toc:
+
+2019 年 3 月 11 日， https://www.deepin.org/2019/03/11/%E6%B7%B1%E5%BA%A6%E7%B3%BB%E7%BB%9F%E6%9B%B4%E6%96%B0%EF%BC%882019-03-11%EF%BC%89/[深度系统更新];3
+月 13 日，小雨，升级 deepin，显卡驱动崩溃，开机卡屏 LOGO
+界面，多种方式解决，无效。告别 deepin。晚上很难受，觉得用了那么久的
+linux，它给我的带来的是烦恼。回想一下自己使用的方式，似乎和 windows
+一样的使用方式，依旧是图形界面，点击，运行，点击运行。感觉到的好处也就莫过于不用担心太多开发环境的问题。但是这真的就是
+linux 吗？自己很迷茫。然后在犹豫是否继续使用 deepin 的时候，尝试了一下
+ubuntu，可惜自己启动盘制作出问题，没有成功，而且自己也对 ubuntu
+有这莫名的排斥情感。
+
+然后逛回到了 arch，找到了自己的第一个实体机安装的
+https://www.manjaro.org/[manjaro] 。19 年的官网，比起来 18
+年的，变化了很多。不仅漂亮了很多，也有了更加完善的文档说明。曾经的
+https://www.manjaro.org/download/[download]
+也从四五个到了现在的十多个版本，各有所长。也就是在这里，我找到了真正的高效的工具
+https://www.manjaro.org/download/i3/[i3] 和
+https://www.manjaro.org/download/awesome/[awesome]
+。当了解了他们之后，自己觉得这才是真正的 linux
+啊，能够提高我们开发者的工作效率，能够让我们完全脱离鼠标的 wm
+真的是太让人着迷了。与那些华丽的 linux
+不同，他们能够用u最少的资源做最效率的工作，我果断的选择了他们。然而却也遇到了不少问题，记录一下网上很难搜到的一些困难点。
+
+== i3 还是 awesome
+
+说实话我一开始选的是
+awesome，可是我做好启动盘后，在安装界面选择中文，他的中文完全是乱码。不得已我只有换了
+i3，两个都是 vm 中的佼佼者，孰优孰劣，各有所好吧。先上截图
+
+image::https://resources.echocow.cn/file/2019/3/16/%E6%B7%B1%E5%BA%A6%E6%88%AA%E5%9B%BE_20190316141254.png[manjaroi3]
+
+== 安装
+
+有了 manjaro kde
+的安装经验，一路畅通无阻，遇到的问题莫过于就是显卡问题，见
+https://echocow.cn/articles/2018/09/16/1546344571882.html#b3_solo_h3_6[manjaro
+笔记 显卡问题]，这样就解决了以下问题：
+
+[arabic]
+. 安装时启动问题
+. 安装完成后启动登录卡死的问题
+. 关机的时候完全卡死的问题
+
+== 右上角日期中文乱码
+
+在安装和安装好以后，右上角的日期 某月 星期几
+都是框框乱码。解决办法如下：
+
+[arabic]
+. 找到 `/usr/share/conky/conky_maia`
+. 使用 `vim` 命令 `：%s/Bitstream Vera/anti/` 统一修改把
+`Bitstream Vera` 修改为 `anti`
+
+然后就方块就变成中文了。
+
+== 浮动问题
+
+这个就是因为要使用 `yakuake`
+雷神终端，但是第一次打开的时候挺好的，第二次他就平铺了。但是我希望他是浮动在上方的，所以要将它修改为浮动的。
+
+[arabic]
+. `vim ~/.i3/config`
+. `for_window [class="yakuake"] floating enable`
+
+这样她就浮动了。
+
+== 科学上网
+
+=== `shadowsocks` 非图形界面
+
+[arabic]
+. `yaourt -S shadowsocks` 安装
+. 修改配置文件 `/etc/shadowsocks/config.json`
+
+[source,json]
+----
+{
+    "server":"remote-shadowsocks-server-ip-addr",
+    "server_port":443,
+    "local_address":"127.0.0.1",
+    "local_port":1080,
+    "password":"your-passwd",
+    "timeout":300,
+    "method":"chacha20-ietf",
+    "fast_open":false,
+    "workers":1
+}
+----
+
+[cols=",",options="header",]
+|===
+|Name |Explanation
+|server |服务端监听地址(IPv4或IPv6)
+
+|server_port |服务端端口，一般为`443`
+
+|local_address |本地监听地址，缺省为`127.0.0.1`可用-b参数设置
+
+|local_port |本地监听端口，一般为`1080`
+
+|password |用以加密的密匙
+
+|timeout |超时时间（秒）
+
+|method
+|参阅 https://github.com/shadowsocks/shadowsocks/wiki/Encryption[加密]
+
+|mode |设置为tcp或udp或tcp_and_udp
+
+|fast_open
+|是否启用 https://github.com/clowwindy/shadowsocks/wiki/TCP-Fast-Open[TCP-Fast-Open]
+
+|wokers |worker数量，如果不理解含义请不要改
+|===
+
+[arabic, start=3]
+. `ss-local -c /etc/shadowsocks/config.json`
+运行。或可尝试手动运行：`ss-local -s _服务器地址_ -p _服务器端口_ -l _本地端端口_ -k _密码_ -m _加密方法_`。配合nohup和&可以使之后台运行，关闭终端也不影响：`#nohup ss-local -s _服务器地址_ -p _服务器端口_ -l _本地端端口_ -k _密码_ -m _加密方法_ &`增加`-v`参数获取详细log信息
+. 浏览器通过 `SwitchyOmega` 可以科学上网。
+
+=== `shadowsocks-qt5` 图形界面
+
+[arabic]
+. `yaourt -S shadowsocks-qt5`
+. 运行 `ss-qt5`
+. 图形界面可以直接扫码导入，很方便，改下本地端口即可。
+
+=== `proxychains`
+
+[arabic]
+. `yaourt -S proxychains`
+. `vim /etc/proxychains.conf`
+. 末尾添加配置，例如 `socks5 127.0.0.1 1080`
+
+遇到一个问题，我希望用 `chrome` 登录我的 `google`
+帐号同步我的书签、插件、应用，但是 `chrome` 不能离线安装 `SwitchyOmega`
+的文件，很奇怪。然后发现 `chrome` 在 `arch` 上面没有 `chromium`
+支持好，https://chromium.googlesource.com/chromium/src/+/master/docs/linux_chromium_packages.md[官网（需要科学上网）]推荐的i也是用
+`chromium`，所以我换了，但是我希望科学上网在应用商店下载 `SwitchyOmega`
+，所以需要用 `proxychains` 启动 `chromium`，但是报错如下：
+
+
+[source,bash]
+....
+[proxychains] config file found: /etc/proxychains.conf
+[proxychains] preloading /usr/lib/libproxychains4.so
+[proxychains] DLL init: proxychains-ng 4.13
+[proxychains] DLL init: proxychains-ng 4.13
+[proxychains] DLL init: proxychains-ng 4.13
+[1]    6322 trace trap (core dumped)  proxychains chromium
+....
+
+找了一段时间在 https://github.com/rofl0r/proxychains-ng/issues/45[github] 找到答案。
+
+创建一个 shell 脚本如下
+
+[source,bash]
+....
+#!/bin/bash
+function _start-with-proxy() {
+    export SOCKS_SERVER=127.0.0.1:1080
+        export SOCKS_VERSION=5
+        chromium %U --user-data-dir="/home/[USER]/.chromium profiles/[PROFILEDIR]"
+}
+_start-with-proxy
+....
+
+然后 `chmod +x 文件名` 添加权限，使用 `./文件名`
+运行，即可完美运行并且可以科学上网，然后就可以下载 `SwitchyOmega`
+这些啦～
+
+=== 开机自启
+
+以守护进程形式运行
+
+`systemctl start shadowsocks@配置名称`，
+
+比如我的配置文件叫做 `ss .json` ，运行 `systemctl start shadowsocks@ss`
+即可开启
+
+运行 `systemctl enable shadowsocks@ss` 即可开机自启。
+
+== QQ / TIM
+
+这里使用 deepin wine qq/tim
+
+前提：*添加archlinuxcn源*。在 `/etc/pacman.conf` 里加入以下代码：
+
+[source,bash]
+....
+[archlinuxcn]
+SigLevel = Never
+Server =[http://mirrors.tuna.tsinghua.edu.cn/archlinuxcn/$arch](http://mirrors.tuna.tsinghua.edu.cn/archlinuxcn/$arch)
+....
+
+[arabic]
+. 修改了pacman.conf之后，执行`pacman -Sy`命令更新一下数据库。
+. *安装QQ或TIM的任意一种*。终端里运行`pacman -S deepin.com.qq.office` 或
+`pacman -S deepin.com.qq.im`
+. 切换到对应目录 `cd /opt/deepinwine/apps/Deepin-TIM` 或者
+`/opt/deepinwine/apps/Deepin-QQ`
+. 运行 `./run.sh`
+
+非常感谢
+https://github.com/wszqkzqk[wszqkzqk同学]，*QQ或TIM只能开一个、不能多开*：据称是deepin-wine防止资源占用过多而限制的，建议使用QQ/TIM自带的多帐号切换功能。
+
+=== 遇到问题
+
+==== 无法启动
+
+[source,bash]
+....
+X Error of failed request: BadWindow (invalid Window parameter)
+Major opcode of failed request: 20 (X_GetProperty)
+Resource id in failed request:
+0x0 Serial number of failed request:
+10 Current serial number in output stream: 10
+....
+
+解决方案
+
+[arabic]
+. `yaourt -S gnome-settings-daemon`
+. 然后运行 `/usr/lib/gsd-xsettings`，或者后台运行
+`nohup /usr/lib/gsd-xsettings > /dev/null 2>&1 &`
+. 切换到对应目录 `cd /opt/deepinwine/apps/Deepin-TIM` 或者
+`/opt/deepinwine/apps/Deepin-QQ`
+. 运行 `./run.sh`
+
+完美解决！参见 https://github.com/wszqkzqk/deepin-wine-ubuntu/issues/12#issuecomment-443656358[github]，然后可以将第二步添加到
+`i3` 的启动项即可。
+
+==== 中文问题
+
+系统语言非中文时，中文全显示成方块，需要在
+`/opt/deepinwine/tools/run.sh` 中将 WINE_CMD 那一行修改为 `WINE_CMD="LC_ALL=zh_CN.UTF-8 deepin-wine"`
+
+== 定制主题
+
+[arabic]
+. 安装想要的主题，比如 `arc-gtk-theme` 和图标主题 `numix-icon-theme`
+. 使用 `$mod + d` 调出 `dmenu`，输入 `lxappearance` 打开配置工具
+. 自由配置即可主题即可
+
+=== 登录壁纸
+
+[arabic]
+. 把壁纸放在/usr/share/backgrounds/目录下（类似的非用户目录）
+. 使用命令打开配置 `lightdm-settings`
+. 选择背景图片即可
+
+=== 默认终端
+
+[arabic]
+. `vim ~/.i3/config`
+. 搜索 `+Return`，大概在 31 行
+. 修改为对应的终端，比如我用的 `konsole` 如下
+
+....
+bindsym $mod+Return exec konsole
+....
+
+=== `polybar`
+
+[arabic]
+. `yaourt -S polybar`
+. `install -Dm644 /usr/share/doc/polybar/config $HOME/.config/polybar/config`
+弄一份 `example` 的配置文件过来
+. 编辑启动文件 `vim ~/.config/polybar/launch.sh` 如下：
+
+[source,bash]
+----
+#!/usr/bin/env bash
+
+# Terminate already running bar instances
+killall -q polybar
+
+# Wait until the processes have been shut down
+while pgrep -u $UID -x polybar >/dev/null; do sleep 1; done
+
+# Launch bar1 and bar2
+# polybar bar1 &
+# polybar bar2 &
+polybar example &
+
+echo "Bars launched..."
+----
+
+[arabic, start=4]
+. `vim ~/.i3/config`
+. 搜索 `start_conky`,注释掉
+. 添加 `exec_always --no-startup-id ~/.config/polybar/launch.sh`
+替换原来系统的 `conky`
+. 注释掉 `i3bar_command i3bar`，添加
+`i3bar_command $HOME/.config/polybar/launch.sh`。
+. `$mod + shift + r` 重新加载 `i3`
+
+=== `rofi`
+
+[arabic]
+. 安装 `yaourt -S rofi`
+. 编辑 `vim .i3/config`
+. 注释掉有 `$mod+d` 的那一行，添加 `bindsym $mod+d exec rofi -show run`
+. `$mod+shift+r` 重新加载配置
+. `$mod+shift+d` 运行
+. 切换到 `cd ~/.config/rofi/`, 使用 `rofi -dump-Xresources > config`
+生成配置文件
+. `rofi-theme-selector` 选择你想要的主题即可
+
+== 推荐软件
+
+[arabic]
+. ydcv —— 翻译工具
+. ranger —— 命令行文本浏览
+. w3m —— 图片预览
+. deepin-screenshot —— deepin 良心截图工具
+. zsh —— 非常好用的 shell
+
+其他记起来再说，，，，
+
+== 结束语
+
+花了一段时间才配置好，才熟悉了
+`i3wm`，现在只是配置好一些基本的，还有一些开发工具够我折腾=-=不过在折腾的时候熟悉了，工作效率提升真的太爽了。现在笔记本去教室都不用带鼠标了，在摸索一下
+`idea` 这些工具的快捷键，真的太棒！壮哉我 manjaro，壮哉 arch！
+

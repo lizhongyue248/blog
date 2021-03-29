@@ -1,0 +1,106 @@
+= [rhce] 2 配置防火墙对 SSH 的限制
+:page-description: 配置防火墙对 SSH 的限制
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20180104.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/15/1546344574537.html
+:page-created: 1518646560000
+:page-modified: 1546346712259
+:toc:
+
+____
+在 serverx和 desktopx上设置防火墙，对 SSH实现访问限制： - 允许
+example.com域的客户对 serverx和 desktopx进行 ssh访问。 - 禁止
+my133t.org域的客户对 serverx和 desktopx进行 ssh访问。 - 备注：
+my133t.org是在172．17．10℃/24网络。 - 根据考试实际提供的网段配置
+____
+
+== 操作
+
+—>防火墙会检查的部分
+
+（1）IP来源 （信任域、非信任域）
+
+（2）访问的对象 （服务ssh/http、端口）
+
+（3）访问的协议 （TCP/UDP）
+
+（4）目标IP （防火墙设备，例如路由器NAT）
+
+[arabic]
+. 关闭与屏蔽 iptables 以及其他防火墙
+
+[source,bash]
+....
+systemctl  mask  ebtables.service
+systemctl  mask  iptables
+systemctl  mask  ip6tables
+....
+
+[arabic, start=2]
+. 开启 firewalld 防火墙以及开机启动
+
+[source,bash]
+....
+systemctl  enable  firewalld
+systemctl  start  firewalld
+....
+
+[arabic, start=3]
+. 配置防火墙富规则
+
+[source,bash]
+....
+mandb                   //更新 man
+man  -k  rich              //查询防火墙副规则的 man 路径
+man  firewalld.richlanguage     //防火墙富规则查询
+....
+
+image::https://resources.echocow.cn/image/rhce/2.1.png[规则查看]
+
+image::https://resources.echocow.cn/image/rhce/2.2.png[规则]
+
+[width="100%",cols="41%,33%,26%",options="header",]
+|===
+|名称 |含义 |值
+|rule |类型 |family=``ipv4 | ipv6''
+
+|source |来源/源地址 |source address=``address[/mask]''
+[invert=``True'']
+
+|destination |目的地址 |destination address=``address[/mask]''
+invert=``True''
+
+|service |服务 |service name=``service name''
+
+|port |端口 |port port=``port value'' protocol=``tcp | udb''
+
+|protocol |协议 |protocol value=``protocol value''
+
+|ICMP-Block |报文块 |icmp-block name=``icmptype name''
+
+|Masquerade |伪装 |masquerade
+
+|Forward-Port |转发 |forward-port port=``port value''
+protocol=``tcp|udp'' to-port=``port value'' to-addr=``address''
+
+|Log |日志 |log [prefix=``prefix text''] [level=``log level''] [limit
+value=``rate/duration'']
+
+|Action |审计 |
+
+|action |行为 |accept, reject or drop
+|===
+
+配置具体规则
+
+[source,bash]
+....
+firewall-cmd --add-rich-rule="rule family=ipv4 source address=172.25.47.10/24 service name=ssh reject" --permanent
+....
+
+[source,bash]
+....
+firewall-cmd --reload
+....
+
+image:https://resources.echocow.cn/image/rhce/2.3.png[image]

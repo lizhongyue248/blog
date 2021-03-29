@@ -1,0 +1,132 @@
+= [rhce] 6 配置本地邮件服务
+:page-description: 配置本地邮件服务
+:page-category: rhce
+:page-image: https://img.hacpai.com/bing/20181025.jpg?imageView2/1/w/1280/h/720/interlace/1/q/100
+:page-href: /articles/2018/02/17/1546344576024.html
+:page-created: 1518862620000
+:page-modified: 1546346600605
+:toc:
+
+____
+在系统server0和desktop0上配置邮件服务，满足以下要求： -
+这些系统不接收外部发送来的邮件 -
+这些系统上本地发送的任何邮件都会自动路由到 classroom.example.com -
+从这些系统上发送的邮件都显示来自 example.com -
+你可以通过发送邮件到本地用户student来测试你的配置，
+
+* classroom.example.com已经配置好。把此用户的邮件转到下列URL
+http://classroom.example.com/cgi-bin/recevied_mail
+____
+
+____
+*使用 postfix
+服务完成上述题目。一般都默认安装了这个服务，并处于默认开机启动状态。但是建议还是检查一下。
+*
+____
+
+server47 和 desktop47 配置一致，仅用 server47 做演示。
+
+== 方法一：直接修改配置文件
+
+*/etc/postfix/main.cf* 主要修改下面几处
+
+....
+inet_interfaces = loopback-only #监听本地回环接口
+myorigin = example.com #设置来源域名
+relayhost = [classroom.example.com] #中转的服务器，没有MX记录的用中括号包起来
+mydestination =  #不接受任何邮件
+mynetworks = 127.0.0.0/8, [::1]/128 #本地网络
+local_transport = error: local delivery disabled #其实是非必须的
+....
+
+`systemctl restart postfix`重启邮件服务
+
+== 方法二：使用 postconf 修改
+
+这是专门用来查看 postfix 配置和修改 postfix
+配置的工具。个人也是推荐这种做法。
+
+....
+[root@server0 ~]# postconf -e 'inet_interfaces=loopback-only'
+[root@server0 ~]# postconf -e 'myorigin=example.com'
+[root@server0 ~]# postconf -e 'relayhost=[classroom.example.com]'
+[root@server0 ~]# postconf -e 'mydestination='
+[root@server0 ~]# postconf -e 'mynetworks=127.0.0.0/8, [::1]/128'
+[root@server0 ~]# postconf -e 'local_transport=error: local delivery disabled'
+[root@server0 ~]# systemctl restart postfix
+....
+
+测试
+
+....
+[root@server0 ~]# mail -s 'fuxk' student@classroom.example.com
+erwerwr
+.
+EOT
+[root@server0 ~]# curl http://classroom.example.com/cgi-bin/recevied_mail
+
+From root@example.com  Tue Jan  3 14:43:46 2017<br>Return-Path: <root@example.com><br>X-Original-To: student@classroom.example.com<br>Delivered-To: student@classroom.example.com<br>Received: from server0.example.com (server0.example.com [172.25.0.11])<br>&nbsp;&nbsp;&nbsp;&nbspby classroom.example.com (Postfix) with ESMTP id 1BB802ACC19<br>&nbsp;&nbsp;&nbsp;&nbspfor <student@classroom.example.com>; Tue,  3 Jan 2017 14:43:46 +0800 (CST)<br>Received: by server0.example.com (Postfix, from userid 0)<br>&nbsp;&nbsp;&nbsp;&nbspid D05FEEAEEA; Tue,  3 Jan 2017 14:43:44 +0800 (CST)<br>Date: Tue, 03 Jan 2017 14:43:44 +0800<br>To: student@classroom.example.com<br>Subject: fuxk<br>User-Agent: Heirloom mailx 12.5 7/5/10<br>MIME-Version: 1.0<br>Content-Type: text/plain; charset=us-ascii<br>Content-Transfer-Encoding: 7bit<br>Message-Id: <20170103064344.D05FEEAEEA@server0.example.com><br>From: root@example.com (root)<br><br>erwerwr<br><br>
+....
+
+== 练习题
+
+____
+在系统 serverX 和 desktopX 上配置邮件服务，满足以下要求：
+
+这些系统不接收外部发送来的邮件
+
+这些系统上本地发送的任何邮件都会自动路由到 smtpX.example.com
+
+从这些系统上发送的邮件都显示来自 desktopX.example.com
+
+你可以通过发送邮件到本地用户 student 来测试你配置，desktop47.example.com
+已配置好
+
+注意：模拟环境只需配置 serverX 即可，但考试时需要同配置 serverX 和
+desktopX
+____
+
+*练习时务必在 serverX 和 desktopX 上先启动练习环境*
+
+....
+lab smtp-nullclient setup
+....
+
+使用 postconf 修改
+
+....
+postconf -e "inet_interfaces=loopback-only" 监听本地回环接口
+postconf -e "relayhost=[smtp47.example.com]" 因为需要自动路由到 smtpX.example.com
+postconf -e "myorigin=desktop47.example.com" 需要系统上发送的邮件都显示来自 desktopX.example.com 
+postconf -e "mydestination=" 不接受任何邮件
+postconf -e "mynetworks=127.0.0.0/8 [::1]/128" 设置本地网络
+postconf -e "local_transport=error:local delivery disable" 阻止本地空客户端所有邮件在本地转发到/var/spool邮箱中
+....
+
+systemctl restart postfix 重启服务
+
+测试
+
+发送一封主题为 server47 null client 的邮件，内容为 null client test
+
+....
+mail -s "server47 null client" student@desktop47.example.com
+null client test.
+
+EOT
+....
+
+使用用户名 student 和密码 student 登录
+
+image:https://resources.echocow.cn/image/rhce/6.1.png[image]
+
+image:https://resources.echocow.cn/image/rhce/6.2.png[image]
+
+image:https://resources.echocow.cn/image/rhce/6.3.png[image]
+
+image:https://resources.echocow.cn/image/rhce/6.4.png[image]
+
+`lab smtp-nullclient grade` 测试
+
+image:https://resources.echocow.cn/image/rhce/6.5.png[image]
+

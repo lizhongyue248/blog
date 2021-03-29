@@ -1,7 +1,7 @@
 export interface Node {
   html: string
   id: string
-  fields: { slug: string }
+  fields: { slug: string, modifiedTime: string, birthTime: string }
   revision: { date: string, number: string }
   author: { fullName: string, email: string }
   document: { title: string }
@@ -21,6 +21,15 @@ export interface Asciidoc {
   pageInfo?: PageInfo
 }
 
+export interface PageContent {
+  document: { title: string }
+  fields: { slug: string }
+}
+
 export interface PostProps {
   data: { allAsciidoc: Asciidoc }
+  pageContext: {
+    next?: PageContent
+    previous?: PageContent
+  }
 }
