@@ -3,10 +3,11 @@ import { useLocalStorageState } from 'ahooks'
 import { createMuiTheme, ThemeProvider, CssBaseline, Container, Paper } from '@material-ui/core'
 import Nav from './Nav'
 import Banner from './Banner'
+import { isBrowser } from '../util/constant'
 import { LayoutProps } from '../interface/page'
 
 const Layout: FC<LayoutProps> = ({ title = '阿月很乖', children, actions }): ReactElement => {
-  const [dark] = useLocalStorageState('palette-dark', window.matchMedia('(prefers-color-scheme: dark)').matches)
+  const [dark] = useLocalStorageState('palette-dark', isBrowser() ? window.matchMedia('(prefers-color-scheme: dark)').matches : true)
   const theme = createMuiTheme({
     palette: { type: dark ? 'light' : 'light' }
   })

@@ -3,6 +3,7 @@ import Typed from 'react-typed'
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown'
 import { createStyles } from '@material-ui/core/styles'
 import { makeStyles, Typography } from '@material-ui/core'
+import { isBrowser } from '../util/constant'
 import { BannerProps } from '../interface/page'
 
 const useStyles = makeStyles(() =>
@@ -21,7 +22,7 @@ const useStyles = makeStyles(() =>
 const Banner: FC<BannerProps> = ({ title }): ReactElement => {
   const classes = useStyles()
   const handleScrollContent = () => {
-    window.scrollTo({ top: screen.height - 100, behavior: 'smooth' })
+    isBrowser() && window.scrollTo({ top: screen.height - 100, behavior: 'smooth' })
   }
   return (
     <div className={classes.banner}>

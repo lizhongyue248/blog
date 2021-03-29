@@ -1,6 +1,5 @@
-import { FC, ReactElement, useEffect } from 'react'
+import { FC, ReactElement, useEffect, useState } from 'react'
 import { useClipboard } from 'use-clipboard-copy'
-import Prism from 'prismjs'
 import { graphql, Link } from 'gatsby'
 import { useBoolean } from 'ahooks'
 import SpeedDial from '@material-ui/lab/SpeedDial'
@@ -10,6 +9,7 @@ import useMediaQuery from '@material-ui/core/useMediaQuery'
 import { Theme } from '@material-ui/core/styles'
 import Snackbar from '@material-ui/core/Snackbar'
 import { Divider, Drawer, Toolbar } from '@material-ui/core'
+import { isBrowser } from '../util/constant'
 import NotFoundPage from '../pages/404'
 import { PostProps } from '../interface/asciidoc'
 import PostSimpleInfo from '../components/PostSimpleInfo'
@@ -47,16 +47,17 @@ const Post: FC<PostProps> = (props): ReactElement => {
   const post = data.allAsciidoc.edges[0]
   const [copyStatue, { setTrue: show, setFalse: hide }] = useBoolean(false)
   const [drawer, { toggle: drawerToggle }] = useBoolean(false)
+  const [toc, setToc] = useState('')
 
   const clipboard = useClipboard({ onSuccess: show })
-  const parser = new DOMParser()
-  const article = parser.parseFromString(post.node.html, 'text/html')
-  const toc = article.querySelector('.toc')
 
   useEffect(() => {
     document.body.classList.add('line-numbers', 'match-braces')
+    const parser = new DOMParser()
+    const article = parser.parseFromString(post.node.html, 'text/html')
+    const tocElement = article.querySelector('.toc') || { outerHTML: '' }
+    setToc(tocElement.outerHTML)
     // document.body.setAttribute('data-download-link', true)
-    Prism.highlightAll()
     // document.querySelectorAll('pre code').forEach(block => {
     //   const element = block as HTMLElement
     //   element.setAttribute('data-download-link', true)
@@ -66,7 +67,7 @@ const Post: FC<PostProps> = (props): ReactElement => {
     document.querySelectorAll(headerSelect).forEach((block) => {
       const element = block as HTMLElement
       element.onclick = () => {
-        const url = new URL(window.location.href)
+        const url = new URL(isBrowser() ? window.location.href : '')
         const link = `${url.origin}${url.pathname}#${element.id}`
         clipboard.copy(link)
       }
@@ -89,7 +90,7 @@ const Post: FC<PostProps> = (props): ReactElement => {
           onClick={() => drawerToggle()}
         />]}
     >
-      <Catalogue show={drawer} list={toc?.outerHTML} visibleToggle={drawerToggle} />
+      <Catalogue show={drawer} list={toc} visibleToggle={drawerToggle} />
       <article className='post'>
         <div className='text-4xl font-bold post-title text-center'>{post.node.document.title}</div>
         <PostSimpleInfo node={post.node} className='text-center my-3' />

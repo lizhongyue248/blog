@@ -7,7 +7,6 @@ import Layout from '../components/Layout'
 
 const CategoryPage: FC<CategoryProps> = ({ data }): ReactElement => {
   const category = data.allAsciidoc.group.map(g => ({ total: g.totalCount, category: g.nodes[0].pageAttributes.category }))
-  console.log(category)
   return (
     <Layout title='分类'>
       <div className='text-2xl font-bold'>共计 {category.length} 个类别</div>

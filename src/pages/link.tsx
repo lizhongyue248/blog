@@ -19,7 +19,7 @@ import {
   Avatar,
   Button
 } from '@material-ui/core'
-import { colors } from '../util/constant'
+import { colors, isBrowser } from '../util/constant'
 import Layout from '../components/Layout'
 
 interface LinkStatusProps {
@@ -104,7 +104,7 @@ const LinkPage: FC<LinkProps> = ({ data }): ReactElement => {
                 <CardContent className='p-0'>
                   <CardActionArea
                     className={`px-4 pt-4 pb-2 text-white ${bgColors[index % bgColors.length]}`}
-                    onClick={() => window.open(node.link, '_blank')}
+                    onClick={() => isBrowser() && window.open(node.link, '_blank')}
                   >
                     <Typography className='text-white' variant='h6' component='h2'>
                       <Avatar

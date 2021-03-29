@@ -19,3 +19,5 @@ export const colors = [
 ]
 
 export const getColor = (index: number): string => colors[index % colors.length]
+
+export const isBrowser = (): boolean => typeof window !== 'undefined'

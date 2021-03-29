@@ -9,6 +9,7 @@ import CategoryIcon from '@material-ui/icons/Category'
 import useScrollTrigger from '@material-ui/core/useScrollTrigger'
 import { createStyles, Theme } from '@material-ui/core/styles'
 import { AppBar, Button, makeStyles, Toolbar, Typography } from '@material-ui/core'
+import { isBrowser } from '../util/constant'
 
 interface Props {
   children: ReactElement;
@@ -36,7 +37,7 @@ const Bar = (props: Props): ReactElement => {
   const trigger = useScrollTrigger({
     disableHysteresis: true,
     threshold: 0,
-    target: window
+    target: isBrowser() ? window : undefined
   })
   return cloneElement(children, {
     className: `${children.props.className} ${trigger ? classes.scroll : ''}`
@@ -49,12 +50,12 @@ const Nav: FC<ArrayProps> = ({ actions: actionProps = [] }): ReactElement => {
     await navigate(url)
   }
   const toTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    isBrowser() && window.scrollTo({ top: 0, behavior: 'smooth' })
   }
   const shouldToTop = !useScrollTrigger({
     disableHysteresis: true,
-    threshold: window.screen.availHeight,
-    target: window
+    threshold: isBrowser() ? window.screen.availHeight : 0,
+    target: isBrowser() ? window : undefined
   })
   const actions = [(
     <SpeedDial
