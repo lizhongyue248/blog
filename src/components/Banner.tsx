@@ -25,8 +25,8 @@ const Banner: FC<BannerProps> = ({ title }): ReactElement => {
   }
   return (
     <div className={classes.banner}>
-      <div className={`${classes.mask} w-full h-full flex justify-center items-center`}>
-        <Typography className='text-white text-center mx-8' variant='h4'>
+      <div className={`${classes.mask} w-full h-full flex flex-col justify-center items-center justify-between`}>
+        <Typography className='flex flex-col justify-center items-center pt-2 text-white h-5/6 text-center mx-8' variant='h4'>
           <Typed
             strings={[title]}
             typeSpeed={40}
@@ -36,7 +36,7 @@ const Banner: FC<BannerProps> = ({ title }): ReactElement => {
           />
         </Typography>
         <KeyboardArrowDownIcon
-          className='absolute bottom-0 text-white w-full mb-3 cursor-pointer animate-bounce-opacity'
+          className='text-white w-full mt-3 cursor-pointer animate-bounce-opacity'
           fontSize='large'
           onClick={handleScrollContent}
         />

@@ -92,8 +92,8 @@ export const pageQuery = graphql`
           id
           fields {
             slug
-            birthTime(formatString: "YYYY-MM-DD")
-            modifiedTime(formatString: "YYYY-MM-DD")
+            birthTime(fromNow: true, locale: "zh-cn")
+            modifiedTime(fromNow: true, locale: "zh-cn")
           }
           author {
             fullName

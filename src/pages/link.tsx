@@ -19,6 +19,7 @@ import {
   Avatar,
   Button
 } from '@material-ui/core'
+import { colors } from '../util/constant'
 import Layout from '../components/Layout'
 
 interface LinkStatusProps {
@@ -39,25 +40,7 @@ interface LinkProps {
   }
 }
 
-const colors = [
-  'red',
-  'amber',
-  'teal',
-  'orange',
-  'yellow',
-  'green',
-  'emerald',
-  'rose',
-  'lime',
-  'blue',
-  'fuchsia',
-  'violet',
-  'cyan',
-  'indigo',
-  'purple',
-  'lightBlue',
-  'pink'
-].map(color => `bg-${color}-500`)
+const bgColors = colors.map(color => `bg-${color}-500`)
 
 const LinkStatus: FC<LinkStatusProps> = ({ status }): ReactElement => {
   let tip = '测试链接中'
@@ -120,10 +103,10 @@ const LinkPage: FC<LinkProps> = ({ data }): ReactElement => {
               <Card className='relative top-0 transition-all duration-700 hover:shadow-image hover:-top-4'>
                 <CardContent className='p-0'>
                   <CardActionArea
-                    className={`px-4 pt-4 pb-2 text-white ${colors[index % colors.length]}`}
+                    className={`px-4 pt-4 pb-2 text-white ${bgColors[index % bgColors.length]}`}
                     onClick={() => window.open(node.link, '_blank')}
                   >
-                    <Typography variant='h6' component='h2'>
+                    <Typography className='text-white' variant='h6' component='h2'>
                       <Avatar
                         className='w-6 h-6 inline-block align-middle text-center text-sm mr-1 leading-relaxed'
                         alt={node.name}
@@ -133,6 +116,7 @@ const LinkPage: FC<LinkProps> = ({ data }): ReactElement => {
                     </Typography>
                     <Typography
                       href={node.link} className='mt-3 text-white no-underline' color='textSecondary'
+                      target='_blank'
                       component='a'
                     >
                       {node.link}

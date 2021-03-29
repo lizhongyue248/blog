@@ -4,7 +4,7 @@ import { graphql, navigate } from 'gatsby'
 import { useSetState } from 'ahooks'
 import ExpandMore from '@material-ui/icons/ExpandMore'
 import ExpandLess from '@material-ui/icons/ExpandLess'
-import { List, ListItem, ListItemText, Collapse, Avatar } from '@material-ui/core'
+import { List, ListItem, ListItemText, Collapse, Chip, Divider } from '@material-ui/core'
 import Layout from '../components/Layout'
 
 interface ArchiveProps {
@@ -52,28 +52,29 @@ const ArchivePage: FC<ArchiveProps> = ({ data }): ReactElement => {
                 button
               >
                 <ListItemText>
-                  <Avatar className='w-7 h-7 text-sm inline-block align-middle mr-2 leading-7 text-center bg-blue-500'>
-                    {archive.nodes.length}
-                  </Avatar>
                   <span>
                     {archive.year}
+                    <Chip className='ml-4' size='small' variant='outlined' label={`${archive.nodes.length} 篇`} />
                   </span>
                 </ListItemText>
                 {open[archive.year] ? <ExpandLess /> : <ExpandMore />}
               </ListItem>
+              <Divider />
               <Collapse in={open[archive.year]} timeout='auto' unmountOnExit>
                 <List>
                   {
                     archive.nodes.map(node => (
-                      <ListItem
-                        className='flex justify-between px-10 text-xl hover:text-blue-400 duration-500 transition-colors'
-                        onClick={() => navigate(node.fields.slug)}
-                        key={node.fields.slug}
-                        button
-                      >
-                        <div>{node.document.title}</div>
-                        <div>{node.fields.birthTime}</div>
-                      </ListItem>
+                      <div key={node.fields.slug}>
+                        <ListItem
+                          className='flex space-x-3 justify-between px-10 sm:text-sm md:text-base lg:text-xl hover:text-blue-400 duration-500 transition-colors'
+                          onClick={() => navigate(node.fields.slug)}
+                          button
+                        >
+                          <div className='w-4/5'>{node.document.title}</div>
+                          <div className='text-right w-1/5'>{node.fields.birthTime}</div>
+                        </ListItem>
+                        <Divider variant='middle' component='li' />
+                      </div>
                     ))
                 }
                 </List>
