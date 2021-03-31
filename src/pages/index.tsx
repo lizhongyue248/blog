@@ -3,8 +3,10 @@ import Layout from '../components/Layout'
 
 const IndexPage: FC = (): ReactElement => {
   return (
-    <Layout title='阿月很乖'>
-      test
+    <Layout>
+      <div className='h-96'>
+        test
+      </div>
     </Layout>
   )
 }

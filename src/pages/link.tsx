@@ -19,7 +19,7 @@ import {
   Avatar,
   Button
 } from '@material-ui/core'
-import { colors, isBrowser } from '../util/constant'
+import { isBrowser, getBgColors } from '../util/constant'
 import Layout from '../components/Layout'
 
 interface LinkStatusProps {
@@ -39,8 +39,6 @@ interface LinkProps {
     }
   }
 }
-
-const bgColors = colors.map(color => `bg-${color}-500`)
 
 const LinkStatus: FC<LinkStatusProps> = ({ status }): ReactElement => {
   let tip = '测试链接中'
@@ -103,7 +101,7 @@ const LinkPage: FC<LinkProps> = ({ data }): ReactElement => {
               <Card className='relative top-0 transition-all duration-700 hover:shadow-image hover:-top-4'>
                 <CardContent className='p-0'>
                   <CardActionArea
-                    className={`px-4 pt-4 pb-2 text-white ${bgColors[index % bgColors.length]}`}
+                    className={`px-4 pt-4 pb-2 text-white ${getBgColors(index)}`}
                     onClick={() => isBrowser() && window.open(node.link, '_blank')}
                   >
                     <Typography className='text-white' variant='h6' component='h2'>

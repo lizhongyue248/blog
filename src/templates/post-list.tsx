@@ -27,7 +27,10 @@ const PostSimple: FC<Node> = (node) : ReactElement => {
     await navigate(fields.slug)
   }
   return (
-    <Grid container className='py-4 mt-6'>
+    <Grid
+      container
+      className='py-4 mt-6'
+    >
       <Grid item md={5} xs={12}>
         <div className='cursor-pointer shadow-image overflow-hidden lg:mr-8 h-full' onClick={toPost}>
           <img

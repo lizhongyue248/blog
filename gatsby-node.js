@@ -19,6 +19,39 @@ exports.onCreateNode = ({ node, getNode, actions }) => {
   }
 }
 
+const createPostPage = (posts, createPage) => {
+  posts.forEach(({ node, next, previous }) => {
+    createPage({
+      path: node.fields.slug,
+      component: path.resolve('./src/templates/post.tsx'),
+      context: {
+        // Data passed to context is available
+        // in page queries as GraphQL variables.
+        slug: node.fields.slug,
+        next: previous,
+        previous: next
+      }
+    })
+  })
+}
+
+const createBlogPage = (posts, createPage) => {
+  const postsPerPage = 10
+  const numPages = Math.ceil(posts.length / postsPerPage)
+  Array.from({ length: numPages }).forEach((_, i) => {
+    createPage({
+      path: i === 0 ? '/blog' : `/blog/${i + 1}`,
+      component: path.resolve('./src/templates/post-list.tsx'),
+      context: {
+        limit: postsPerPage,
+        skip: i * postsPerPage,
+        numPages,
+        currentPage: i + 1
+      }
+    })
+  })
+}
+
 exports.createPages = async ({ graphql, actions }) => {
   const { createPage } = actions
   /** @type {{data: {allAsciidoc}}} result */
@@ -54,32 +87,14 @@ exports.createPages = async ({ graphql, actions }) => {
     }
   `)
   const posts = result.data.allAsciidoc.edges
-  posts.forEach(({ node, next, previous }) => {
-    createPage({
-      path: node.fields.slug,
-      component: path.resolve('./src/templates/post.tsx'),
-      context: {
-        // Data passed to context is available
-        // in page queries as GraphQL variables.
-        slug: node.fields.slug,
-        next: previous,
-        previous: next
-      }
-    })
-  })
-  const postsPerPage = 10
-  const numPages = Math.ceil(posts.length / postsPerPage)
-  Array.from({ length: numPages }).forEach((_, i) => {
-    createPage({
-      path: i === 0 ? '/blog' : `/blog/${i + 1}`,
-      component: path.resolve('./src/templates/post-list.tsx'),
-      context: {
-        limit: postsPerPage,
-        skip: i * postsPerPage,
-        numPages,
-        currentPage: i + 1
-      }
-    })
+  createPostPage(posts, createPage)
+  createBlogPage(posts, createPage)
+  const { createRedirect } = actions
+  createRedirect({
+    fromPath: '/',
+    toPath: '/blog',
+    redirectInBrowser: true,
+    isPermanent: true
   })
 }
 

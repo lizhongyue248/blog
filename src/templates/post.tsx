@@ -49,7 +49,6 @@ const Post: FC<PostProps> = (props): ReactElement => {
   const [copyStatue, { setTrue: show, setFalse: hide }] = useBoolean(false)
   const [drawer, { toggle: drawerToggle }] = useBoolean(false)
   const [toc, setToc] = useState('')
-
   const clipboard = useClipboard({ onSuccess: show })
 
   useEffect(() => {
@@ -78,7 +77,7 @@ const Post: FC<PostProps> = (props): ReactElement => {
       element.classList.add('shadow-image', 'mb-3')
     })
     Prism.highlightAll()
-  })
+  }, [])
 
   return (
     <Layout

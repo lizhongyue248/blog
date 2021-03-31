@@ -10,6 +10,7 @@ module.exports = {
     PARALLEL_SOURCING: true
   },
   plugins: [
+    'gatsby-plugin-lodash',
     'gatsby-plugin-postcss',
     'gatsby-transformer-json',
     'gatsby-plugin-react-helmet',
@@ -67,6 +68,14 @@ module.exports = {
       options: {
         name: 'pages',
         path: './posts'
+      }
+    },
+    {
+      resolve: 'gatsby-plugin-scroll-reveal',
+      options: {
+        threshold: 1,
+        once: false,
+        disable: false
       }
     }
   ]
