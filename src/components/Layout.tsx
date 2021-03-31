@@ -31,7 +31,7 @@ const Layout: FC<LayoutProps> = ({ title = '阿月很乖', children, actions, ot
   return (
     <RecoilRoot>
       <Helmet>
-        <script async src='//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js' />
+        {isBrowser() && <script async src='//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js' />}
       </Helmet>
       <ThemeProvider theme={theme}>
         <CssBaseline />

@@ -10,6 +10,7 @@ module.exports = {
     PARALLEL_SOURCING: true
   },
   plugins: [
+    'gatsby-plugin-styled-components',
     'gatsby-plugin-lodash',
     'gatsby-plugin-postcss',
     'gatsby-transformer-json',
@@ -39,12 +40,6 @@ module.exports = {
       }
     },
     'gatsby-plugin-postcss',
-    // {
-    //   resolve: "gatsby-plugin-google-analytics",
-    //   options: {
-    //     trackingId: "",
-    //   },
-    // },
     'gatsby-plugin-sharp',
     'gatsby-plugin-react-helmet',
     'gatsby-plugin-sitemap',
@@ -75,8 +70,26 @@ module.exports = {
       resolve: 'gatsby-plugin-scroll-reveal',
       options: {
         threshold: 1,
-        once: false,
+        once: true,
         disable: false
+      }
+    },
+    {
+      resolve: 'gatsby-plugin-page-progress',
+      options: {
+        includePaths: ['/', { regex: '^/blog' }, { regex: '^/articles' }],
+        excludePaths: ['/category', '/link'],
+        height: 3,
+        prependToBody: false,
+        color: '#68a9ff',
+        footerHeight: 500,
+        headerHeight: 0
+      }
+    },
+    {
+      resolve: 'gatsby-plugin-google-tagmanager',
+      options: {
+        id: 'GTM-NRHQLXP'
       }
     }
   ]

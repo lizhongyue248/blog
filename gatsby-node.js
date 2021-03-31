@@ -106,6 +106,10 @@ exports.onCreateWebpackConfig = ({ stage, loaders, actions }) => {
           {
             test: /prismjs/,
             use: loaders.null()
+          },
+          {
+            test: /styled-components/,
+            use: loaders.null()
           }
         ]
       }
