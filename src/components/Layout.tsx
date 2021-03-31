@@ -1,5 +1,6 @@
 import { FC, ReactElement, useEffect } from 'react'
 import { RecoilRoot } from 'recoil'
+import { Helmet } from 'react-helmet'
 import { useLocalStorageState } from 'ahooks'
 import { createMuiTheme, ThemeProvider, CssBaseline, Container, Paper } from '@material-ui/core'
 import Nav from './Nav'
@@ -29,6 +30,9 @@ const Layout: FC<LayoutProps> = ({ title = '阿月很乖', children, actions, ot
   }, [])
   return (
     <RecoilRoot>
+      <Helmet>
+        <script async src='//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js' />
+      </Helmet>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Nav actions={actions} />

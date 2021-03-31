@@ -5,6 +5,7 @@ import { graphql, Link } from 'gatsby'
 import { useBoolean } from 'ahooks'
 import SpeedDial from '@material-ui/lab/SpeedDial'
 import Alert from '@material-ui/lab/Alert'
+import VisibilityIcon from '@material-ui/icons/Visibility'
 import { ListAlt } from '@material-ui/icons'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
 import { Theme } from '@material-ui/core/styles'
@@ -94,7 +95,12 @@ const Post: FC<PostProps> = (props): ReactElement => {
       <Catalogue show={drawer} list={toc} visibleToggle={drawerToggle} />
       <article className='post'>
         <div className='text-4xl font-bold post-title text-center'>{post.node.document.title}</div>
-        <PostSimpleInfo node={post.node} className='text-center my-3' />
+        <PostSimpleInfo node={post.node} className='text-center my-3'>
+          <span style={{ display: 'none' }} id='busuanzi_container_page_pv' className='cursor-pointer hover:text-blue-400 duration-500 transition-colors'>
+            <VisibilityIcon className='align-text-bottom text-base' />
+            <span className='ml-2' id='busuanzi_value_page_pv' />
+          </span>
+        </PostSimpleInfo>
         <div className='mt-5'>
           {
             post.node.pageAttributes.image && <img className='w-full mb-10' alt={post.node.document.title} src={post.node.pageAttributes.image} />

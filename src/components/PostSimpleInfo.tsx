@@ -6,10 +6,11 @@ import { Node } from '../interface/asciidoc'
 
 interface SimpleInfoProps {
   node: Node,
-  className?: string
+  className?: string,
+  children?: ReactElement
 }
 
-const PostSimpleInfo: FC<SimpleInfoProps> = ({ node, className }): ReactElement => {
+const PostSimpleInfo: FC<SimpleInfoProps> = ({ node, className, children }): ReactElement => {
   const { fields, pageAttributes } = node
   return (
     <div className={`flex-none text-gray-500 space-x-7 ${className}`}>
@@ -22,6 +23,7 @@ const PostSimpleInfo: FC<SimpleInfoProps> = ({ node, className }): ReactElement 
       <span className='cursor-pointer hover:text-blue-400 duration-500 transition-colors'>
         <CategoryIcon className='align-text-bottom text-base' /> {pageAttributes.category}
       </span>
+      {children}
     </div>
   )
 }
