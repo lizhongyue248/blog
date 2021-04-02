@@ -1,7 +1,7 @@
 module.exports = {
   siteMetadata: {
     title: '阿月很乖',
-    siteUrl: 'https://blog.ayue.wiki'
+    siteUrl: 'https://zyue.wiki'
   },
   flags: {
     DEV_SSR: false,

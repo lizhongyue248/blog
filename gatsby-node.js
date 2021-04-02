@@ -40,7 +40,7 @@ const createBlogPage = (posts, createPage) => {
   const numPages = Math.ceil(posts.length / postsPerPage)
   Array.from({ length: numPages }).forEach((_, i) => {
     createPage({
-      path: i === 0 ? '/blog' : `/blog/${i + 1}`,
+      path: i === 0 ? '/' : `/blog/${i + 1}`,
       component: path.resolve('./src/templates/post-list.tsx'),
       context: {
         limit: postsPerPage,
@@ -90,12 +90,8 @@ exports.createPages = async ({ graphql, actions }) => {
   createPostPage(posts, createPage)
   createBlogPage(posts, createPage)
   const { createRedirect } = actions
-  createRedirect({
-    fromPath: '/',
-    toPath: '/blog',
-    redirectInBrowser: true,
-    isPermanent: true
-  })
+  createRedirect({ fromPath: '/blog', toPath: '/', redirectInBrowser: true, isPermanent: true })
+  createRedirect({ fromPath: '/blog/1', toPath: '/', redirectInBrowser: true, isPermanent: true })
 }
 
 exports.onCreateWebpackConfig = ({ stage, loaders, actions }) => {
