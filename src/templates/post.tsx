@@ -16,6 +16,7 @@ import NotFoundPage from '../pages/404'
 import { PostProps } from '../interface/asciidoc'
 import PostSimpleInfo from '../components/PostSimpleInfo'
 import Layout from '../components/Layout'
+import Comment from '../components/Comment'
 import '../styles/fontawesome.min.css'
 import '../styles/post.css'
 
@@ -109,7 +110,7 @@ const Post: FC<PostProps> = (props): ReactElement => {
         </div>
       </article>
       <Divider />
-      <div className='mt-4'>
+      <div className='mt-4 font-bold'>
         <span>上一篇：</span>
         {
         pageContext.previous
@@ -123,7 +124,7 @@ const Post: FC<PostProps> = (props): ReactElement => {
           : <span>没有了</span>
       }
       </div>
-      <div className='mt-4'>
+      <div className='mt-4 font-bold'>
         <span>下一篇：</span>
         {
         pageContext.next
@@ -137,6 +138,7 @@ const Post: FC<PostProps> = (props): ReactElement => {
           : <span>没有了</span>
       }
       </div>
+      <Comment />
       <Snackbar
         open={copyStatue}
         autoHideDuration={3000}

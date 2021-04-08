@@ -479,3 +479,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 .quoteblock, code {
     word-break: break-all;
 }
+
+.utterances {
+    margin-top: 2rem;
+}
