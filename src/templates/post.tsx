@@ -18,6 +18,7 @@ import PostSimpleInfo from '../components/PostSimpleInfo'
 import Layout from '../components/Layout'
 import Comment from '../components/Comment'
 import '../styles/fontawesome.min.css'
+import '../styles/asciidoc.css'
 import '../styles/post.css'
 
 interface CatalogueProps {
@@ -37,8 +38,8 @@ const Catalogue: FC<CatalogueProps> = ({ list = '', show: drawer, visibleToggle 
       onClose={() => visibleToggle()}
     >
       <div style={{ zIndex: 800 }}>
-        <Toolbar />
-        <div className='px-5' dangerouslySetInnerHTML={{ __html: list }} />
+        {matches && <Toolbar />}
+        <div className='px-5' id='post-toc' dangerouslySetInnerHTML={{ __html: list }} />
       </div>
     </Drawer>
   )
@@ -94,7 +95,7 @@ const Post: FC<PostProps> = (props): ReactElement => {
         />]}
     >
       <Catalogue show={drawer} list={toc} visibleToggle={drawerToggle} />
-      <article className='post'>
+      <article className='post mb-7'>
         <div className='text-4xl font-bold post-title text-center'>{post.node.document.title}</div>
         <PostSimpleInfo node={post.node} className='text-center my-3'>
           <span style={{ display: 'none' }} id='busuanzi_container_page_pv' className='cursor-pointer hover:text-blue-400 duration-500 transition-colors'>

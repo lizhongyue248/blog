@@ -4,6 +4,7 @@ import { Node } from './asciidoc'
 export interface BannerProps {
   title: string
   other?: ReactElement
+  banner: string
 }
 
 export interface LayoutProps {
@@ -11,6 +12,7 @@ export interface LayoutProps {
   title?: string
   other?: ReactElement
   actions?: ReactElement[]
+  banner?: string
 }
 
 export interface CategoryProps {

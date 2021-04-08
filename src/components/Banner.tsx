@@ -10,7 +10,7 @@ import { BannerProps } from '../interface/page'
 const useStyles = makeStyles(() =>
   createStyles({
     banner: {
-      background: 'url("https://rmt.dogedoge.com/fetch/fluid/storage/bg/vdysjx.png?w=1920&fmt=webp") center center / cover no-repeat',
+      background: 'center center / cover no-repeat',
       height: '100vh',
       width: '100%'
     },
@@ -20,12 +20,12 @@ const useStyles = makeStyles(() =>
   })
 )
 
-const Banner: FC<BannerProps> = ({ title, other = <div /> }): ReactElement => {
+const Banner: FC<BannerProps> = ({ banner, title, other = <div /> }): ReactElement => {
   const classes = useStyles()
   useTitle(title)
   const handleScrollContent = () => { isBrowser() && window.scrollTo({ top: screen.height - 100, behavior: 'smooth' }) }
   return (
-    <div className={classes.banner}>
+    <div className={classes.banner} style={{ backgroundImage: `url("${banner}")` }}>
       <div className={`${classes.mask} w-full h-full flex flex-col justify-center items-center justify-between`}>
         <Typography className='flex flex-col justify-center items-center pt-2 text-white h-5/6 text-center mx-8' variant='h4'>
           <Typed
