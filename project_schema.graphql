@@ -77,7 +77,7 @@ type AsciidocFields {
     locale: String
   ): Date
   slug: String
-  year: Float
+  year: Int
 }
 
 type AsciidocGroupConnection {
@@ -95,6 +95,8 @@ type AsciidocPageAttributes {
   description: String
   href: String
   image: String
+  keywords: String
+  layout: String
   modified: String
   sort: String
 }
@@ -117,12 +119,16 @@ type AsciidocRevision {
 type DataJson implements Node {
   avatar: String
   children: [Node!]!
+  description: String
   id: ID!
+  image: String
   info: DataJsonInfo
   internal: Internal!
+  keyword: String
   motto: String
   name: String
   parent: Node
+  titleTemplate: String
 }
 
 type DataJsonConnection {
@@ -683,7 +689,7 @@ type Query {
   allSitePage(filter: SitePageFilterInput, limit: Int, skip: Int, sort: SitePageSortInput): SitePageConnection!
   allSitePlugin(filter: SitePluginFilterInput, limit: Int, skip: Int, sort: SitePluginSortInput): SitePluginConnection!
   asciidoc(author: AsciidocAuthorFilterInput, children: NodeFilterListInput, document: AsciidocDocumentFilterInput, fields: AsciidocFieldsFilterInput, html: StringQueryOperatorInput, id: StringQueryOperatorInput, internal: InternalFilterInput, pageAttributes: AsciidocPageAttributesFilterInput, parent: NodeFilterInput, revision: AsciidocRevisionFilterInput): Asciidoc
-  dataJson(avatar: StringQueryOperatorInput, children: NodeFilterListInput, id: StringQueryOperatorInput, info: DataJsonInfoFilterInput, internal: InternalFilterInput, motto: StringQueryOperatorInput, name: StringQueryOperatorInput, parent: NodeFilterInput): DataJson
+  dataJson(avatar: StringQueryOperatorInput, children: NodeFilterListInput, description: StringQueryOperatorInput, id: StringQueryOperatorInput, image: StringQueryOperatorInput, info: DataJsonInfoFilterInput, internal: InternalFilterInput, keyword: StringQueryOperatorInput, motto: StringQueryOperatorInput, name: StringQueryOperatorInput, parent: NodeFilterInput, titleTemplate: StringQueryOperatorInput): DataJson
   directory(absolutePath: StringQueryOperatorInput, accessTime: DateQueryOperatorInput, atime: DateQueryOperatorInput, atimeMs: FloatQueryOperatorInput, base: StringQueryOperatorInput, birthTime: DateQueryOperatorInput, birthtime: DateQueryOperatorInput, birthtimeMs: FloatQueryOperatorInput, blksize: IntQueryOperatorInput, blocks: IntQueryOperatorInput, changeTime: DateQueryOperatorInput, children: NodeFilterListInput, ctime: DateQueryOperatorInput, ctimeMs: FloatQueryOperatorInput, dev: IntQueryOperatorInput, dir: StringQueryOperatorInput, ext: StringQueryOperatorInput, extension: StringQueryOperatorInput, gid: IntQueryOperatorInput, id: StringQueryOperatorInput, ino: FloatQueryOperatorInput, internal: InternalFilterInput, mode: IntQueryOperatorInput, modifiedTime: DateQueryOperatorInput, mtime: DateQueryOperatorInput, mtimeMs: FloatQueryOperatorInput, name: StringQueryOperatorInput, nlink: IntQueryOperatorInput, parent: NodeFilterInput, prettySize: StringQueryOperatorInput, rdev: IntQueryOperatorInput, relativeDirectory: StringQueryOperatorInput, relativePath: StringQueryOperatorInput, root: StringQueryOperatorInput, size: IntQueryOperatorInput, sourceInstanceName: StringQueryOperatorInput, uid: IntQueryOperatorInput): Directory
   file(absolutePath: StringQueryOperatorInput, accessTime: DateQueryOperatorInput, atime: DateQueryOperatorInput, atimeMs: FloatQueryOperatorInput, base: StringQueryOperatorInput, birthTime: DateQueryOperatorInput, birthtime: DateQueryOperatorInput, birthtimeMs: FloatQueryOperatorInput, blksize: IntQueryOperatorInput, blocks: IntQueryOperatorInput, changeTime: DateQueryOperatorInput, childAsciidoc: AsciidocFilterInput, childDataJson: DataJsonFilterInput, childImageSharp: ImageSharpFilterInput, childLinksJson: LinksJsonFilterInput, children: NodeFilterListInput, childrenAsciidoc: AsciidocFilterListInput, childrenDataJson: DataJsonFilterListInput, childrenImageSharp: ImageSharpFilterListInput, childrenLinksJson: LinksJsonFilterListInput, ctime: DateQueryOperatorInput, ctimeMs: FloatQueryOperatorInput, dev: IntQueryOperatorInput, dir: StringQueryOperatorInput, ext: StringQueryOperatorInput, extension: StringQueryOperatorInput, gid: IntQueryOperatorInput, id: StringQueryOperatorInput, ino: FloatQueryOperatorInput, internal: InternalFilterInput, mode: IntQueryOperatorInput, modifiedTime: DateQueryOperatorInput, mtime: DateQueryOperatorInput, mtimeMs: FloatQueryOperatorInput, name: StringQueryOperatorInput, nlink: IntQueryOperatorInput, parent: NodeFilterInput, prettySize: StringQueryOperatorInput, publicURL: StringQueryOperatorInput, rdev: IntQueryOperatorInput, relativeDirectory: StringQueryOperatorInput, relativePath: StringQueryOperatorInput, root: StringQueryOperatorInput, size: IntQueryOperatorInput, sourceInstanceName: StringQueryOperatorInput, uid: IntQueryOperatorInput): File
   imageSharp(children: NodeFilterListInput, fixed: ImageSharpFixedFilterInput, fluid: ImageSharpFluidFilterInput, gatsbyImageData: JSONQueryOperatorInput, id: StringQueryOperatorInput, internal: InternalFilterInput, original: ImageSharpOriginalFilterInput, parent: NodeFilterInput, resize: ImageSharpResizeFilterInput): ImageSharp
@@ -818,8 +824,36 @@ type SitePageConnection {
 type SitePageContext {
   currentPage: Int
   limit: Int
+  next: SitePageContextNext
   numPages: Int
+  previous: SitePageContextPrevious
   skip: Int
+  slug: String
+}
+
+type SitePageContextNext {
+  document: SitePageContextNextDocument
+  fields: SitePageContextNextFields
+}
+
+type SitePageContextNextDocument {
+  title: String
+}
+
+type SitePageContextNextFields {
+  slug: String
+}
+
+type SitePageContextPrevious {
+  document: SitePageContextPreviousDocument
+  fields: SitePageContextPreviousFields
+}
+
+type SitePageContextPreviousDocument {
+  title: String
+}
+
+type SitePageContextPreviousFields {
   slug: String
 }
 
@@ -911,23 +945,42 @@ type SitePluginPluginOptions {
   base64Width: Int
   cacheDigest: String
   cache_busting_mode: String
+  color: String
   createLinkInHead: Boolean
   crossOrigin: String
   defaultQuality: Int
+  disable: Boolean
+  displayName: Boolean
+  excludePaths: [String]
   failOnError: Boolean
+  fileName: Boolean
+  footerHeight: Int
+  head: Boolean
+  headerHeight: Int
+  height: Int
   icon: String
+  id: String
+  includeInDevelopment: Boolean
   include_favicon: Boolean
   isTSX: Boolean
   jsxPragma: String
   legacy: Boolean
+  minify: Boolean
   name: String
+  namespace: String
+  once: Boolean
   output: String
   path: String
   pathCheck: Boolean
-  pathToConfigModule: String
+  prependToBody: Boolean
+  pure: Boolean
+  routeChangeEventName: String
   safe: String
+  siteId: String
   stripMetadata: Boolean
   theme_color_in_head: Boolean
+  threshold: Int
+  transpileTemplateLiterals: Boolean
 }
 
 type SitePluginPluginOptionsAttributes {
@@ -936,6 +989,7 @@ type SitePluginPluginOptionsAttributes {
 
 type SiteSiteMetadata {
   description: String
+  image: String
   siteUrl: String
   title: String
 }
@@ -1008,6 +1062,8 @@ enum AsciidocFieldsEnum {
   pageAttributes___description
   pageAttributes___href
   pageAttributes___image
+  pageAttributes___keywords
+  pageAttributes___layout
   pageAttributes___modified
   pageAttributes___sort
   parent___children
@@ -1094,7 +1150,9 @@ enum DataJsonFieldsEnum {
   children___parent___internal___type
   children___parent___parent___children
   children___parent___parent___id
+  description
   id
+  image
   info___email
   info___github
   info___qq
@@ -1107,6 +1165,7 @@ enum DataJsonFieldsEnum {
   internal___mediaType
   internal___owner
   internal___type
+  keyword
   motto
   name
   parent___children
@@ -1147,6 +1206,7 @@ enum DataJsonFieldsEnum {
   parent___parent___internal___type
   parent___parent___parent___children
   parent___parent___parent___id
+  titleTemplate
 }
 
 enum DirectoryFieldsEnum {
@@ -1326,6 +1386,8 @@ enum FileFieldsEnum {
   childAsciidoc___pageAttributes___description
   childAsciidoc___pageAttributes___href
   childAsciidoc___pageAttributes___image
+  childAsciidoc___pageAttributes___keywords
+  childAsciidoc___pageAttributes___layout
   childAsciidoc___pageAttributes___modified
   childAsciidoc___pageAttributes___sort
   childAsciidoc___parent___children
@@ -1361,7 +1423,9 @@ enum FileFieldsEnum {
   childDataJson___children___internal___type
   childDataJson___children___parent___children
   childDataJson___children___parent___id
+  childDataJson___description
   childDataJson___id
+  childDataJson___image
   childDataJson___info___email
   childDataJson___info___github
   childDataJson___info___qq
@@ -1374,6 +1438,7 @@ enum FileFieldsEnum {
   childDataJson___internal___mediaType
   childDataJson___internal___owner
   childDataJson___internal___type
+  childDataJson___keyword
   childDataJson___motto
   childDataJson___name
   childDataJson___parent___children
@@ -1390,6 +1455,7 @@ enum FileFieldsEnum {
   childDataJson___parent___internal___type
   childDataJson___parent___parent___children
   childDataJson___parent___parent___id
+  childDataJson___titleTemplate
   childImageSharp___children @deprecated(reason : "Sorting on fields that need arguments to resolve is deprecated.")
   childImageSharp___children___children @deprecated(reason : "Sorting on fields that need arguments to resolve is deprecated.")
   childImageSharp___children___children___children @deprecated(reason : "Sorting on fields that need arguments to resolve is deprecated.")
@@ -1547,6 +1613,8 @@ enum FileFieldsEnum {
   childrenAsciidoc___pageAttributes___description
   childrenAsciidoc___pageAttributes___href
   childrenAsciidoc___pageAttributes___image
+  childrenAsciidoc___pageAttributes___keywords
+  childrenAsciidoc___pageAttributes___layout
   childrenAsciidoc___pageAttributes___modified
   childrenAsciidoc___pageAttributes___sort
   childrenAsciidoc___parent___children
@@ -1583,7 +1651,9 @@ enum FileFieldsEnum {
   childrenDataJson___children___internal___type
   childrenDataJson___children___parent___children
   childrenDataJson___children___parent___id
+  childrenDataJson___description
   childrenDataJson___id
+  childrenDataJson___image
   childrenDataJson___info___email
   childrenDataJson___info___github
   childrenDataJson___info___qq
@@ -1596,6 +1666,7 @@ enum FileFieldsEnum {
   childrenDataJson___internal___mediaType
   childrenDataJson___internal___owner
   childrenDataJson___internal___type
+  childrenDataJson___keyword
   childrenDataJson___motto
   childrenDataJson___name
   childrenDataJson___parent___children
@@ -1612,6 +1683,7 @@ enum FileFieldsEnum {
   childrenDataJson___parent___internal___type
   childrenDataJson___parent___parent___children
   childrenDataJson___parent___parent___id
+  childrenDataJson___titleTemplate
   childrenImageSharp
   childrenImageSharp___children @deprecated(reason : "Sorting on fields that need arguments to resolve is deprecated.")
   childrenImageSharp___children___children @deprecated(reason : "Sorting on fields that need arguments to resolve is deprecated.")
@@ -2290,6 +2362,7 @@ enum SiteFieldsEnum {
   polyfill
   port
   siteMetadata___description
+  siteMetadata___image
   siteMetadata___siteUrl
   siteMetadata___title
 }
@@ -2339,7 +2412,11 @@ enum SitePageFieldsEnum {
   componentPath
   context___currentPage
   context___limit
+  context___next___document___title
+  context___next___fields___slug
   context___numPages
+  context___previous___document___title
+  context___previous___fields___slug
   context___skip
   context___slug
   id
@@ -2456,23 +2533,42 @@ enum SitePageFieldsEnum {
   pluginCreator___pluginOptions___base64Width
   pluginCreator___pluginOptions___cacheDigest
   pluginCreator___pluginOptions___cache_busting_mode
+  pluginCreator___pluginOptions___color
   pluginCreator___pluginOptions___createLinkInHead
   pluginCreator___pluginOptions___crossOrigin
   pluginCreator___pluginOptions___defaultQuality
+  pluginCreator___pluginOptions___disable
+  pluginCreator___pluginOptions___displayName
+  pluginCreator___pluginOptions___excludePaths
   pluginCreator___pluginOptions___failOnError
+  pluginCreator___pluginOptions___fileName
+  pluginCreator___pluginOptions___footerHeight
+  pluginCreator___pluginOptions___head
+  pluginCreator___pluginOptions___headerHeight
+  pluginCreator___pluginOptions___height
   pluginCreator___pluginOptions___icon
+  pluginCreator___pluginOptions___id
+  pluginCreator___pluginOptions___includeInDevelopment
   pluginCreator___pluginOptions___include_favicon
   pluginCreator___pluginOptions___isTSX
   pluginCreator___pluginOptions___jsxPragma
   pluginCreator___pluginOptions___legacy
+  pluginCreator___pluginOptions___minify
   pluginCreator___pluginOptions___name
+  pluginCreator___pluginOptions___namespace
+  pluginCreator___pluginOptions___once
   pluginCreator___pluginOptions___output
   pluginCreator___pluginOptions___path
   pluginCreator___pluginOptions___pathCheck
-  pluginCreator___pluginOptions___pathToConfigModule
+  pluginCreator___pluginOptions___prependToBody
+  pluginCreator___pluginOptions___pure
+  pluginCreator___pluginOptions___routeChangeEventName
   pluginCreator___pluginOptions___safe
+  pluginCreator___pluginOptions___siteId
   pluginCreator___pluginOptions___stripMetadata
   pluginCreator___pluginOptions___theme_color_in_head
+  pluginCreator___pluginOptions___threshold
+  pluginCreator___pluginOptions___transpileTemplateLiterals
   pluginCreator___resolve
   pluginCreator___ssrAPIs
   pluginCreator___version
@@ -2589,23 +2685,42 @@ enum SitePluginFieldsEnum {
   pluginOptions___base64Width
   pluginOptions___cacheDigest
   pluginOptions___cache_busting_mode
+  pluginOptions___color
   pluginOptions___createLinkInHead
   pluginOptions___crossOrigin
   pluginOptions___defaultQuality
+  pluginOptions___disable
+  pluginOptions___displayName
+  pluginOptions___excludePaths
   pluginOptions___failOnError
+  pluginOptions___fileName
+  pluginOptions___footerHeight
+  pluginOptions___head
+  pluginOptions___headerHeight
+  pluginOptions___height
   pluginOptions___icon
+  pluginOptions___id
+  pluginOptions___includeInDevelopment
   pluginOptions___include_favicon
   pluginOptions___isTSX
   pluginOptions___jsxPragma
   pluginOptions___legacy
+  pluginOptions___minify
   pluginOptions___name
+  pluginOptions___namespace
+  pluginOptions___once
   pluginOptions___output
   pluginOptions___path
   pluginOptions___pathCheck
-  pluginOptions___pathToConfigModule
+  pluginOptions___prependToBody
+  pluginOptions___pure
+  pluginOptions___routeChangeEventName
   pluginOptions___safe
+  pluginOptions___siteId
   pluginOptions___stripMetadata
   pluginOptions___theme_color_in_head
+  pluginOptions___threshold
+  pluginOptions___transpileTemplateLiterals
   resolve
   ssrAPIs
   version
@@ -2641,7 +2756,7 @@ input AsciidocFieldsFilterInput {
   birthTime: DateQueryOperatorInput
   modifiedTime: DateQueryOperatorInput
   slug: StringQueryOperatorInput
-  year: FloatQueryOperatorInput
+  year: IntQueryOperatorInput
 }
 
 input AsciidocFilterInput {
@@ -2667,6 +2782,8 @@ input AsciidocPageAttributesFilterInput {
   description: StringQueryOperatorInput
   href: StringQueryOperatorInput
   image: StringQueryOperatorInput
+  keywords: StringQueryOperatorInput
+  layout: StringQueryOperatorInput
   modified: StringQueryOperatorInput
   sort: StringQueryOperatorInput
 }
@@ -2699,12 +2816,16 @@ input BooleanQueryOperatorInput {
 input DataJsonFilterInput {
   avatar: StringQueryOperatorInput
   children: NodeFilterListInput
+  description: StringQueryOperatorInput
   id: StringQueryOperatorInput
+  image: StringQueryOperatorInput
   info: DataJsonInfoFilterInput
   internal: InternalFilterInput
+  keyword: StringQueryOperatorInput
   motto: StringQueryOperatorInput
   name: StringQueryOperatorInput
   parent: NodeFilterInput
+  titleTemplate: StringQueryOperatorInput
 }
 
 input DataJsonFilterListInput {
@@ -3035,9 +3156,37 @@ input SiteFlagsFilterInput {
 input SitePageContextFilterInput {
   currentPage: IntQueryOperatorInput
   limit: IntQueryOperatorInput
+  next: SitePageContextNextFilterInput
   numPages: IntQueryOperatorInput
+  previous: SitePageContextPreviousFilterInput
   skip: IntQueryOperatorInput
   slug: StringQueryOperatorInput
+}
+
+input SitePageContextNextDocumentFilterInput {
+  title: StringQueryOperatorInput
+}
+
+input SitePageContextNextFieldsFilterInput {
+  slug: StringQueryOperatorInput
+}
+
+input SitePageContextNextFilterInput {
+  document: SitePageContextNextDocumentFilterInput
+  fields: SitePageContextNextFieldsFilterInput
+}
+
+input SitePageContextPreviousDocumentFilterInput {
+  title: StringQueryOperatorInput
+}
+
+input SitePageContextPreviousFieldsFilterInput {
+  slug: StringQueryOperatorInput
+}
+
+input SitePageContextPreviousFilterInput {
+  document: SitePageContextPreviousDocumentFilterInput
+  fields: SitePageContextPreviousFieldsFilterInput
 }
 
 input SitePageFilterInput {
@@ -3127,23 +3276,42 @@ input SitePluginPluginOptionsFilterInput {
   base64Width: IntQueryOperatorInput
   cacheDigest: StringQueryOperatorInput
   cache_busting_mode: StringQueryOperatorInput
+  color: StringQueryOperatorInput
   createLinkInHead: BooleanQueryOperatorInput
   crossOrigin: StringQueryOperatorInput
   defaultQuality: IntQueryOperatorInput
+  disable: BooleanQueryOperatorInput
+  displayName: BooleanQueryOperatorInput
+  excludePaths: StringQueryOperatorInput
   failOnError: BooleanQueryOperatorInput
+  fileName: BooleanQueryOperatorInput
+  footerHeight: IntQueryOperatorInput
+  head: BooleanQueryOperatorInput
+  headerHeight: IntQueryOperatorInput
+  height: IntQueryOperatorInput
   icon: StringQueryOperatorInput
+  id: StringQueryOperatorInput
+  includeInDevelopment: BooleanQueryOperatorInput
   include_favicon: BooleanQueryOperatorInput
   isTSX: BooleanQueryOperatorInput
   jsxPragma: StringQueryOperatorInput
   legacy: BooleanQueryOperatorInput
+  minify: BooleanQueryOperatorInput
   name: StringQueryOperatorInput
+  namespace: StringQueryOperatorInput
+  once: BooleanQueryOperatorInput
   output: StringQueryOperatorInput
   path: StringQueryOperatorInput
   pathCheck: BooleanQueryOperatorInput
-  pathToConfigModule: StringQueryOperatorInput
+  prependToBody: BooleanQueryOperatorInput
+  pure: BooleanQueryOperatorInput
+  routeChangeEventName: StringQueryOperatorInput
   safe: StringQueryOperatorInput
+  siteId: StringQueryOperatorInput
   stripMetadata: BooleanQueryOperatorInput
   theme_color_in_head: BooleanQueryOperatorInput
+  threshold: IntQueryOperatorInput
+  transpileTemplateLiterals: BooleanQueryOperatorInput
 }
 
 input SitePluginSortInput {
@@ -3153,6 +3321,7 @@ input SitePluginSortInput {
 
 input SiteSiteMetadataFilterInput {
   description: StringQueryOperatorInput
+  image: StringQueryOperatorInput
   siteUrl: StringQueryOperatorInput
   title: StringQueryOperatorInput
 }

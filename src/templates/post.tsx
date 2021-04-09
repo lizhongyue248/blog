@@ -13,6 +13,7 @@ import Snackbar from '@material-ui/core/Snackbar'
 import { Divider, Drawer, Toolbar } from '@material-ui/core'
 import { isBrowser } from '../util/constant'
 import NotFoundPage from '../pages/404'
+import { PostMeta } from '../interface/page'
 import { PostProps } from '../interface/asciidoc'
 import PostSimpleInfo from '../components/PostSimpleInfo'
 import Layout from '../components/Layout'
@@ -82,9 +83,17 @@ const Post: FC<PostProps> = (props): ReactElement => {
     Prism.highlightAll()
   }, [])
 
+  const postMeta: PostMeta = {
+    title: post.node.document.title,
+    image: post.node.pageAttributes.image,
+    description: post.node.pageAttributes.description,
+    category: post.node.pageAttributes.category
+  }
+
   return (
     <Layout
-      title={post.node.document.title}
+      title={postMeta.title}
+      postMeta={postMeta}
       actions={[
         <SpeedDial
           ariaLabel='目录'

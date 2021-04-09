@@ -1,6 +1,8 @@
 module.exports = {
   siteMetadata: {
     title: '阿月很乖',
+    description: '念念不忘，必有回响。',
+    image: 'https://resources.echocow.cn/image/logo/logo-ghost.png',
     siteUrl: 'https://zyue.wiki'
   },
   flags: {
@@ -10,6 +12,13 @@ module.exports = {
     PARALLEL_SOURCING: true
   },
   plugins: [
+    {
+      resolve: 'gatsby-plugin-baidu-analytics',
+      options: {
+        siteId: '5e4c4618ca1c2c8820c39ad5bc249d88',
+        head: true
+      }
+    },
     'gatsby-plugin-styled-components',
     'gatsby-plugin-lodash',
     'gatsby-plugin-postcss',

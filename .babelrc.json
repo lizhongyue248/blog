@@ -16,6 +16,8 @@
           "clike",
           "docker",
           "json",
+          "jsonp",
+          "json5",
           "go",
           "groovy",
           "http",

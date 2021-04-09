@@ -94,3 +94,11 @@
 .utterances {
     margin-top: 2rem;
 }
+
+.colist td:first-child {
+    width: 48px;
+}
+
+.hdlist td:first-child {
+    width: 256px;
+}

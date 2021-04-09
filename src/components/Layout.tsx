@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet'
 import { useLocalStorageState } from 'ahooks'
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder'
 import { createMuiTheme, ThemeProvider, CssBaseline, Container, Paper, Divider } from '@material-ui/core'
+import Seo from './Seo'
 import Nav from './Nav'
 import Banner from './Banner'
 import { isBrowser } from '../util/constant'
@@ -13,6 +14,7 @@ import { LayoutProps } from '../interface/page'
 const Layout: FC<LayoutProps> = (
   {
     title = '阿月很乖',
+    postMeta,
     banner = 'https://rmt.dogedoge.com/fetch/fluid/storage/bg/vdysjx.png?w=1920&fmt=webp',
     children,
     actions,
@@ -20,18 +22,16 @@ const Layout: FC<LayoutProps> = (
   }
 ): ReactElement => {
   const [dark] = useLocalStorageState('palette-dark', isBrowser() ? window.matchMedia('(prefers-color-scheme: dark)').matches : true)
-  const theme = createMuiTheme({
-    palette: { type: dark ? 'dark' : 'light' }
-  })
+  const theme = createMuiTheme({ palette: { type: dark ? 'light' : 'light' } })
   useEffect(() => {
     const documentTitle = document.title
     let titleTime: ReturnType<typeof setTimeout>
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
-        document.title = '🙈 (つェ⊂)看不到我~ ' + documentTitle
+        document.title = '(つェ⊂)看不到我~ ' + documentTitle
         clearTimeout(titleTime)
       } else {
-        document.title = '🙉 (*´∇｀*) 被发现啦~ ' + documentTitle
+        document.title = '(*´∇｀*) 被发现啦~ ' + documentTitle
         titleTime = setTimeout(function () {
           document.title = documentTitle
         }, 2000)
@@ -43,6 +43,7 @@ const Layout: FC<LayoutProps> = (
       <Helmet>
         {isBrowser() && <script async src='//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js' />}
       </Helmet>
+      <Seo post={postMeta} />
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Nav actions={actions} />
@@ -57,7 +58,7 @@ const Layout: FC<LayoutProps> = (
             </Paper>
           </Container>
         </div>
-        <footer className='w-full text-center my-9'>
+        <footer className='w-full text-center py-9 bg-gray-100'>
           <div>
             总访问量 <span id='busuanzi_value_site_pv' /> 次
             <FavoriteBorderIcon className='align-middle text-xl mx-2 px-1 animate-ping' />
