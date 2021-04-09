@@ -29,7 +29,7 @@ const Banner: FC<BannerProps> = ({ banner, title, other = <div /> }): ReactEleme
       <div className={`${classes.mask} w-full h-full flex flex-col justify-center items-center justify-between`}>
         <Typography className='flex flex-col justify-center items-center pt-2 text-white h-5/6 text-center mx-8' variant='h4'>
           <Typed
-            className='text-3xl md:text-4xl lg:text-5xl'
+            className='text-3xl md:text-4xl lg:text-5xl text-white'
             strings={[title]}
             typeSpeed={40}
             backSpeed={50}

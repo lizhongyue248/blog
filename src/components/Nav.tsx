@@ -1,4 +1,5 @@
-import { FC, ReactElement, cloneElement } from 'react'
+import { FC, ReactElement, cloneElement, useEffect } from 'react'
+import { useRecoilState } from 'recoil'
 import { Link, navigate } from 'gatsby'
 import { useBoolean } from 'ahooks'
 import SpeedDial from '@material-ui/lab/SpeedDial'
@@ -8,6 +9,8 @@ import HomeIcon from '@material-ui/icons/Home'
 import EventNoteIcon from '@material-ui/icons/EventNote'
 import EjectIcon from '@material-ui/icons/Eject'
 import CategoryIcon from '@material-ui/icons/Category'
+import Brightness7Icon from '@material-ui/icons/Brightness7'
+import Brightness4Icon from '@material-ui/icons/Brightness4'
 import useScrollTrigger from '@material-ui/core/useScrollTrigger'
 import { createStyles, Theme } from '@material-ui/core/styles'
 import {
@@ -15,12 +18,12 @@ import {
   Button,
   makeStyles,
   Toolbar,
-  Typography,
   IconButton,
   Drawer,
   List, ListItem, ListItemIcon, ListItemText
 } from '@material-ui/core'
 import { isBrowser } from '../util/constant'
+import { darkState } from '../store/base'
 
 interface Props {
   children: ReactElement;
@@ -63,6 +66,8 @@ const menus = [
 ]
 
 const Nav: FC<ArrayProps> = ({ actions: actionProps = [] }): ReactElement => {
+  // const [dark, setDark] = useLocalStorageState('palette-dark', isBrowser() ? window.matchMedia('(prefers-color-scheme: dark)').matches : true)
+  const [dark, setDark] = useRecoilState(darkState)
   const [open, { setTrue: show, setFalse: hide }] = useBoolean(false)
   const classes = useStyles()
   const toHref = async (url: string) => {
@@ -86,13 +91,20 @@ const Nav: FC<ArrayProps> = ({ actions: actionProps = [] }): ReactElement => {
       hidden={shouldToTop}
     />)]
   actions.unshift(...actionProps)
+
+  useEffect(() => {
+    const body = document.getElementsByTagName('body')[0]
+    if (dark) body.classList.add('dark')
+    else body.classList.remove('dark')
+  }, [dark])
+
   return (
     <div>
       <Bar>
         <AppBar elevation={4} className={`min-h-0 h-16 bg-transparent transition-all duration-700 ${classes.appBar}`}>
           <Toolbar className='h-full min-h-0 max-w-7xl w-full flex justify-between mx-auto'>
             <Link to='/blog' className='no-underline'>
-              <Typography className='font-bold text-white cursor-pointer' variant='h6'>A Yue's Blog</Typography>
+              <div className='font-bold cursor-pointer text-white text-2xl'>A Yue's Blog</div>
             </Link>
             <div className='space-x-1 hidden sm:block'>
               {
@@ -106,6 +118,11 @@ const Nav: FC<ArrayProps> = ({ actions: actionProps = [] }): ReactElement => {
                   </Button>
                 ))
               }
+              <IconButton className='text-white' aria-label='切换主题' onClick={() => setDark(!dark)}>
+                {
+                  dark ? <Brightness4Icon /> : <Brightness7Icon />
+                }
+              </IconButton>
             </div>
             <div className='block sm:hidden'>
               <IconButton className='text-white' size='medium' aria-label='menus' onClick={() => show()}>

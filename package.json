@@ -16,8 +16,8 @@
     "gatsby"
   ],
   "scripts": {
-    "develop": "gatsby develop -p 8005",
-    "start": "gatsby develop -p 8005",
+    "develop": "gatsby develop -p 8006",
+    "start": "gatsby develop -p 8006",
     "build": "gatsby build",
     "serve": "gatsby serve",
     "clean": "gatsby clean",
@@ -40,6 +40,7 @@
     "gatsby-plugin-page-progress": "^2.2.0",
     "gatsby-plugin-postcss": "^4.2.0",
     "gatsby-plugin-react-helmet": "^4.2.0",
+    "gatsby-plugin-sass": "^4.2.0",
     "gatsby-plugin-scroll-reveal": "^0.0.7",
     "gatsby-plugin-sharp": "^3.2.1",
     "gatsby-plugin-sitemap": "^3.2.0",
@@ -88,6 +89,7 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-react": "^7.23.2",
     "gh-pages": "^3.1.0",
+    "sass": "^1.32.8",
     "typescript": "^4.2.4"
   }
 }

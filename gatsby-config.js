@@ -19,6 +19,7 @@ module.exports = {
         head: true
       }
     },
+    'gatsby-plugin-sass',
     'gatsby-plugin-styled-components',
     'gatsby-plugin-lodash',
     'gatsby-plugin-postcss',

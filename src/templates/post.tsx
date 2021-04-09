@@ -19,8 +19,8 @@ import PostSimpleInfo from '../components/PostSimpleInfo'
 import Layout from '../components/Layout'
 import Comment from '../components/Comment'
 import '../styles/fontawesome.min.css'
-import '../styles/asciidoc.css'
-import '../styles/post.css'
+import '../styles/asciidoc.scss'
+import '../styles/post.scss'
 
 interface CatalogueProps {
   list?: string

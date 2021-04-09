@@ -1,0 +1,131 @@
+#post-content {
+  h1, h2, h3, h4, h5, h6 {
+    /*position: relative;*/
+    /*left: -30px;*/
+    cursor: pointer;
+    transition: all 500ms;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  table {
+    table-layout: fixed;
+    width: 100%;
+
+    td {
+      word-break: break-all;
+    }
+
+    pre {
+      overflow: auto;
+    }
+  }
+
+  a {
+    overflow-wrap: break-word;
+  }
+
+  .literalblock .content pre {
+    padding: 1rem;
+  }
+}
+
+/*#post-content table .icon,*/
+/*#post-content .colist table tr > td:first-child {*/
+/*    width: 8rem;*/
+/*    padding: 0;*/
+/*    text-align: center;*/
+/*    vertical-align: middle;*/
+/*    line-height: 1.5;*/
+/*    height: 8rem;*/
+/*}*/
+
+/*#post-content .colist table tr > td:first-child {*/
+/*    height: 2rem;*/
+/*    width: 2rem;*/
+/*    text-align: left;*/
+/*}*/
+
+.MuiDrawer-docked > .MuiPaper-root {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 400;
+}
+
+#post-toc {
+  #toc {
+    font-weight: 600;
+
+    #toctitle {
+      font-size: 2em;
+    }
+
+    > ul {
+      padding: 0;
+      margin: 1rem 0 0 0;
+    }
+
+    li {
+      list-style: none;
+      margin: 0.5rem 0 0 0;
+    }
+
+    a {
+      text-decoration: none;
+      color: #315ae0 !important;
+      display: block;
+      width: 100%;
+
+      &:hover {
+        color: #6983d6 !important;
+        text-decoration: underline !important;
+      }
+    }
+  }
+}
+
+.dark {
+  #post-toc {
+    #toc {
+      a {
+        color: #31A9F4 !important;
+        &:hover {
+          color: #21a3ec !important;
+        }
+      }
+    }
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: bold;
+  }
+
+}
+
+.quoteblock, code {
+  word-break: break-all;
+}
+
+.utterances {
+  margin-top: 2rem;
+}
+
+.colist td:first-child {
+  width: 48px;
+}
+
+.hdlist td:first-child {
+  width: 256px;
+}
+
+* {
+  transition: background-color 300ms;
+}
+
+.sec1 .quoteblock {
+  width: 80%;
+}
