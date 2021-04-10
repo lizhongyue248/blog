@@ -38,9 +38,52 @@ export const bgColors = [
   'bg-pink-500'
 ]
 
+export const textColors = [
+  'text-red-500',
+  'text-amber-500',
+  'text-teal-500',
+  'text-orange-500',
+  'text-yellow-500',
+  'text-green-500',
+  'text-emerald-500',
+  'text-rose-500',
+  'text-lime-500',
+  'text-blue-500',
+  'text-fuchsia-500',
+  'text-violet-500',
+  'text-cyan-500',
+  'text-indigo-500',
+  'text-purple-500',
+  'text-lightBlue-500',
+  'text-pink-500'
+]
+export const borderColors = [
+  'border-red-500',
+  'border-amber-500',
+  'border-teal-500',
+  'border-orange-500',
+  'border-yellow-500',
+  'border-green-500',
+  'border-emerald-500',
+  'border-rose-500',
+  'border-lime-500',
+  'border-blue-500',
+  'border-fuchsia-500',
+  'border-violet-500',
+  'border-cyan-500',
+  'border-indigo-500',
+  'border-purple-500',
+  'border-lightBlue-500',
+  'border-pink-500'
+]
+
 export const getColor = (index: number): string => colors[index % colors.length]
 
 export const getBgColors = (index: number): string => bgColors[index % colors.length]
+
+export const getTextColors = (index: number): string => textColors[index % colors.length]
+
+export const getBorderColors = (index: number): string => borderColors[index % colors.length]
 
 export const isBrowser = (): boolean => typeof window !== 'undefined'
 

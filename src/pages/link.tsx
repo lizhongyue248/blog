@@ -104,14 +104,14 @@ const LinkPage: FC<LinkProps> = ({ data }): ReactElement => {
                     className={`px-4 pt-4 pb-2 text-white ${getBgColors(index)}`}
                     onClick={() => isBrowser() && window.open(node.link, '_blank')}
                   >
-                    <Typography className='text-white' variant='h6' component='h2'>
+                    <div className='text-white text-xl'>
                       <Avatar
-                        className='w-6 h-6 inline-block align-middle text-center text-sm mr-1 leading-relaxed'
+                        className='w-6 h-6 inline-block bg-gray-100 align-middle text-center text-sm mr-1 leading-relaxed'
                         alt={node.name}
                         src={checks[`${node.id}-avatar`]}
                       />
                       {node.name}
-                    </Typography>
+                    </div>
                     <Typography
                       href={node.link} className='mt-3 text-white no-underline' color='textSecondary'
                       target='_blank'
@@ -120,11 +120,11 @@ const LinkPage: FC<LinkProps> = ({ data }): ReactElement => {
                       {node.link}
                     </Typography>
                   </CardActionArea>
-                  <Typography className='py-5 h-20 px-4 bg-gray-100' variant='body2' component='p'>
+                  <Typography className='py-5 h-20 px-4 bg-gray-100 dark:bg-gray-500' variant='body2' component='p'>
                     {node.description}
                   </Typography>
                 </CardContent>
-                <CardActions className='flex px-4 justify-between bg-gray-100 text-gray-400'>
+                <CardActions className='flex px-4 justify-between bg-gray-100 dark:bg-gray-500 text-gray-400'>
                   <div>
                     <Button disabled startIcon={<AlternateEmailIcon className='text-xs' />}>
                       <span>{node.tag}</span>

@@ -16,8 +16,8 @@
     "gatsby"
   ],
   "scripts": {
-    "develop": "gatsby develop -p 8006",
-    "start": "gatsby develop -p 8006",
+    "develop": "gatsby develop -p 8007",
+    "start": "gatsby develop -p 8007",
     "build": "gatsby build",
     "serve": "gatsby serve",
     "clean": "gatsby clean",
@@ -30,6 +30,7 @@
     "@syncfusion/ej2-react-charts": "^19.1.54",
     "ahooks": "^2.10.0",
     "autoprefixer": "^10.2.4",
+    "clear-cache": "^1.0.1",
     "gatsby": "^3.2.1",
     "gatsby-image": "^3.2.0",
     "gatsby-plugin-baidu-analytics": "^2.2.0",

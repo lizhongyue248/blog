@@ -1,4 +1,5 @@
 import { FC, ReactElement } from 'react'
+import { useRecoilValue } from 'recoil'
 import { graphql } from 'gatsby'
 import {
   Inject, AccumulationDataLabel,
@@ -12,13 +13,13 @@ import {
   AccumulationSeriesDirective
 } from '@syncfusion/ej2-react-charts'
 import { Chip, Avatar } from '@material-ui/core'
-import { getColor } from '../util/constant'
+import { getBgColors, getBorderColors, getTextColors } from '../util/constant'
+import { darkState } from '../store/base'
 import { CategoryProps } from '../interface/page'
 import Layout from '../components/Layout'
 
 const dataLabel: AccumulationDataLabelSettingsModel = { name: 'text', visible: true, position: 'Outside' }
 const toolTip: TooltipSettingsModel = { enable: true, header: '类别' }
-const legend: LegendSettingsModel = { position: 'Bottom', shapeHeight: 15, shapeWidth: 15 }
 
 interface CategoryChartProps {
   category: {
@@ -29,9 +30,13 @@ interface CategoryChartProps {
 }
 
 const CategoryChart: FC<CategoryChartProps> = ({ category }): ReactElement => {
+  const dark = useRecoilValue(darkState)
+  const legend: LegendSettingsModel = { position: 'Bottom', shapeHeight: 15, shapeWidth: 15, textStyle: { color: dark ? '#fff' : '#000' } }
+
   return (
     <AccumulationChartComponent
       id='charts'
+      background={dark ? '#424242' : '#ffffff'}
       tooltip={toolTip}
       legendSettings={legend}
     >
@@ -62,9 +67,9 @@ const CategoryPage: FC<CategoryProps> = ({ data }): ReactElement => {
       {
         category.map((c, index) => (
           <Chip
-            className={`mr-5 mt-5 border-${getColor(index)}-500 text-${getColor(index)}-500 `}
+            className={`mr-5 mt-5 ${getBorderColors(index)} ${getTextColors(index)} `}
             key={c.category}
-            avatar={<Avatar className={`bg-${getColor(index)}-500 text-white`}>{c.total}</Avatar>}
+            avatar={<Avatar className={`${getBgColors(index)} text-white`}>{c.total}</Avatar>}
             label={c.category}
             clickable
             variant='outlined'

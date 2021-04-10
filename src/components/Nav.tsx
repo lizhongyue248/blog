@@ -94,8 +94,14 @@ const Nav: FC<ArrayProps> = ({ actions: actionProps = [] }): ReactElement => {
 
   useEffect(() => {
     const body = document.getElementsByTagName('body')[0]
-    if (dark) body.classList.add('dark')
-    else body.classList.remove('dark')
+    const html = document.getElementsByTagName('html')[0]
+    if (dark) {
+      body.classList.add('dark')
+      html.classList.add('dark')
+    } else {
+      body.classList.remove('dark')
+      html.classList.remove('dark')
+    }
   }, [dark])
 
   return (
@@ -106,12 +112,12 @@ const Nav: FC<ArrayProps> = ({ actions: actionProps = [] }): ReactElement => {
             <Link to='/blog' className='no-underline'>
               <div className='font-bold cursor-pointer text-white text-2xl'>A Yue's Blog</div>
             </Link>
-            <div className='space-x-1 hidden sm:block'>
+            <div className='space-x-1'>
               {
                 menus.map(menu => (
                   <Button
                     key={menu.name}
-                    className='text-white'
+                    className='text-white hidden sm:inline-block'
                     startIcon={menu.icon}
                     onClick={() => toHref(menu.href)}
                   >{menu.name}
@@ -119,13 +125,9 @@ const Nav: FC<ArrayProps> = ({ actions: actionProps = [] }): ReactElement => {
                 ))
               }
               <IconButton className='text-white' aria-label='切换主题' onClick={() => setDark(!dark)}>
-                {
-                  dark ? <Brightness4Icon /> : <Brightness7Icon />
-                }
+                {dark ? <Brightness4Icon /> : <Brightness7Icon />}
               </IconButton>
-            </div>
-            <div className='block sm:hidden'>
-              <IconButton className='text-white' size='medium' aria-label='menus' onClick={() => show()}>
+              <IconButton className='sm:hidden text-white' size='medium' aria-label='menus' onClick={() => show()}>
                 <MenuIcon />
               </IconButton>
             </div>

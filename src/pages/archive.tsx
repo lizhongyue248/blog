@@ -1,4 +1,5 @@
 import { FC, ReactElement } from 'react'
+import { useRecoilValue } from 'recoil'
 import _ from 'lodash'
 import { graphql, navigate } from 'gatsby'
 import { useSetState } from 'ahooks'
@@ -20,6 +21,7 @@ import {
 import ExpandMore from '@material-ui/icons/ExpandMore'
 import ExpandLess from '@material-ui/icons/ExpandLess'
 import { List, ListItem, ListItemText, Collapse, Chip, Divider } from '@material-ui/core'
+import { darkState } from '../store/base'
 import { Node } from '../interface/asciidoc'
 import Layout from '../components/Layout'
 
@@ -43,14 +45,17 @@ interface Archive {
 }
 
 const ArchiveChart: FC<{ archives: Archive[]}> = ({ archives }): ReactElement => {
+  const dark = useRecoilValue(darkState)
   const bad = archives.filter(archive => archive.total < 5)
   const good = archives.filter(archive => archive.total > 24)
+
   return (
     <ChartComponent
       id='charts'
+      background={dark ? '#424242' : '#ffffff'}
       margin={{ top: 30, left: 15, right: 15, bottom: 30 }}
-      primaryXAxis={{ title: '年份', valueType: 'DateTime', intervalType: 'Years', majorGridLines: { width: 0 }, labelIntersectAction: 'Rotate90' }}
-      primaryYAxis={{ title: '文章数', labelFormat: '{value}篇' }}
+      primaryXAxis={{ title: '年份', valueType: 'DateTime', intervalType: 'Years', majorGridLines: { width: 0 }, labelIntersectAction: 'Rotate90', labelStyle: { color: dark ? '#fff' : '#000' } }}
+      primaryYAxis={{ title: '文章数', labelFormat: '{value}篇', labelStyle: { color: dark ? '#fff' : '#000' } }}
       tooltip={{ enable: true, shared: true }}
     >
       <Inject services={[SplineSeries, Legend, Tooltip, DataLabel, Category, DateTime, ChartAnnotation]} />
@@ -132,14 +137,17 @@ const ArchivePage: FC<ArchiveProps> = ({ data }): ReactElement => {
               <Collapse in={open[archive.year]} timeout='auto' unmountOnExit>
                 <List>
                   {
-                    archive.nodes.map(node => (
+                    archive.nodes.map((node, index) => (
                       <div key={node.fields.slug}>
                         <ListItem
                           className='flex space-x-3 justify-between px-10 sm:text-sm md:text-base lg:text-xl hover:text-blue-400 duration-500 transition-colors'
                           onClick={() => navigate(node.fields.slug)}
                           button
                         >
-                          <div className='w-4/5'>{node.document.title}</div>
+                          <div className='w-4/5'>
+                            {node.document.title}
+                            <Chip className='ml-4 text-orange-500 border-orange-500' variant='outlined' size='small' label={node.pageAttributes.category} />
+                          </div>
                           <div className='text-right w-1/5'>{node.fields.birthTime}</div>
                         </ListItem>
                         <Divider variant='middle' component='li' />
@@ -169,6 +177,9 @@ export const query = graphql`
             year
             slug
             birthTime(formatString: "YYYY-MM-DD")
+          }
+          pageAttributes {
+            category
           }
         }
         totalCount
