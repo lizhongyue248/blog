@@ -1,0 +1,17 @@
+{
+  "name": "gatsby-transformer-asciidoc",
+  "description": "Gatsby transformer plugin for Asciidocs using the Asciidoctor.js library",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "update:dependency": "yarn upgrade-interactive --latest"
+  },
+  "dependencies": {
+    "asciidoctor": "^2.2.2",
+    "lodash": "^4.17.21"
+  },
+  "peerDependencies": {
+    "gatsby": "^3.0.0"
+  }
+}

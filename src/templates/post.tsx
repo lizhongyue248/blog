@@ -175,10 +175,6 @@ export const query = graphql`
             modifiedTime(fromNow: true, locale: "zh-cn")
           }
           html
-          author {
-            fullName
-            email
-          }
           document {
             title
           }

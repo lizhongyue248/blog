@@ -137,7 +137,7 @@ const ArchivePage: FC<ArchiveProps> = ({ data }): ReactElement => {
               <Collapse in={open[archive.year]} timeout='auto' unmountOnExit>
                 <List>
                   {
-                    archive.nodes.map((node, index) => (
+                    archive.nodes.map((node) => (
                       <div key={node.fields.slug}>
                         <ListItem
                           className='flex space-x-3 justify-between px-10 sm:text-sm md:text-base lg:text-xl hover:text-blue-400 duration-500 transition-colors'

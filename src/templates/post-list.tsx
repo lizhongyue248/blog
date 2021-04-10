@@ -98,10 +98,6 @@ export const pageQuery = graphql`
             birthTime(formatString: "YYYY-MM-DD", locale: "zh-cn")
             modifiedTime(formatString: "YYYY-MM-DD", locale: "zh-cn")
           }
-          author {
-            fullName
-            email
-          }
           document {
             title
           }

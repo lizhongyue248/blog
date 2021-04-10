@@ -3,7 +3,6 @@ export interface Node {
   id: string
   fields: { slug: string, modifiedTime: string, birthTime: string, year: number }
   revision: { date: string, number: string }
-  author: { fullName: string, email: string }
   document: { title: string }
   pageAttributes: { category: string, description: string, image: string, sort: number | null }
 }

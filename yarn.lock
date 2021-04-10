@@ -24,14 +24,6 @@
   dependencies:
     yargs "15.3.1"
 
-"@asciidoctor/core@2.2.1":
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/@asciidoctor/core/-/core-2.2.1.tgz#eac0361a85b46f2ef2a9d19d73e3875bf94715d4"
-  integrity sha512-wdVseZjCcBvFfWSsCGyyvJkSQJ9UmXDdTDKnL+HerM12XQq4eWtk7lniSIKO459ipqImcsrueib47EtkzzRjLw==
-  dependencies:
-    asciidoctor-opal-runtime "0.3.0"
-    unxhr "1.0.1"
-
 "@asciidoctor/core@2.2.2":
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/@asciidoctor/core/-/core-2.2.2.tgz#ceeb9257e53c14a41ab2fc4f47b1d3d378368bca"
@@ -2934,14 +2926,6 @@ arrify@^2.0.1:
   resolved "https://registry.yarnpkg.com/arrify/-/arrify-2.0.1.tgz#c9655e9331e0abcd588d2a7cad7e9956f66701fa"
   integrity sha512-3duEwti880xqi4eAMN8AyR4a0ByT90zoYdLlevfrvU43vb0YZwZVfxOgxWrLXXXpyugL0hNZc9G6BiB5B3nUug==
 
-asciidoctor-opal-runtime@0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/asciidoctor-opal-runtime/-/asciidoctor-opal-runtime-0.3.0.tgz#df327a870ddd3cd5eb0e162d64ed4dcdd3fe3fee"
-  integrity sha512-YapVwl2qbbs6sIe1dvAlMpBzQksFVTSa2HOduOKFNhZlE9bNmn+moDgGVvjWPbzMPo/g8gItyTHfWB2u7bQxag==
-  dependencies:
-    glob "7.1.3"
-    unxhr "1.0.1"
-
 asciidoctor-opal-runtime@0.3.2:
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/asciidoctor-opal-runtime/-/asciidoctor-opal-runtime-0.3.2.tgz#4e8a20b7f8ff3ef13ad4575a6fd4b54be25ccb00"
@@ -2949,14 +2933,6 @@ asciidoctor-opal-runtime@0.3.2:
   dependencies:
     glob "7.1.3"
     unxhr "1.0.1"
-
-asciidoctor@^2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/asciidoctor/-/asciidoctor-2.2.1.tgz#4e29fe7195d97f75b36c91ad8e3448191b9ab0fa"
-  integrity sha512-adH/pDPDZCd4eb1ku7N8WepN+O6Yl0lVQPWE/ep7+0BFkBm4P/Sx8DUqzZ+X+nG6WSZlma5Uu0gNuDgrc7etFg==
-  dependencies:
-    "@asciidoctor/cli" "3.4.0"
-    "@asciidoctor/core" "2.2.1"
 
 asciidoctor@^2.2.2:
   version "2.2.2"
@@ -6942,14 +6918,6 @@ gatsby-theme-material-ui@^2.0.1:
     gatsby-plugin-webfonts "^2.1.0"
     gatsby-theme-material-ui-top-layout "^2.0.1"
     react-helmet "^6.1.0"
-
-gatsby-transformer-asciidoc@^2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/gatsby-transformer-asciidoc/-/gatsby-transformer-asciidoc-2.2.0.tgz#583cd3c4b9384b617094576cbe5f6a28275932ed"
-  integrity sha512-8MaG1tGlSOkn0rj4ynWw62YbJX1mbuB7lPOdM9F14zqhmBY4BoLQkzMYBIzP2W6GYiavAT1O6/vvFLXB+Q4pFg==
-  dependencies:
-    "@babel/runtime" "^7.12.5"
-    asciidoctor "^2.2.1"
 
 gatsby-transformer-json@^3.2.0:
   version "3.2.0"

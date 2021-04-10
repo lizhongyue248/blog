@@ -2,7 +2,7 @@
   "name": "a-yue",
   "version": "1.0.0",
   "private": true,
-  "description": "Gatsby Template",
+  "description": "中月的博客",
   "author": {
     "name": "阿月很乖",
     "url": "https://github.com/lizhongyue248",
@@ -10,10 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/lizhongyue248/a-yue"
+    "url": "https://github.com/lizhongyue248/blog"
   },
   "keywords": [
-    "gatsby"
+    "ayue",
+    "zyue",
+    "中月",
+    "阿月",
+    "Blog"
   ],
   "scripts": {
     "develop": "gatsby develop -p 8007",
@@ -49,7 +53,6 @@
     "gatsby-plugin-typescript": "^3.2.0",
     "gatsby-source-filesystem": "^3.2.0",
     "gatsby-theme-material-ui": "^2.0.1",
-    "gatsby-transformer-asciidoc": "^2.2.0",
     "gatsby-transformer-json": "^3.2.0",
     "gatsby-transformer-sharp": "^3.2.0",
     "gravatar-url": "^3.1.0",
