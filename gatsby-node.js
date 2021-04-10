@@ -91,6 +91,7 @@ exports.createPages = async ({ graphql, actions }) => {
   createBlogPage(posts, createPage)
   const { createRedirect } = actions
   createRedirect({ fromPath: '/blog', toPath: '/', redirectInBrowser: true, isPermanent: true })
+  createRedirect({ fromPath: '/blog/', toPath: '/', redirectInBrowser: true, isPermanent: true })
   createRedirect({ fromPath: '/blog/1', toPath: '/', redirectInBrowser: true, isPermanent: true })
 }
 
