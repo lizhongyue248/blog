@@ -13,8 +13,8 @@ interface Node {
 }
 
 type Asciidoc implements Node {
-  author: AsciidocAuthor
   children: [Node!]!
+  content: String
   document: AsciidocDocument
   fields: AsciidocFields
   html: String
@@ -23,15 +23,6 @@ type Asciidoc implements Node {
   pageAttributes: AsciidocPageAttributes
   parent: Node
   revision: AsciidocRevision
-}
-
-type AsciidocAuthor {
-  authorInitials: String
-  email: String
-  firstName: String
-  fullName: String
-  lastName: String
-  middleName: String
 }
 
 type AsciidocConnection {
@@ -125,6 +116,7 @@ type DataJson implements Node {
   info: DataJsonInfo
   internal: Internal!
   keyword: String
+  logo: String
   motto: String
   name: String
   parent: Node
@@ -688,8 +680,8 @@ type Query {
   allSiteBuildMetadata(filter: SiteBuildMetadataFilterInput, limit: Int, skip: Int, sort: SiteBuildMetadataSortInput): SiteBuildMetadataConnection!
   allSitePage(filter: SitePageFilterInput, limit: Int, skip: Int, sort: SitePageSortInput): SitePageConnection!
   allSitePlugin(filter: SitePluginFilterInput, limit: Int, skip: Int, sort: SitePluginSortInput): SitePluginConnection!
-  asciidoc(author: AsciidocAuthorFilterInput, children: NodeFilterListInput, document: AsciidocDocumentFilterInput, fields: AsciidocFieldsFilterInput, html: StringQueryOperatorInput, id: StringQueryOperatorInput, internal: InternalFilterInput, pageAttributes: AsciidocPageAttributesFilterInput, parent: NodeFilterInput, revision: AsciidocRevisionFilterInput): Asciidoc
-  dataJson(avatar: StringQueryOperatorInput, children: NodeFilterListInput, description: StringQueryOperatorInput, id: StringQueryOperatorInput, image: StringQueryOperatorInput, info: DataJsonInfoFilterInput, internal: InternalFilterInput, keyword: StringQueryOperatorInput, motto: StringQueryOperatorInput, name: StringQueryOperatorInput, parent: NodeFilterInput, titleTemplate: StringQueryOperatorInput): DataJson
+  asciidoc(children: NodeFilterListInput, content: StringQueryOperatorInput, document: AsciidocDocumentFilterInput, fields: AsciidocFieldsFilterInput, html: StringQueryOperatorInput, id: StringQueryOperatorInput, internal: InternalFilterInput, pageAttributes: AsciidocPageAttributesFilterInput, parent: NodeFilterInput, revision: AsciidocRevisionFilterInput): Asciidoc
+  dataJson(avatar: StringQueryOperatorInput, children: NodeFilterListInput, description: StringQueryOperatorInput, id: StringQueryOperatorInput, image: StringQueryOperatorInput, info: DataJsonInfoFilterInput, internal: InternalFilterInput, keyword: StringQueryOperatorInput, logo: StringQueryOperatorInput, motto: StringQueryOperatorInput, name: StringQueryOperatorInput, parent: NodeFilterInput, titleTemplate: StringQueryOperatorInput): DataJson
   directory(absolutePath: StringQueryOperatorInput, accessTime: DateQueryOperatorInput, atime: DateQueryOperatorInput, atimeMs: FloatQueryOperatorInput, base: StringQueryOperatorInput, birthTime: DateQueryOperatorInput, birthtime: DateQueryOperatorInput, birthtimeMs: FloatQueryOperatorInput, blksize: IntQueryOperatorInput, blocks: IntQueryOperatorInput, changeTime: DateQueryOperatorInput, children: NodeFilterListInput, ctime: DateQueryOperatorInput, ctimeMs: FloatQueryOperatorInput, dev: IntQueryOperatorInput, dir: StringQueryOperatorInput, ext: StringQueryOperatorInput, extension: StringQueryOperatorInput, gid: IntQueryOperatorInput, id: StringQueryOperatorInput, ino: FloatQueryOperatorInput, internal: InternalFilterInput, mode: IntQueryOperatorInput, modifiedTime: DateQueryOperatorInput, mtime: DateQueryOperatorInput, mtimeMs: FloatQueryOperatorInput, name: StringQueryOperatorInput, nlink: IntQueryOperatorInput, parent: NodeFilterInput, prettySize: StringQueryOperatorInput, rdev: IntQueryOperatorInput, relativeDirectory: StringQueryOperatorInput, relativePath: StringQueryOperatorInput, root: StringQueryOperatorInput, size: IntQueryOperatorInput, sourceInstanceName: StringQueryOperatorInput, uid: IntQueryOperatorInput): Directory
   file(absolutePath: StringQueryOperatorInput, accessTime: DateQueryOperatorInput, atime: DateQueryOperatorInput, atimeMs: FloatQueryOperatorInput, base: StringQueryOperatorInput, birthTime: DateQueryOperatorInput, birthtime: DateQueryOperatorInput, birthtimeMs: FloatQueryOperatorInput, blksize: IntQueryOperatorInput, blocks: IntQueryOperatorInput, changeTime: DateQueryOperatorInput, childAsciidoc: AsciidocFilterInput, childDataJson: DataJsonFilterInput, childImageSharp: ImageSharpFilterInput, childLinksJson: LinksJsonFilterInput, children: NodeFilterListInput, childrenAsciidoc: AsciidocFilterListInput, childrenDataJson: DataJsonFilterListInput, childrenImageSharp: ImageSharpFilterListInput, childrenLinksJson: LinksJsonFilterListInput, ctime: DateQueryOperatorInput, ctimeMs: FloatQueryOperatorInput, dev: IntQueryOperatorInput, dir: StringQueryOperatorInput, ext: StringQueryOperatorInput, extension: StringQueryOperatorInput, gid: IntQueryOperatorInput, id: StringQueryOperatorInput, ino: FloatQueryOperatorInput, internal: InternalFilterInput, mode: IntQueryOperatorInput, modifiedTime: DateQueryOperatorInput, mtime: DateQueryOperatorInput, mtimeMs: FloatQueryOperatorInput, name: StringQueryOperatorInput, nlink: IntQueryOperatorInput, parent: NodeFilterInput, prettySize: StringQueryOperatorInput, publicURL: StringQueryOperatorInput, rdev: IntQueryOperatorInput, relativeDirectory: StringQueryOperatorInput, relativePath: StringQueryOperatorInput, root: StringQueryOperatorInput, size: IntQueryOperatorInput, sourceInstanceName: StringQueryOperatorInput, uid: IntQueryOperatorInput): File
   imageSharp(children: NodeFilterListInput, fixed: ImageSharpFixedFilterInput, fluid: ImageSharpFluidFilterInput, gatsbyImageData: JSONQueryOperatorInput, id: StringQueryOperatorInput, internal: InternalFilterInput, original: ImageSharpOriginalFilterInput, parent: NodeFilterInput, resize: ImageSharpResizeFilterInput): ImageSharp
@@ -949,7 +941,6 @@ type SitePluginPluginOptions {
   createLinkInHead: Boolean
   crossOrigin: String
   defaultQuality: Int
-  disable: Boolean
   displayName: Boolean
   excludePaths: [String]
   failOnError: Boolean
@@ -968,7 +959,6 @@ type SitePluginPluginOptions {
   minify: Boolean
   name: String
   namespace: String
-  once: Boolean
   output: String
   path: String
   pathCheck: Boolean
@@ -979,7 +969,6 @@ type SitePluginPluginOptions {
   siteId: String
   stripMetadata: Boolean
   theme_color_in_head: Boolean
-  threshold: Int
   transpileTemplateLiterals: Boolean
 }
 
@@ -995,12 +984,6 @@ type SiteSiteMetadata {
 }
 
 enum AsciidocFieldsEnum {
-  author___authorInitials
-  author___email
-  author___firstName
-  author___fullName
-  author___lastName
-  author___middleName
   children
   children___children
   children___children___children
@@ -1040,6 +1023,7 @@ enum AsciidocFieldsEnum {
   children___parent___internal___type
   children___parent___parent___children
   children___parent___parent___id
+  content
   document___main
   document___subtitle
   document___title
@@ -1166,6 +1150,7 @@ enum DataJsonFieldsEnum {
   internal___owner
   internal___type
   keyword
+  logo
   motto
   name
   parent___children
@@ -1343,12 +1328,6 @@ enum FileFieldsEnum {
   blksize
   blocks
   changeTime
-  childAsciidoc___author___authorInitials
-  childAsciidoc___author___email
-  childAsciidoc___author___firstName
-  childAsciidoc___author___fullName
-  childAsciidoc___author___lastName
-  childAsciidoc___author___middleName
   childAsciidoc___children
   childAsciidoc___children___children
   childAsciidoc___children___children___children
@@ -1364,6 +1343,7 @@ enum FileFieldsEnum {
   childAsciidoc___children___internal___type
   childAsciidoc___children___parent___children
   childAsciidoc___children___parent___id
+  childAsciidoc___content
   childAsciidoc___document___main
   childAsciidoc___document___subtitle
   childAsciidoc___document___title
@@ -1439,6 +1419,7 @@ enum FileFieldsEnum {
   childDataJson___internal___owner
   childDataJson___internal___type
   childDataJson___keyword
+  childDataJson___logo
   childDataJson___motto
   childDataJson___name
   childDataJson___parent___children
@@ -1570,12 +1551,6 @@ enum FileFieldsEnum {
   childLinksJson___tag
   children
   childrenAsciidoc
-  childrenAsciidoc___author___authorInitials
-  childrenAsciidoc___author___email
-  childrenAsciidoc___author___firstName
-  childrenAsciidoc___author___fullName
-  childrenAsciidoc___author___lastName
-  childrenAsciidoc___author___middleName
   childrenAsciidoc___children
   childrenAsciidoc___children___children
   childrenAsciidoc___children___children___children
@@ -1591,6 +1566,7 @@ enum FileFieldsEnum {
   childrenAsciidoc___children___internal___type
   childrenAsciidoc___children___parent___children
   childrenAsciidoc___children___parent___id
+  childrenAsciidoc___content
   childrenAsciidoc___document___main
   childrenAsciidoc___document___subtitle
   childrenAsciidoc___document___title
@@ -1667,6 +1643,7 @@ enum FileFieldsEnum {
   childrenDataJson___internal___owner
   childrenDataJson___internal___type
   childrenDataJson___keyword
+  childrenDataJson___logo
   childrenDataJson___motto
   childrenDataJson___name
   childrenDataJson___parent___children
@@ -2537,7 +2514,6 @@ enum SitePageFieldsEnum {
   pluginCreator___pluginOptions___createLinkInHead
   pluginCreator___pluginOptions___crossOrigin
   pluginCreator___pluginOptions___defaultQuality
-  pluginCreator___pluginOptions___disable
   pluginCreator___pluginOptions___displayName
   pluginCreator___pluginOptions___excludePaths
   pluginCreator___pluginOptions___failOnError
@@ -2556,7 +2532,6 @@ enum SitePageFieldsEnum {
   pluginCreator___pluginOptions___minify
   pluginCreator___pluginOptions___name
   pluginCreator___pluginOptions___namespace
-  pluginCreator___pluginOptions___once
   pluginCreator___pluginOptions___output
   pluginCreator___pluginOptions___path
   pluginCreator___pluginOptions___pathCheck
@@ -2567,7 +2542,6 @@ enum SitePageFieldsEnum {
   pluginCreator___pluginOptions___siteId
   pluginCreator___pluginOptions___stripMetadata
   pluginCreator___pluginOptions___theme_color_in_head
-  pluginCreator___pluginOptions___threshold
   pluginCreator___pluginOptions___transpileTemplateLiterals
   pluginCreator___resolve
   pluginCreator___ssrAPIs
@@ -2689,7 +2663,6 @@ enum SitePluginFieldsEnum {
   pluginOptions___createLinkInHead
   pluginOptions___crossOrigin
   pluginOptions___defaultQuality
-  pluginOptions___disable
   pluginOptions___displayName
   pluginOptions___excludePaths
   pluginOptions___failOnError
@@ -2708,7 +2681,6 @@ enum SitePluginFieldsEnum {
   pluginOptions___minify
   pluginOptions___name
   pluginOptions___namespace
-  pluginOptions___once
   pluginOptions___output
   pluginOptions___path
   pluginOptions___pathCheck
@@ -2719,7 +2691,6 @@ enum SitePluginFieldsEnum {
   pluginOptions___siteId
   pluginOptions___stripMetadata
   pluginOptions___theme_color_in_head
-  pluginOptions___threshold
   pluginOptions___transpileTemplateLiterals
   resolve
   ssrAPIs
@@ -2737,15 +2708,6 @@ input AVIFOptions {
   speed: Int
 }
 
-input AsciidocAuthorFilterInput {
-  authorInitials: StringQueryOperatorInput
-  email: StringQueryOperatorInput
-  firstName: StringQueryOperatorInput
-  fullName: StringQueryOperatorInput
-  lastName: StringQueryOperatorInput
-  middleName: StringQueryOperatorInput
-}
-
 input AsciidocDocumentFilterInput {
   main: StringQueryOperatorInput
   subtitle: StringQueryOperatorInput
@@ -2760,8 +2722,8 @@ input AsciidocFieldsFilterInput {
 }
 
 input AsciidocFilterInput {
-  author: AsciidocAuthorFilterInput
   children: NodeFilterListInput
+  content: StringQueryOperatorInput
   document: AsciidocDocumentFilterInput
   fields: AsciidocFieldsFilterInput
   html: StringQueryOperatorInput
@@ -2822,6 +2784,7 @@ input DataJsonFilterInput {
   info: DataJsonInfoFilterInput
   internal: InternalFilterInput
   keyword: StringQueryOperatorInput
+  logo: StringQueryOperatorInput
   motto: StringQueryOperatorInput
   name: StringQueryOperatorInput
   parent: NodeFilterInput
@@ -3280,7 +3243,6 @@ input SitePluginPluginOptionsFilterInput {
   createLinkInHead: BooleanQueryOperatorInput
   crossOrigin: StringQueryOperatorInput
   defaultQuality: IntQueryOperatorInput
-  disable: BooleanQueryOperatorInput
   displayName: BooleanQueryOperatorInput
   excludePaths: StringQueryOperatorInput
   failOnError: BooleanQueryOperatorInput
@@ -3299,7 +3261,6 @@ input SitePluginPluginOptionsFilterInput {
   minify: BooleanQueryOperatorInput
   name: StringQueryOperatorInput
   namespace: StringQueryOperatorInput
-  once: BooleanQueryOperatorInput
   output: StringQueryOperatorInput
   path: StringQueryOperatorInput
   pathCheck: BooleanQueryOperatorInput
@@ -3310,7 +3271,6 @@ input SitePluginPluginOptionsFilterInput {
   siteId: StringQueryOperatorInput
   stripMetadata: BooleanQueryOperatorInput
   theme_color_in_head: BooleanQueryOperatorInput
-  threshold: IntQueryOperatorInput
   transpileTemplateLiterals: BooleanQueryOperatorInput
 }
 

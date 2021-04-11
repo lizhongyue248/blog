@@ -20,8 +20,8 @@
     "Blog"
   ],
   "scripts": {
-    "develop": "gatsby develop -p 8010",
-    "start": "gatsby develop -p 8010",
+    "develop": "gatsby develop -p 8012",
+    "start": "gatsby develop -p 8012",
     "build": "gatsby build",
     "serve": "gatsby serve",
     "clean": "gatsby clean",
@@ -38,6 +38,7 @@
     "gatsby": "^3.2.1",
     "gatsby-image": "^3.2.0",
     "gatsby-plugin-baidu-analytics": "^2.2.0",
+    "gatsby-plugin-feed": "^3.2.0",
     "gatsby-plugin-google-tagmanager": "^3.2.0",
     "gatsby-plugin-lodash": "^4.2.0",
     "gatsby-plugin-manifest": "^3.2.0",

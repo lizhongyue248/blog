@@ -28,21 +28,27 @@ const Seo: FC<SeoProps> = ({ post = { category: '' } }): ReactElement => {
   const { name, keyword, description, image, titleTemplate } = allDataJson.nodes[0]
   const { siteMetadata } = site
   return (
-    <Helmet title={post.title || name} titleTemplate={titleTemplate}>
-      <meta charSet='UTF-8' />
-      <meta name='title' content={post.title || name} />
-      <meta name='description' content={post.description || description} />
-      <meta name='image' content={post.image || image} />
-      <meta name='keywords' content={`${keyword} ${post.category}`} />
-      <meta property='og:title' content={post.title || name} />
-      <meta property='og:description' content={post.description || description} />
-      <meta property='og:image' content={post.image || image} />
-      <meta property='og:url' content={`${siteMetadata.siteUrl}${pathname}`} />
-      <meta name='twitter:card' content='summary_large_image' />
-      <meta name='twitter:title' content={post.title || name} />
-      <meta name='twitter:description' content={post.description || description} />
-      <meta name='twitter:image' content={post.image || image} />
-    </Helmet>
+    <Helmet
+      title={post.title || name}
+      titleTemplate={titleTemplate}
+      script={[
+        { async: true, src: '//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js' }
+      ]}
+      meta={[
+        { name: 'title', content: post.title || name },
+        { name: 'description', content: post.description || description },
+        { name: 'image', content: post.image || image },
+        { name: 'keywords', content: `${keyword} ${post.category}` },
+        { property: 'og:title', content: post.title || name },
+        { property: 'og:description', content: post.description || description },
+        { property: 'og:url', content: `${siteMetadata.siteUrl}${pathname}` },
+        { property: 'twitter:card', content: 'summary_large_image' },
+        { property: 'twitter:title', content: post.title || name },
+        { property: 'twitter:description', content: post.description || description },
+        { property: 'twitter:image', content: post.image || image },
+        { charSet: 'UTF-8' }
+      ]}
+    />
   )
 }
 

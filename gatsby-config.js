@@ -113,6 +113,58 @@ module.exports = {
       options: {
         id: 'GTM-NRHQLXP'
       }
+    },
+    {
+      resolve: 'gatsby-plugin-feed',
+      options: {
+        query: `
+          {
+            site {
+              siteMetadata {
+                description
+                siteUrl
+                title
+              }
+            }
+          }
+        `,
+        feeds: [
+          {
+            query: `
+              query RSS {
+                allAsciidoc(sort: {order: DESC, fields: fields___modifiedTime}) {
+                  nodes {
+                    document {
+                      title
+                    }
+                    pageAttributes {
+                      description
+                    }
+                    fields {
+                      slug
+                      modifiedTime(fromNow: true)
+                    }
+                    html
+                    content
+                  }
+                }
+              }
+            `,
+            serialize: ({ query: { site, allAsciidoc } }) =>
+              allAsciidoc.nodes.map(node => ({
+                description: node.pageAttributes.description,
+                date: node.fields.modifiedTime,
+                url: site.siteMetadata.siteUrl + node.fields.slug,
+                guid: site.siteMetadata.siteUrl + node.fields.slug,
+                custom_elements: [{
+                  'content:encoded': node.html
+                }]
+              })),
+            output: '/rss.xml',
+            title: "A'yue Site's RSS Feed"
+          }
+        ]
+      }
     }
   ]
 }

@@ -21,6 +21,7 @@ import {
 } from '@material-ui/core'
 import { isBrowser, getBgColors } from '../util/constant'
 import Layout from '../components/Layout'
+import Comment from '../components/Comment'
 
 interface LinkStatusProps {
   status: string
@@ -144,6 +145,10 @@ const LinkPage: FC<LinkProps> = ({ data }): ReactElement => {
           ))
         }
       </Grid>
+      <div>
+        <div className='text-2xl my-5 font-bold'>欢迎申请添加友链哦~🔥🔥🔥 只需要名称、地址和描述即可！</div>
+      </div>
+      <Comment />
     </Layout>
   )
 }

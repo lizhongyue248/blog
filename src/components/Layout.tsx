@@ -1,13 +1,13 @@
 import { FC, ReactElement, useEffect } from 'react'
 import sal, { Options } from 'sal.js'
 import { useRecoilValue } from 'recoil'
-import { Helmet } from 'react-helmet'
+import { navigate } from 'gatsby'
+import RssFeedIcon from '@material-ui/icons/RssFeed'
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder'
-import { createMuiTheme, MuiThemeProvider, CssBaseline, Container, Paper, Divider } from '@material-ui/core'
+import { createMuiTheme, MuiThemeProvider, CssBaseline, Container, Paper, Divider, IconButton } from '@material-ui/core'
 import Seo from './Seo'
 import Nav from './Nav'
 import Banner from './Banner'
-import { isBrowser } from '../util/constant'
 import { getYear } from '../util'
 import { darkState } from '../store/base'
 import { LayoutProps } from '../interface/page'
@@ -47,9 +47,6 @@ const Layout: FC<LayoutProps> = (
   }, [])
   return (
     <div>
-      <Helmet>
-        {isBrowser() && <script async src='//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js' />}
-      </Helmet>
       <Seo post={postMeta} />
       <MuiThemeProvider theme={dark ? darkTheme : lightTheme}>
         <CssBaseline />
@@ -78,9 +75,12 @@ const Layout: FC<LayoutProps> = (
             <Divider variant='inset' className='my-1' />
           </div>
           <div>Copyright © 2017 - {getYear()} z-yue. All Rights Reserved.</div>
-          {/* <div className='my-1'> */}
-          {/*  <a href='https://beian.miit.gov.cn' target='_blank' rel='noreferrer'>黔 ICP 备 17008630 号-2</a> */}
-          {/* </div> */}
+          <div className='my-1'>
+            {/*  <a href='https://beian.miit.gov.cn' target='_blank' rel='noreferrer'>黔 ICP 备 17008630 号-2</a> */}
+            <IconButton size='medium' color='primary' aria-label='RSS' onClick={() => navigate('/rss.xml')}>
+              <RssFeedIcon />
+            </IconButton>
+          </div>
         </footer>
       </MuiThemeProvider>
     </div>
