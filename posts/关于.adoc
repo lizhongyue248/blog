@@ -1,6 +1,6 @@
 = 关于
 :page-exclude: true
-:page-image: https://img.hacpai.com/bing/20181211.jpg?imageView2/1/w/960/h/520/interlace/1/q/100
+:page-image: https://rmt.dogedoge.com/fetch/fluid/storage/hexo-static/cover.jpg?w=480&fmt=webp
 :page-created: 1536269239000
 :page-modified: 1567077466773
 
@@ -28,7 +28,7 @@
 
 如果你想和我交流，可以在下方留言，或者联系 lizhongyue248@163.com。
 
-[NOTE]
+[INFO]
 ====
 如果觉得文章不错或者帮到了您，帮忙点点下面广告呗～谢谢啦～
 ====

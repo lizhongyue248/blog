@@ -37,3 +37,9 @@ export interface BackgroundProps {
   classesName?: string
   style?: CSSProperties
 }
+
+export interface PostContentProps {
+  node: Node
+  comment?: boolean
+  children?: ReactElement[]
+}

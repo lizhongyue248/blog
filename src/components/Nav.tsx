@@ -11,6 +11,7 @@ import EjectIcon from '@material-ui/icons/Eject'
 import CategoryIcon from '@material-ui/icons/Category'
 import Brightness7Icon from '@material-ui/icons/Brightness7'
 import Brightness4Icon from '@material-ui/icons/Brightness4'
+import AlbumIcon from '@material-ui/icons/Album'
 import useScrollTrigger from '@material-ui/core/useScrollTrigger'
 import { createStyles, Theme } from '@material-ui/core/styles'
 import {
@@ -62,7 +63,8 @@ const menus = [
   { name: '首页', icon: <HomeIcon />, href: '/' },
   { name: '归档', icon: <EventNoteIcon />, href: '/archive' },
   { name: '分类', icon: <CategoryIcon />, href: '/category' },
-  { name: '友链', icon: <InsertLinkIcon />, href: '/link' }
+  { name: '友链', icon: <InsertLinkIcon />, href: '/link' },
+  { name: '关于', icon: <AlbumIcon />, href: '/about' }
 ]
 
 const Nav: FC<ArrayProps> = ({ actions: actionProps = [] }): ReactElement => {

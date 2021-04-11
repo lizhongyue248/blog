@@ -5,7 +5,6 @@ import { graphql, Link } from 'gatsby'
 import { useBoolean } from 'ahooks'
 import SpeedDial from '@material-ui/lab/SpeedDial'
 import Alert from '@material-ui/lab/Alert'
-import VisibilityIcon from '@material-ui/icons/Visibility'
 import { ListAlt } from '@material-ui/icons'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
 import { Theme } from '@material-ui/core/styles'
@@ -14,9 +13,8 @@ import { Divider, Drawer, Toolbar } from '@material-ui/core'
 import { isBrowser } from '../util/constant'
 import { PostMeta } from '../interface/page'
 import { PostProps } from '../interface/asciidoc'
-import PostSimpleInfo from '../components/PostSimpleInfo'
+import PostContent from '../components/PostContent'
 import Layout from '../components/Layout'
-import Comment from '../components/Comment'
 import '../styles/fontawesome.min.css'
 import '../styles/asciidoc.scss'
 import '../styles/post.scss'
@@ -103,55 +101,33 @@ const Post: FC<PostProps> = (props): ReactElement => {
         />]}
     >
       <Catalogue show={drawer} list={toc} visibleToggle={drawerToggle} />
-      <article className='post mb-7'>
-        <div className='text-4xl font-bold post-title text-center' {...salAttr}>
-          {post.document.title}
-        </div>
-        <PostSimpleInfo node={post} className='text-center my-3' {...salAttr}>
-          <span style={{ display: 'none' }} id='busuanzi_container_page_pv' className='cursor-pointer hover:text-blue-400 duration-500 transition-colors'>
-            <VisibilityIcon className='align-text-bottom text-base' />
-            <span className='ml-2' id='busuanzi_value_page_pv' />
-          </span>
-        </PostSimpleInfo>
-        <div className='mt-5'>
+      <PostContent node={post}>
+        <Divider />
+        <div className='mt-4 font-bold' {...salAttr}>
+          <span>上一篇：</span>
           {
-            post.pageAttributes.image &&
-              <img
-                className='w-full mb-10'
-                alt={post.document.title}
-                src={post.pageAttributes.image}
-                {...salAttr}
-              />
+            pageContext.previous
+              ? (
+                <Link to={pageContext.previous.fields.slug}>
+                  {pageContext.previous.document.title}
+                </Link>
+                )
+              : <span>没有了</span>
           }
-          <div id='post-content' dangerouslySetInnerHTML={{ __html: post.html }} {...salAttr} />
         </div>
-      </article>
-      <Divider />
-      <div className='mt-4 font-bold' {...salAttr}>
-        <span>上一篇：</span>
-        {
-        pageContext.previous
-          ? (
-            <Link to={pageContext.previous.fields.slug}>
-              {pageContext.previous.document.title}
-            </Link>
-            )
-          : <span>没有了</span>
-      }
-      </div>
-      <div className='mt-4 font-bold' {...salAttr}>
-        <span>下一篇：</span>
-        {
-          pageContext.next
-            ? (
-              <Link to={pageContext.next.fields.slug}>
-                {pageContext.next.document.title}
-              </Link>
-              )
-            : <span>没有了</span>
-        }
-      </div>
-      <Comment />
+        <div className='mt-4 font-bold' {...salAttr}>
+          <span>下一篇：</span>
+          {
+            pageContext.next
+              ? (
+                <Link to={pageContext.next.fields.slug}>
+                  {pageContext.next.document.title}
+                </Link>
+                )
+              : <span>没有了</span>
+          }
+        </div>
+      </PostContent>
       <Snackbar
         open={copyStatue}
         autoHideDuration={3000}

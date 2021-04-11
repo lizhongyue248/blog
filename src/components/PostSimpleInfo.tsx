@@ -21,9 +21,13 @@ const PostSimpleInfo: FC<SimpleInfoProps> = ({ node, className, children }): Rea
       <span className='cursor-pointer hover:text-blue-400 duration-500 transition-colors' onClick={() => navigate('/archive')}>
         <EventNoteIcon className='align-text-bottom text-base' /> {fields.birthTime}
       </span>
-      <span className='cursor-pointer hover:text-blue-400 duration-500 transition-colors' onClick={() => navigate('/category')}>
-        <CategoryIcon className='align-text-bottom text-base' /> {pageAttributes.category}
-      </span>
+      {
+        pageAttributes.category && (
+          <span className='cursor-pointer hover:text-blue-400 duration-500 transition-colors' onClick={() => navigate('/category')}>
+            <CategoryIcon className='align-text-bottom text-base' /> {pageAttributes.category}
+          </span>
+        )
+      }
       {children}
     </div>
   )
