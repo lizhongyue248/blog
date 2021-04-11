@@ -39,13 +39,13 @@ const Catalogue: FC<CatalogueProps> = ({ list = '', show: drawer, visibleToggle 
     <Drawer
       variant={matches ? 'persistent' : 'temporary'}
       id='post-catalogue'
-      className='shadow-xl'
+      className='shadow-xl ml-3'
       open={drawer}
       onClose={() => visibleToggle()}
     >
       <div style={{ zIndex: 800 }}>
         {matches && <Toolbar />}
-        <div className='px-5' id='post-toc' dangerouslySetInnerHTML={{ __html: list }} />
+        <div className={`px-8 ${matches || 'mt-8'}`} id='post-toc' dangerouslySetInnerHTML={{ __html: list }} />
       </div>
     </Drawer>
   )
