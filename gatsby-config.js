@@ -1,3 +1,22 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const cheerio = require('cheerio')
+
+class CustomConverter {
+  constructor (asciidoctor) {
+    this.baseConverter = asciidoctor.Html5Converter.$new()
+  }
+
+  convert (node, transform) {
+    const domString = this.baseConverter.convert(node, transform)
+    const $ = cheerio.load(domString, null, false)
+    const dom = $('div, h1, h2, h3, h4, h5, h6, ul, li')
+    dom.prop('data-sal', 'fade')
+    dom.prop('data-sal-duration', '1000')
+    dom.prop('data-sal-repeat', 'true')
+    return $.html()
+  }
+}
+
 module.exports = {
   siteMetadata: {
     title: '阿月很乖',
@@ -38,7 +57,8 @@ module.exports = {
         attributes: {
           icons: 'font'
         },
-        safe: 'unsafe'
+        safe: 'unsafe',
+        converterFactory: CustomConverter
       }
     },
     {
@@ -74,14 +94,6 @@ module.exports = {
       options: {
         name: 'pages',
         path: './posts'
-      }
-    },
-    {
-      resolve: 'gatsby-plugin-scroll-reveal',
-      options: {
-        threshold: 1,
-        once: true,
-        disable: false
       }
     },
     {

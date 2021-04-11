@@ -97,7 +97,12 @@ const LinkPage: FC<LinkProps> = ({ data }): ReactElement => {
       <Grid container spacing={3} className='py-4 mt-6'>
         {
           nodes.map((node, index) => (
-            <Grid key={node.id} item xs={12} md={6} lg={4}>
+            <Grid
+              key={node.id} item xs={12} md={6} lg={4}
+              data-sal='slide-up'
+              data-sal-duration='1000'
+              data-sal-repeat='true'
+            >
               <Card className='relative top-0 transition-all duration-700 hover:shadow-image hover:-top-4'>
                 <CardContent className='p-0'>
                   <CardActionArea

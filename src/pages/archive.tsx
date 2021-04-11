@@ -51,6 +51,9 @@ const ArchiveChart: FC<{ archives: Archive[]}> = ({ archives }): ReactElement =>
 
   return (
     <ChartComponent
+      data-sal='slide-up'
+      data-sal-duration='1000'
+      data-sal-repeat='true'
       id='charts'
       background={dark ? '#424242' : '#ffffff'}
       margin={{ top: 30, left: 15, right: 15, bottom: 30 }}

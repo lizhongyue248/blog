@@ -19,7 +19,13 @@ const Comment: FC = (): ReactElement => {
     ref.current && ref.current.appendChild(scriptEl)
   }, [dark])
   return (
-    <div ref={ref} className='comments'>
+    <div
+      ref={ref}
+      className='comments'
+      data-sal='fade'
+      data-sal-duration='1000'
+      data-sal-repeat='true'
+    >
       <div />
     </div>
   )

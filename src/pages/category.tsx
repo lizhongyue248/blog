@@ -35,6 +35,9 @@ const CategoryChart: FC<CategoryChartProps> = ({ category }): ReactElement => {
 
   return (
     <AccumulationChartComponent
+      data-sal='slide-up'
+      data-sal-duration='1000'
+      data-sal-repeat='true'
       id='charts'
       background={dark ? '#424242' : '#ffffff'}
       tooltip={toolTip}

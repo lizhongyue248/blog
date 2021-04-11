@@ -1,4 +1,5 @@
 import { FC, ReactElement, useEffect } from 'react'
+import sal, { Options } from 'sal.js'
 import { useRecoilValue } from 'recoil'
 import { Helmet } from 'react-helmet'
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder'
@@ -21,7 +22,6 @@ const Layout: FC<LayoutProps> = (
     other
   }
 ): ReactElement => {
-  // const [dark] = useLocalStorageState('palette-dark', isBrowser() ? window.matchMedia('(prefers-color-scheme: dark)').matches : true)
   const dark = useRecoilValue(darkState)
   const darkTheme = createMuiTheme({ palette: { type: 'dark' } })
   const lightTheme = createMuiTheme({ palette: { type: 'light' } })
@@ -30,13 +30,20 @@ const Layout: FC<LayoutProps> = (
     let titleTime: ReturnType<typeof setTimeout>
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
-        document.title = '(つェ⊂)看不到我~ ' + documentTitle
+        document.title = '(つェ⊂) 看不到我~ ' + documentTitle
         clearTimeout(titleTime)
       } else {
         document.title = '(*´∇｀*) 被发现啦~ ' + documentTitle
         titleTime = setTimeout(() => { document.title = documentTitle }, 2000)
       }
     })
+    const salOption: Options = {
+      root: null,
+      threshold: 0.00000000000000000001,
+      once: true,
+      disabled: false
+    }
+    sal(salOption)
   }, [])
   return (
     <div>
@@ -58,7 +65,12 @@ const Layout: FC<LayoutProps> = (
             </Paper>
           </Container>
         </div>
-        <footer className='w-full text-center py-9'>
+        <footer
+          className='w-full text-center py-9'
+          data-sal='fade'
+          data-sal-duration='1000'
+          data-sal-repeat='true'
+        >
           <div>
             总访问量 <span id='busuanzi_value_site_pv' /> 次
             <FavoriteBorderIcon className='align-middle text-xl mx-2 px-1 animate-ping' />

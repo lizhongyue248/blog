@@ -14,7 +14,7 @@ interface SimpleInfoProps {
 const PostSimpleInfo: FC<SimpleInfoProps> = ({ node, className, children }): ReactElement => {
   const { fields, pageAttributes } = node
   return (
-    <div className={`flex-none text-gray-500 space-x-7 ${className}`}>
+    <div className={`flex-none text-gray-500 dark:text-gray-400 space-x-7 ${className}`}>
       <span className='cursor-pointer hover:text-blue-400 duration-500 transition-colors' onClick={() => navigate('/archive')}>
         <EditSharp className='align-text-bottom text-base' /> {fields.modifiedTime}
       </span>

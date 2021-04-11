@@ -30,6 +30,9 @@ const PostSimple: FC<Node> = (node) : ReactElement => {
     <Grid
       container
       className='py-4 mt-6'
+      data-sal='slide-up'
+      data-sal-duration='1000'
+      data-sal-repeat='true'
     >
       <Grid item md={5} xs={12}>
         <div className='cursor-pointer shadow-image overflow-hidden lg:mr-8 h-full' onClick={toPost}>
@@ -68,9 +71,14 @@ const PostList: FC<PostProps> = ({ data }): ReactElement => {
     await navigate(`/blog/${value <= 1 ? '' : value}`)
   }
   return (
-    <Layout>
+    <Layout other={<div>念念不忘，必有回响</div>}>
       {nodes.map(node => (<PostSimple key={node.id} {...node} />))}
-      <div className='flex'>
+      <div
+        className='flex'
+        data-sal='slide-up'
+        data-sal-duration='1000'
+        data-sal-repeat='true'
+      >
         <Pagination
           className='mx-auto my-8'
           count={pageInfo.pageCount}

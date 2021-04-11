@@ -3,9 +3,10 @@ import Typed from 'react-typed'
 import { useTitle } from 'ahooks'
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown'
 import { createStyles } from '@material-ui/core/styles'
-import { makeStyles, Typography } from '@material-ui/core'
+import { makeStyles } from '@material-ui/core'
 import { isBrowser } from '../util/constant'
 import { BannerProps } from '../interface/page'
+import 'sal.js/dist/sal.css'
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -27,7 +28,7 @@ const Banner: FC<BannerProps> = ({ banner, title, other = <div /> }): ReactEleme
   return (
     <div className={classes.banner} style={{ backgroundImage: `url("${banner}")` }}>
       <div className={`${classes.mask} w-full h-full flex flex-col justify-center items-center justify-between`}>
-        <Typography className='flex flex-col justify-center items-center pt-2 text-white h-5/6 text-center mx-8' variant='h4'>
+        <div className='flex flex-col justify-center items-center pt-2 text-white h-5/6 text-center mx-8'>
           <Typed
             className='text-3xl md:text-4xl lg:text-5xl text-white'
             strings={[title]}
@@ -38,12 +39,13 @@ const Banner: FC<BannerProps> = ({ banner, title, other = <div /> }): ReactEleme
           <div
             className='mt-2 md:mt-4 lg:mt-8 text-sm text-base lg:text-xl font-normal'
             data-sal='slide-up'
-            data-sal-delay='1000'
+            data-sal-delay='500'
             data-sal-duration='1000'
+            data-sal-repeat='true'
           >
             {other}
           </div>
-        </Typography>
+        </div>
         <KeyboardArrowDownIcon
           className='text-white w-full mt-3 cursor-pointer animate-bounce-opacity'
           fontSize='large'

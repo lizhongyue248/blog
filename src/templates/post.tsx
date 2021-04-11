@@ -28,6 +28,12 @@ interface CatalogueProps {
   visibleToggle: () => void
 }
 
+const salAttr = {
+  'data-sal': 'fade',
+  'data-sal-duration': '2000',
+  'data-sal-repeat': 'true'
+}
+
 const Catalogue: FC<CatalogueProps> = ({ list = '', show: drawer, visibleToggle }): ReactElement => {
   const matches = useMediaQuery((theme: Theme) => theme.breakpoints.up('lg'))
   return (
@@ -105,8 +111,10 @@ const Post: FC<PostProps> = (props): ReactElement => {
     >
       <Catalogue show={drawer} list={toc} visibleToggle={drawerToggle} />
       <article className='post mb-7'>
-        <div className='text-4xl font-bold post-title text-center'>{post.node.document.title}</div>
-        <PostSimpleInfo node={post.node} className='text-center my-3'>
+        <div className='text-4xl font-bold post-title text-center' {...salAttr}>
+          {post.node.document.title}
+        </div>
+        <PostSimpleInfo node={post.node} className='text-center my-3' {...salAttr}>
           <span style={{ display: 'none' }} id='busuanzi_container_page_pv' className='cursor-pointer hover:text-blue-400 duration-500 transition-colors'>
             <VisibilityIcon className='align-text-bottom text-base' />
             <span className='ml-2' id='busuanzi_value_page_pv' />
@@ -114,13 +122,19 @@ const Post: FC<PostProps> = (props): ReactElement => {
         </PostSimpleInfo>
         <div className='mt-5'>
           {
-            post.node.pageAttributes.image && <img className='w-full mb-10' alt={post.node.document.title} src={post.node.pageAttributes.image} />
+            post.node.pageAttributes.image &&
+              <img
+                className='w-full mb-10'
+                alt={post.node.document.title}
+                src={post.node.pageAttributes.image}
+                {...salAttr}
+              />
           }
-          <div id='post-content' dangerouslySetInnerHTML={{ __html: post.node.html }} />
+          <div id='post-content' dangerouslySetInnerHTML={{ __html: post.node.html }} {...salAttr} />
         </div>
       </article>
       <Divider />
-      <div className='mt-4 font-bold'>
+      <div className='mt-4 font-bold' {...salAttr}>
         <span>上一篇：</span>
         {
         pageContext.previous
@@ -134,7 +148,7 @@ const Post: FC<PostProps> = (props): ReactElement => {
           : <span>没有了</span>
       }
       </div>
-      <div className='mt-4 font-bold'>
+      <div className='mt-4 font-bold' {...salAttr}>
         <span>下一篇：</span>
         {
         pageContext.next
