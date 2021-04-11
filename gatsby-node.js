@@ -58,6 +58,7 @@ exports.createPages = async ({ graphql, actions }) => {
   const result = await graphql(`
     query {
       allAsciidoc(
+        filter: {pageAttributes: {exclude: {ne: "true"}}},
         sort: {order: [ASC, DESC], fields: [pageAttributes___sort, fields___birthTime]}
       ) {
         edges {

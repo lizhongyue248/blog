@@ -84,6 +84,7 @@ type AsciidocPageAttributes {
   category: String
   created: String
   description: String
+  exclude: String
   href: String
   image: String
   keywords: String
@@ -944,6 +945,7 @@ type SitePluginPluginOptions {
   displayName: Boolean
   excludePaths: [String]
   failOnError: Boolean
+  feeds: [SitePluginPluginOptionsFeeds]
   fileName: Boolean
   footerHeight: Int
   head: Boolean
@@ -964,6 +966,7 @@ type SitePluginPluginOptions {
   pathCheck: Boolean
   prependToBody: Boolean
   pure: Boolean
+  query: String
   routeChangeEventName: String
   safe: String
   siteId: String
@@ -974,6 +977,12 @@ type SitePluginPluginOptions {
 
 type SitePluginPluginOptionsAttributes {
   icons: String
+}
+
+type SitePluginPluginOptionsFeeds {
+  output: String
+  query: String
+  title: String
 }
 
 type SiteSiteMetadata {
@@ -1044,6 +1053,7 @@ enum AsciidocFieldsEnum {
   pageAttributes___category
   pageAttributes___created
   pageAttributes___description
+  pageAttributes___exclude
   pageAttributes___href
   pageAttributes___image
   pageAttributes___keywords
@@ -1364,6 +1374,7 @@ enum FileFieldsEnum {
   childAsciidoc___pageAttributes___category
   childAsciidoc___pageAttributes___created
   childAsciidoc___pageAttributes___description
+  childAsciidoc___pageAttributes___exclude
   childAsciidoc___pageAttributes___href
   childAsciidoc___pageAttributes___image
   childAsciidoc___pageAttributes___keywords
@@ -1587,6 +1598,7 @@ enum FileFieldsEnum {
   childrenAsciidoc___pageAttributes___category
   childrenAsciidoc___pageAttributes___created
   childrenAsciidoc___pageAttributes___description
+  childrenAsciidoc___pageAttributes___exclude
   childrenAsciidoc___pageAttributes___href
   childrenAsciidoc___pageAttributes___image
   childrenAsciidoc___pageAttributes___keywords
@@ -2517,6 +2529,10 @@ enum SitePageFieldsEnum {
   pluginCreator___pluginOptions___displayName
   pluginCreator___pluginOptions___excludePaths
   pluginCreator___pluginOptions___failOnError
+  pluginCreator___pluginOptions___feeds
+  pluginCreator___pluginOptions___feeds___output
+  pluginCreator___pluginOptions___feeds___query
+  pluginCreator___pluginOptions___feeds___title
   pluginCreator___pluginOptions___fileName
   pluginCreator___pluginOptions___footerHeight
   pluginCreator___pluginOptions___head
@@ -2537,6 +2553,7 @@ enum SitePageFieldsEnum {
   pluginCreator___pluginOptions___pathCheck
   pluginCreator___pluginOptions___prependToBody
   pluginCreator___pluginOptions___pure
+  pluginCreator___pluginOptions___query
   pluginCreator___pluginOptions___routeChangeEventName
   pluginCreator___pluginOptions___safe
   pluginCreator___pluginOptions___siteId
@@ -2666,6 +2683,10 @@ enum SitePluginFieldsEnum {
   pluginOptions___displayName
   pluginOptions___excludePaths
   pluginOptions___failOnError
+  pluginOptions___feeds
+  pluginOptions___feeds___output
+  pluginOptions___feeds___query
+  pluginOptions___feeds___title
   pluginOptions___fileName
   pluginOptions___footerHeight
   pluginOptions___head
@@ -2686,6 +2707,7 @@ enum SitePluginFieldsEnum {
   pluginOptions___pathCheck
   pluginOptions___prependToBody
   pluginOptions___pure
+  pluginOptions___query
   pluginOptions___routeChangeEventName
   pluginOptions___safe
   pluginOptions___siteId
@@ -2742,6 +2764,7 @@ input AsciidocPageAttributesFilterInput {
   category: StringQueryOperatorInput
   created: StringQueryOperatorInput
   description: StringQueryOperatorInput
+  exclude: StringQueryOperatorInput
   href: StringQueryOperatorInput
   image: StringQueryOperatorInput
   keywords: StringQueryOperatorInput
@@ -3233,6 +3256,16 @@ input SitePluginPluginOptionsAttributesFilterInput {
   icons: StringQueryOperatorInput
 }
 
+input SitePluginPluginOptionsFeedsFilterInput {
+  output: StringQueryOperatorInput
+  query: StringQueryOperatorInput
+  title: StringQueryOperatorInput
+}
+
+input SitePluginPluginOptionsFeedsFilterListInput {
+  elemMatch: SitePluginPluginOptionsFeedsFilterInput
+}
+
 input SitePluginPluginOptionsFilterInput {
   allExtensions: BooleanQueryOperatorInput
   attributes: SitePluginPluginOptionsAttributesFilterInput
@@ -3246,6 +3279,7 @@ input SitePluginPluginOptionsFilterInput {
   displayName: BooleanQueryOperatorInput
   excludePaths: StringQueryOperatorInput
   failOnError: BooleanQueryOperatorInput
+  feeds: SitePluginPluginOptionsFeedsFilterListInput
   fileName: BooleanQueryOperatorInput
   footerHeight: IntQueryOperatorInput
   head: BooleanQueryOperatorInput
@@ -3266,6 +3300,7 @@ input SitePluginPluginOptionsFilterInput {
   pathCheck: BooleanQueryOperatorInput
   prependToBody: BooleanQueryOperatorInput
   pure: BooleanQueryOperatorInput
+  query: StringQueryOperatorInput
   routeChangeEventName: StringQueryOperatorInput
   safe: StringQueryOperatorInput
   siteId: StringQueryOperatorInput

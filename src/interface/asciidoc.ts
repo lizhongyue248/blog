@@ -26,7 +26,7 @@ export interface PageContent {
 }
 
 export interface PostProps {
-  data: { allAsciidoc: Asciidoc }
+  data: { asciidoc: Node }
   pageContext: {
     next?: PageContent
     previous?: PageContent

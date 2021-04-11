@@ -12,7 +12,6 @@ import { Theme } from '@material-ui/core/styles'
 import Snackbar from '@material-ui/core/Snackbar'
 import { Divider, Drawer, Toolbar } from '@material-ui/core'
 import { isBrowser } from '../util/constant'
-import NotFoundPage from '../pages/404'
 import { PostMeta } from '../interface/page'
 import { PostProps } from '../interface/asciidoc'
 import PostSimpleInfo from '../components/PostSimpleInfo'
@@ -54,8 +53,7 @@ const Catalogue: FC<CatalogueProps> = ({ list = '', show: drawer, visibleToggle 
 
 const Post: FC<PostProps> = (props): ReactElement => {
   const { data, pageContext } = props
-  if (data.allAsciidoc.edges.length < 0) return <NotFoundPage />
-  const post = data.allAsciidoc.edges[0]
+  const post = data.asciidoc
   const [copyStatue, { setTrue: show, setFalse: hide }] = useBoolean(false)
   const [drawer, { toggle: drawerToggle }] = useBoolean(false)
   const [toc, setToc] = useState('')
@@ -64,14 +62,9 @@ const Post: FC<PostProps> = (props): ReactElement => {
   useEffect(() => {
     document.body.classList.add('line-numbers', 'match-braces')
     const parser = new DOMParser()
-    const article = parser.parseFromString(post.node.html, 'text/html')
+    const article = parser.parseFromString(post.html, 'text/html')
     const tocElement = article.querySelector('.toc') || { outerHTML: '' }
-    setToc(tocElement.outerHTML)
-    // document.body.setAttribute('data-download-link', true)
-    // document.querySelectorAll('pre code').forEach(block => {
-    //   const element = block as HTMLElement
-    //   element.setAttribute('data-download-link', true)
-    // })
+    setToc(tocElement.outerHTML.replaceAll('data-sal="fade" data-sal-duration="1000" data-sal-repeat="true"', ''))
     document.querySelector('#post-content .toc')?.classList.add('hidden')
     const headerSelect = Array(6).fill(0).map((_, index) => `.post h${index + 2}[id]`).join(',')
     document.querySelectorAll(headerSelect).forEach((block) => {
@@ -90,10 +83,10 @@ const Post: FC<PostProps> = (props): ReactElement => {
   }, [])
 
   const postMeta: PostMeta = {
-    title: post.node.document.title,
-    image: post.node.pageAttributes.image,
-    description: post.node.pageAttributes.description,
-    category: post.node.pageAttributes.category
+    title: post.document.title,
+    image: post.pageAttributes.image,
+    description: post.pageAttributes.description,
+    category: post.pageAttributes.category
   }
 
   return (
@@ -112,9 +105,9 @@ const Post: FC<PostProps> = (props): ReactElement => {
       <Catalogue show={drawer} list={toc} visibleToggle={drawerToggle} />
       <article className='post mb-7'>
         <div className='text-4xl font-bold post-title text-center' {...salAttr}>
-          {post.node.document.title}
+          {post.document.title}
         </div>
-        <PostSimpleInfo node={post.node} className='text-center my-3' {...salAttr}>
+        <PostSimpleInfo node={post} className='text-center my-3' {...salAttr}>
           <span style={{ display: 'none' }} id='busuanzi_container_page_pv' className='cursor-pointer hover:text-blue-400 duration-500 transition-colors'>
             <VisibilityIcon className='align-text-bottom text-base' />
             <span className='ml-2' id='busuanzi_value_page_pv' />
@@ -122,15 +115,15 @@ const Post: FC<PostProps> = (props): ReactElement => {
         </PostSimpleInfo>
         <div className='mt-5'>
           {
-            post.node.pageAttributes.image &&
+            post.pageAttributes.image &&
               <img
                 className='w-full mb-10'
-                alt={post.node.document.title}
-                src={post.node.pageAttributes.image}
+                alt={post.document.title}
+                src={post.pageAttributes.image}
                 {...salAttr}
               />
           }
-          <div id='post-content' dangerouslySetInnerHTML={{ __html: post.node.html }} {...salAttr} />
+          <div id='post-content' dangerouslySetInnerHTML={{ __html: post.html }} {...salAttr} />
         </div>
       </article>
       <Divider />
@@ -139,9 +132,7 @@ const Post: FC<PostProps> = (props): ReactElement => {
         {
         pageContext.previous
           ? (
-            <Link
-              to={pageContext.previous.fields.slug}
-            >
+            <Link to={pageContext.previous.fields.slug}>
               {pageContext.previous.document.title}
             </Link>
             )
@@ -151,16 +142,14 @@ const Post: FC<PostProps> = (props): ReactElement => {
       <div className='mt-4 font-bold' {...salAttr}>
         <span>下一篇：</span>
         {
-        pageContext.next
-          ? (
-            <Link
-              to={pageContext.next.fields.slug}
-            >
-              {pageContext.next.document.title}
-            </Link>
-            )
-          : <span>没有了</span>
-      }
+          pageContext.next
+            ? (
+              <Link to={pageContext.next.fields.slug}>
+                {pageContext.next.document.title}
+              </Link>
+              )
+            : <span>没有了</span>
+        }
       </div>
       <Comment />
       <Snackbar
@@ -179,26 +168,22 @@ const Post: FC<PostProps> = (props): ReactElement => {
 
 export const query = graphql`
   query Post($slug: String!) {
-    allAsciidoc(filter: {fields: {slug: {eq: $slug }}}) {
-      edges {
-        node {
-          id
-          fields {
-            slug
-            birthTime(fromNow: true, locale: "zh-cn")
-            modifiedTime(fromNow: true, locale: "zh-cn")
-          }
-          html
-          document {
-            title
-          }
-          pageAttributes {
-            category
-            description
-            image
-            sort
-          }
-        }
+    asciidoc(fields: {slug: {eq: $slug}}) {
+      id
+      fields {
+        slug
+        birthTime(fromNow: true, locale: "zh-cn")
+        modifiedTime(fromNow: true, locale: "zh-cn")
+      }
+      html
+      document {
+        title
+      }
+      pageAttributes {
+        category
+        description
+        image
+        sort
       }
     }
   }
