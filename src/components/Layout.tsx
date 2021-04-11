@@ -8,6 +8,7 @@ import { createMuiTheme, MuiThemeProvider, CssBaseline, Container, Paper, Divide
 import Seo from './Seo'
 import Nav from './Nav'
 import Banner from './Banner'
+import Background from './Background'
 import { getYear } from '../util'
 import { darkState } from '../store/base'
 import { LayoutProps } from '../interface/page'
@@ -49,6 +50,7 @@ const Layout: FC<LayoutProps> = (
     <div>
       <Seo post={postMeta} />
       <MuiThemeProvider theme={dark ? darkTheme : lightTheme}>
+        <Background color={dark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(17,135,250,0.8)'} />
         <CssBaseline />
         <Nav actions={actions} />
         <Banner banner={banner} title={title} other={other} />

@@ -1,4 +1,4 @@
-import { ReactElement, ReactNode } from 'react'
+import { CSSProperties, ReactElement, ReactNode } from 'react'
 import { Node } from './asciidoc'
 
 export interface PostMeta {
@@ -30,4 +30,10 @@ export interface CategoryProps {
       group: {nodes: Node[], totalCount: number}[]
     }
   }
+}
+
+export interface BackgroundProps {
+  color?: string
+  classesName?: string
+  style?: CSSProperties
 }
