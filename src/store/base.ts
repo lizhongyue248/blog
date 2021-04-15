@@ -29,3 +29,8 @@ export const darkState = atom<boolean>({
     localStorageEffect<boolean>('dark')
   ]
 })
+
+export const searchState = atom<boolean>({
+  key: 'search',
+  default: true
+})

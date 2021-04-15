@@ -4,7 +4,7 @@ import Pagination from '@material-ui/lab/Pagination'
 import PublishIcon from '@material-ui/icons/Publish'
 import { createStyles } from '@material-ui/core/styles'
 import { Grid, makeStyles } from '@material-ui/core'
-import { PostProps, Node } from '../interface/asciidoc'
+import { PostListProps, Node } from '../interface/asciidoc'
 import PostSimpleInfo from '../components/PostSimpleInfo'
 import Layout from '../components/Layout'
 
@@ -63,7 +63,7 @@ const PostSimple: FC<Node> = (node) : ReactElement => {
   )
 }
 
-const PostList: FC<PostProps> = ({ data }): ReactElement => {
+const PostList: FC<PostListProps> = ({ data }): ReactElement => {
   const nodes = data.allAsciidoc.edges.map(edge => edge.node)
   const { pageInfo = { itemCount: 0, pageCount: 0, currentPage: 1 } } = data.allAsciidoc
 

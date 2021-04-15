@@ -4,6 +4,7 @@ import { useRecoilValue } from 'recoil'
 import { navigate } from 'gatsby'
 import RssFeedIcon from '@material-ui/icons/RssFeed'
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder'
+import { blue, purple } from '@material-ui/core/colors'
 import { createMuiTheme, MuiThemeProvider, CssBaseline, Container, Paper, Divider, IconButton } from '@material-ui/core'
 import Seo from './Seo'
 import Nav from './Nav'
@@ -24,8 +25,16 @@ const Layout: FC<LayoutProps> = (
   }
 ): ReactElement => {
   const dark = useRecoilValue(darkState)
-  const darkTheme = createMuiTheme({ palette: { type: 'dark' } })
-  const lightTheme = createMuiTheme({ palette: { type: 'light' } })
+  const theme = createMuiTheme(
+    {
+      palette: {
+        type: dark ? 'dark' : 'light',
+        divider: '#BDBDBD',
+        primary: blue,
+        secondary: purple
+      }
+    }
+  )
   useEffect(() => {
     const documentTitle = document.title
     let titleTime: ReturnType<typeof setTimeout>
@@ -49,7 +58,7 @@ const Layout: FC<LayoutProps> = (
   return (
     <div>
       <Seo post={postMeta} />
-      <MuiThemeProvider theme={dark ? darkTheme : lightTheme}>
+      <MuiThemeProvider theme={theme}>
         <Background color={dark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(17,135,250,0.8)'} />
         <CssBaseline />
         <Nav actions={actions} />

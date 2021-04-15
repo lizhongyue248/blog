@@ -32,3 +32,11 @@ export interface PostProps {
     previous?: PageContent
   }
 }
+
+export interface PostListProps {
+  data: { allAsciidoc: Asciidoc }
+  pageContext: {
+    next?: PageContent
+    previous?: PageContent
+  }
+}

@@ -1,5 +1,5 @@
 import { FC, ReactElement, cloneElement, useEffect } from 'react'
-import { useRecoilState } from 'recoil'
+import { useRecoilState, useSetRecoilState } from 'recoil'
 import { Link, navigate } from 'gatsby'
 import { useBoolean } from 'ahooks'
 import SpeedDial from '@material-ui/lab/SpeedDial'
@@ -12,6 +12,7 @@ import CategoryIcon from '@material-ui/icons/Category'
 import Brightness7Icon from '@material-ui/icons/Brightness7'
 import Brightness4Icon from '@material-ui/icons/Brightness4'
 import AlbumIcon from '@material-ui/icons/Album'
+import { SearchOutlined } from '@material-ui/icons'
 import useScrollTrigger from '@material-ui/core/useScrollTrigger'
 import { createStyles, Theme } from '@material-ui/core/styles'
 import {
@@ -21,10 +22,11 @@ import {
   Toolbar,
   IconButton,
   Drawer,
-  List, ListItem, ListItemIcon, ListItemText
+  List, ListItem, ListItemIcon, ListItemText, Divider
 } from '@material-ui/core'
+import Search from './Search'
 import { isBrowser } from '../util/constant'
-import { darkState } from '../store/base'
+import { darkState, searchState } from '../store/base'
 
 interface Props {
   children: ReactElement;
@@ -32,6 +34,14 @@ interface Props {
 
 interface ArrayProps {
   actions?: ReactElement[];
+}
+
+interface Menu {
+  name: string
+  icon: ReactElement
+  href?: string
+  handler?: () => void
+  type?: 'icon'
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -59,14 +69,6 @@ const Bar = (props: Props): ReactElement => {
   })
 }
 
-const menus = [
-  { name: '首页', icon: <HomeIcon />, href: '/' },
-  { name: '归档', icon: <EventNoteIcon />, href: '/archive' },
-  { name: '分类', icon: <CategoryIcon />, href: '/category' },
-  { name: '友链', icon: <InsertLinkIcon />, href: '/link' },
-  { name: '关于', icon: <AlbumIcon />, href: '/about' }
-]
-
 const Nav: FC<ArrayProps> = ({ actions: actionProps = [] }): ReactElement => {
   // const [dark, setDark] = useLocalStorageState('palette-dark', isBrowser() ? window.matchMedia('(prefers-color-scheme: dark)').matches : true)
   const [dark, setDark] = useRecoilState(darkState)
@@ -83,6 +85,21 @@ const Nav: FC<ArrayProps> = ({ actions: actionProps = [] }): ReactElement => {
     threshold: isBrowser() ? window.screen.availHeight : 0,
     target: isBrowser() ? window : undefined
   })
+
+  const setSearch = useSetRecoilState(searchState)
+  const menus: Menu[] = [
+    { name: '首页', icon: <HomeIcon />, href: '/' },
+    { name: '归档', icon: <EventNoteIcon />, href: '/archive' },
+    { name: '分类', icon: <CategoryIcon />, href: '/category' },
+    { name: '友链', icon: <InsertLinkIcon />, href: '/link' },
+    { name: '关于', icon: <AlbumIcon />, href: '/about' },
+    { name: '搜索', icon: <SearchOutlined />, handler: () => setSearch(true), type: 'icon' }
+  ]
+
+  const menuHandler = (menu: Menu) => {
+    (menu.href && toHref(menu.href)) || (menu.handler && menu.handler())
+  }
+
   const actions = [(
     <SpeedDial
       ariaLabel='返回顶上'
@@ -117,13 +134,21 @@ const Nav: FC<ArrayProps> = ({ actions: actionProps = [] }): ReactElement => {
             <div className='space-x-1'>
               {
                 menus.map(menu => (
-                  <Button
-                    key={menu.name}
-                    className='text-white hidden sm:inline-block'
-                    startIcon={menu.icon}
-                    onClick={() => toHref(menu.href)}
-                  >{menu.name}
-                  </Button>
+                  menu.type
+                    ? (
+                      <IconButton key={menu.name} className='hidden sm:inline-block text-white' size='medium' aria-label='menus' onClick={() => menuHandler(menu)}>
+                        {menu.icon}
+                      </IconButton>
+                      )
+                    : (
+                      <Button
+                        key={menu.name}
+                        className='text-white hidden sm:inline-block'
+                        startIcon={menu.icon}
+                        onClick={() => menuHandler(menu)}
+                      >{menu.name}
+                      </Button>
+                      )
                 ))
               }
               <IconButton className='text-white' aria-label='切换主题' onClick={() => setDark(!dark)}>
@@ -132,6 +157,7 @@ const Nav: FC<ArrayProps> = ({ actions: actionProps = [] }): ReactElement => {
               <IconButton className='sm:hidden text-white' size='medium' aria-label='menus' onClick={() => show()}>
                 <MenuIcon />
               </IconButton>
+              <Search />
             </div>
           </Toolbar>
         </AppBar>
@@ -139,10 +165,13 @@ const Nav: FC<ArrayProps> = ({ actions: actionProps = [] }): ReactElement => {
       <Drawer className='sm:hidden' open={open} onClose={() => hide()} anchor='top' variant='temporary'>
         <List>
           {menus.map(menu => (
-            <ListItem button key={menu.name} onClick={() => toHref(menu.href)}>
-              <ListItemIcon>{menu.icon}</ListItemIcon>
-              <ListItemText>{menu.name}</ListItemText>
-            </ListItem>
+            <div key={menu.name}>
+              {menu.type && <Divider variant='middle' />}
+              <ListItem button onClick={() => menuHandler(menu)}>
+                <ListItemIcon>{menu.icon}</ListItemIcon>
+                <ListItemText>{menu.name}</ListItemText>
+              </ListItem>
+            </div>
           ))}
         </List>
       </Drawer>
