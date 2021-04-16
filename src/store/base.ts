@@ -32,5 +32,5 @@ export const darkState = atom<boolean>({
 
 export const searchState = atom<boolean>({
   key: 'search',
-  default: true
+  default: false
 })
