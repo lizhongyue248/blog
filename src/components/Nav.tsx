@@ -22,7 +22,11 @@ import {
   Toolbar,
   IconButton,
   Drawer,
-  List, ListItem, ListItemIcon, ListItemText, Divider
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider
 } from '@material-ui/core'
 import Search from './Search'
 import { isBrowser } from '../util/constant'
@@ -128,9 +132,12 @@ const Nav: FC<ArrayProps> = ({ actions: actionProps = [] }): ReactElement => {
       <Bar>
         <AppBar elevation={4} className={`min-h-0 h-16 bg-transparent transition-all duration-700 ${classes.appBar}`}>
           <Toolbar className='h-full min-h-0 max-w-7xl w-full flex justify-between mx-auto'>
-            <Link to='/blog' className='no-underline'>
-              <div className='font-bold cursor-pointer text-white text-2xl'>A Yue's Blog</div>
-            </Link>
+            <div className='flex'>
+              <Link to='/blog' className='no-underline'>
+                <div className='font-bold cursor-pointer text-white text-2xl'>A Yue's Blog
+                </div>
+              </Link>
+            </div>
             <div className='space-x-1'>
               {
                 menus.map(menu => (

@@ -1,16 +1,13 @@
 import { FC, ReactElement, useEffect } from 'react'
 import sal, { Options } from 'sal.js'
 import { useRecoilValue } from 'recoil'
-import { navigate } from 'gatsby'
-import RssFeedIcon from '@material-ui/icons/RssFeed'
-import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder'
 import { blue, purple } from '@material-ui/core/colors'
-import { createMuiTheme, MuiThemeProvider, CssBaseline, Container, Paper, Divider, IconButton } from '@material-ui/core'
+import { createMuiTheme, MuiThemeProvider, CssBaseline, Container, Paper } from '@material-ui/core'
 import Seo from './Seo'
 import Nav from './Nav'
+import Footer from './Footer'
 import Banner from './Banner'
 import Background from './Background'
-import { getYear } from '../util'
 import { darkState } from '../store/base'
 import { LayoutProps } from '../interface/page'
 
@@ -73,26 +70,7 @@ const Layout: FC<LayoutProps> = (
             </Paper>
           </Container>
         </div>
-        <footer
-          className='w-full text-center py-9'
-          data-sal='fade'
-          data-sal-duration='1000'
-          data-sal-repeat='true'
-        >
-          <div>
-            总访问量 <span id='busuanzi_value_site_pv' /> 次
-            <FavoriteBorderIcon className='align-middle text-xl mx-2 px-1 animate-ping' />
-            总访客数 <span id='busuanzi_value_site_uv' /> 人
-            <Divider variant='inset' className='my-1' />
-          </div>
-          <div>Copyright © 2017 - {getYear()} z-yue. All Rights Reserved.</div>
-          <div className='my-1'>
-            {/*  <a href='https://beian.miit.gov.cn' target='_blank' rel='noreferrer'>黔 ICP 备 17008630 号-2</a> */}
-            <IconButton size='medium' color='primary' aria-label='RSS' onClick={() => navigate('/rss.xml')}>
-              <RssFeedIcon />
-            </IconButton>
-          </div>
-        </footer>
+        <Footer />
       </MuiThemeProvider>
     </div>
   )

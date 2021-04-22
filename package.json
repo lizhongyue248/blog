@@ -20,8 +20,8 @@
     "url": "https://github.com/lizhongyue248"
   },
   "scripts": {
-    "develop": "gatsby develop -p 8012",
-    "start": "gatsby develop -p 8012",
+    "develop": "gatsby develop -p 8013",
+    "start": "gatsby develop -p 8013",
     "build": "gatsby build",
     "serve": "gatsby serve",
     "clean": "gatsby clean",
