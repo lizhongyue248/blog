@@ -1,5 +1,6 @@
 import { FC, ReactElement } from 'react'
 import { graphql } from 'gatsby'
+import { getBanner } from '../util/constant'
 import { Node } from '../interface/asciidoc'
 import PostContent from '../components/PostContent'
 import Layout from '../components/Layout'
@@ -13,7 +14,7 @@ interface AboutProps {
 const About: FC<AboutProps> = ({ data }): ReactElement => {
   const post = data.asciidoc
   return (
-    <Layout title={post.document.title}>
+    <Layout title={post.document.title} banner={getBanner(5)}>
       <PostContent node={post} />
     </Layout>
   )

@@ -19,7 +19,7 @@ import {
   Avatar,
   Button
 } from '@material-ui/core'
-import { isBrowser, getBgColors } from '../util/constant'
+import { isBrowser, getBgColors, getBanner } from '../util/constant'
 import Layout from '../components/Layout'
 import Comment from '../components/Comment'
 
@@ -94,7 +94,7 @@ const LinkPage: FC<LinkProps> = ({ data }): ReactElement => {
     })
   }, [])
   return (
-    <Layout title='友链'>
+    <Layout title='友链' banner={getBanner(2)}>
       <Grid container spacing={3} className='py-4 mt-6'>
         {
           nodes.map((node, index) => (

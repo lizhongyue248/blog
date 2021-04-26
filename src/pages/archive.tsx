@@ -21,6 +21,7 @@ import {
 import ExpandMore from '@material-ui/icons/ExpandMore'
 import ExpandLess from '@material-ui/icons/ExpandLess'
 import { List, ListItem, ListItemText, Collapse, Chip, Divider } from '@material-ui/core'
+import { getBanner } from '../util/constant'
 import { darkState } from '../store/base'
 import { Node } from '../interface/asciidoc'
 import Layout from '../components/Layout'
@@ -116,7 +117,7 @@ const ArchivePage: FC<ArchiveProps> = ({ data }): ReactElement => {
         [curr]: currentIndex === 0
       }), {}))
   return (
-    <Layout title='归档'>
+    <Layout title='归档' banner={getBanner(4)}>
       <List>
         <ListItem className='text-2xl font-bold'>共计 {data.allAsciidoc.totalCount} 篇文章</ListItem>
         <ArchiveChart archives={archives} />

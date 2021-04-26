@@ -96,3 +96,26 @@ export const getMonth = (date: Date) : string => {
   const month = date.getMonth()
   return month < 10 ? `0${month}` : `${month}`
 }
+
+export const banner = [
+  '/blog/bg/bg.jpg',
+  '/blog/bg/bg1.jpg',
+  '/blog/bg/bg2.jpg',
+  '/blog/bg/bg3.jpg',
+  '/blog/bg/bg5.jpg',
+  '/blog/bg/plief.jpg',
+  '/blog/bg/62824816_p0.jpg',
+  '/blog/bg/Sweet-space.png',
+  '/blog/bg/Next Theme KDE Plasma Wallpaper Flat Version.png',
+  '/blog/bg/Inspiration KDE Plasma Theme Wallapper Flat Light.png',
+  '/blog/bg/01-wallpaper-tela.jpg',
+  '/blog/bg/02-wallpaper-vimix.jpg',
+  '/blog/bg/03-wallpaper-stylish.jpg',
+  '/blog/bg/timg (3).jpeg',
+  '/blog/bg/timg (2).jpeg',
+  '/blog/bg/bg-start.jpeg'
+]
+
+export const cdn = 'https://resources.echocow.cn'
+
+export const getBanner = (round = 1): string => `${cdn}${banner[Math.round(new Date().getTime() * round / 100000 % banner.length)]}`

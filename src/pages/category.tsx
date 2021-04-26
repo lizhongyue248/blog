@@ -13,7 +13,7 @@ import {
   AccumulationSeriesDirective
 } from '@syncfusion/ej2-react-charts'
 import { Chip, Avatar } from '@material-ui/core'
-import { getBgColors, getBorderColors, getTextColors } from '../util/constant'
+import { getBanner, getBgColors, getBorderColors, getTextColors } from '../util/constant'
 import { darkState } from '../store/base'
 import { CategoryProps } from '../interface/page'
 import Layout from '../components/Layout'
@@ -64,7 +64,7 @@ const CategoryPage: FC<CategoryProps> = ({ data }): ReactElement => {
     .map(g => ({ total: g.totalCount, category: g.nodes[0].pageAttributes.category }))
     .map((c) => ({ ...c, text: `${c.category} ${c.total}` }))
   return (
-    <Layout title='分类'>
+    <Layout title='分类' banner={getBanner(3)}>
       <div className='text-2xl font-bold'>共计 {category.length} 个类别</div>
       <CategoryChart category={category} />
       {

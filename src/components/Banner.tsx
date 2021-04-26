@@ -2,13 +2,13 @@ import { FC, ReactElement } from 'react'
 import Typed from 'react-typed'
 import { useTitle } from 'ahooks'
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown'
-import { createStyles } from '@material-ui/core/styles'
+import { createStyles, Theme } from '@material-ui/core/styles'
 import { makeStyles } from '@material-ui/core'
 import { isBrowser } from '../util/constant'
 import { BannerProps } from '../interface/page'
 import 'sal.js/dist/sal.css'
 
-const useStyles = makeStyles(() =>
+const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     banner: {
       background: 'center center / cover no-repeat',
@@ -16,7 +16,7 @@ const useStyles = makeStyles(() =>
       width: '100%'
     },
     mask: {
-      backgroundColor: 'rgba(0, 0, 0, .3)'
+      backgroundColor: theme.palette.type === 'dark' ? 'rgba(0, 0, 0, .6)' : 'rgba(0, 0, 0, .3)'
     }
   })
 )
@@ -27,7 +27,7 @@ const Banner: FC<BannerProps> = ({ banner, title, other = <div /> }): ReactEleme
   const handleScrollContent = () => { isBrowser() && window.scrollTo({ top: screen.height - 100, behavior: 'smooth' }) }
   return (
     <div className={classes.banner} style={{ backgroundImage: `url("${banner}")` }}>
-      <div className={`${classes.mask} w-full h-full flex flex-col justify-center items-center justify-between`}>
+      <div className={`${classes.mask} w-full h-full flex flex-col justify-center items-center justify-between transition-all duration-200`}>
         <div className='flex flex-col justify-center items-center pt-2 text-white h-5/6 text-center mx-8'>
           <Typed
             className='text-3xl md:text-4xl lg:text-5xl text-white'

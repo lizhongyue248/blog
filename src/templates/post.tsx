@@ -91,6 +91,7 @@ const Post: FC<PostProps> = (props): ReactElement => {
     <Layout
       title={postMeta.title}
       postMeta={postMeta}
+      banner={postMeta.image}
       actions={[
         <SpeedDial
           ariaLabel='目录'
