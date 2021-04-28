@@ -8,7 +8,7 @@
     "update:dependency": "yarn upgrade-interactive --latest"
   },
   "dependencies": {
-    "asciidoctor": "^2.2.4-rc.1",
+    "asciidoctor": "^2.2.4",
     "lodash": "^4.17.21"
   },
   "peerDependencies": {
