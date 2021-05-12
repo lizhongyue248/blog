@@ -57,7 +57,7 @@ const PostSimple: FC<Node> = (node) : ReactElement => {
             {pageAttributes.description}
           </p>
         </div>
-        <PostSimpleInfo node={node} />
+        <PostSimpleInfo fromNow node={node} />
       </Grid>
     </Grid>
   )
@@ -103,8 +103,8 @@ export const pageQuery = graphql`
           id
           fields {
             slug
-            birthTime(formatString: "YYYY-MM-DD", locale: "zh-cn")
-            modifiedTime(formatString: "YYYY-MM-DD", locale: "zh-cn")
+            birthTime
+            modifiedTime
           }
           document {
             title

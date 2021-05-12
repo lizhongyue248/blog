@@ -20,8 +20,8 @@
     "url": "https://github.com/lizhongyue248"
   },
   "scripts": {
-    "develop": "gatsby develop -p 8013",
-    "start": "gatsby develop -p 8013",
+    "develop": "gatsby develop -p 8014",
+    "start": "gatsby develop -p 8014",
     "build": "gatsby build",
     "serve": "gatsby serve",
     "clean": "gatsby clean",
@@ -35,6 +35,7 @@
     "ahooks": "^2.10.3",
     "autoprefixer": "^10.2.4",
     "clear-cache": "^1.0.1",
+    "dayjs": "^1.10.4",
     "fuse.js": "^6.4.6",
     "gatsby": "^3.4.2",
     "gatsby-image": "^3.4.0",
