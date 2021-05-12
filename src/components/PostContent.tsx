@@ -1,7 +1,9 @@
 import { FC, ReactElement } from 'react'
+import Alert from '@material-ui/lab/Alert'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import PostSimpleInfo from './PostSimpleInfo'
 import Comment from './Comment'
+import { fromNow, isDeprecated } from '../util/dayjs'
 import { PostContentProps } from '../interface/page'
 
 export const salAttr = {
@@ -13,6 +15,7 @@ export const salAttr = {
 const PostContent: FC<PostContentProps> = (
   { node: post, children, comment = true }
 ): ReactElement => {
+  const time = fromNow(post.fields.modifiedTime)
   return (
     <article className='post mb-7'>
       <div className='text-4xl font-bold post-title text-center' {...salAttr}>
@@ -33,6 +36,14 @@ const PostContent: FC<PostContentProps> = (
               src={post.pageAttributes.image}
               {...salAttr}
             />
+        }
+        {
+          isDeprecated(time) &&
+            <div {...salAttr}>
+              <Alert className='mb-10' variant='outlined' severity='warning'>
+                <b>您当前所阅读的文章最后更新时间已经是 {`${time.humanize()}以前`}，文章内容可能已经过时，仅供学习与参考。</b>
+              </Alert>
+            </div>
         }
         <div className='mb-12' id='post-content' dangerouslySetInnerHTML={{ __html: post.html }} {...salAttr} />
       </div>
