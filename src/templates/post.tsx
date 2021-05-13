@@ -67,6 +67,7 @@ const Post: FC<PostProps> = (props): ReactElement => {
     const headerSelect = Array(6).fill(0).map((_, index) => `.post h${index + 2}[id]`).join(',')
     document.querySelectorAll(headerSelect).forEach((block) => {
       const element = block as HTMLElement
+      element.classList.add('pt-20', '-mt-16')
       element.onclick = () => {
         const url = new URL(isBrowser() ? window.location.href : '')
         const link = `${url.origin}${url.pathname}#${element.id}`

@@ -4,7 +4,7 @@
   "extensions": {
     "endpoints": {
       "Remote GraphQL Endpoint": {
-        "url": "http://localhost:8021/___graphql",
+        "url": "http://localhost:8024/___graphql",
         "introspect": true
       }
     }

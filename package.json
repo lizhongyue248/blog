@@ -1,6 +1,6 @@
 {
   "name": "z-yue",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": true,
   "description": "中月的博客",
   "keywords": [
@@ -28,7 +28,7 @@
     "update:dependency": "yarn upgrade-interactive --latest"
   },
   "config": {
-    "port": 8022
+    "port": 8024
   },
   "dependencies": {
     "@material-ui/core": "^4.11.4",
