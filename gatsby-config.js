@@ -26,9 +26,10 @@ module.exports = {
   },
   flags: {
     DEV_SSR: false,
-    FAST_DEV: false,
+    FAST_DEV: true,
     FAST_REFRESH: true,
-    PARALLEL_SOURCING: true
+    PARALLEL_SOURCING: true,
+    PRESERVE_WEBPACK_CACHE: true
   },
   plugins: [
     {

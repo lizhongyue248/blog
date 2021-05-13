@@ -1,6 +1,7 @@
 import { FC, ReactElement } from 'react'
 import Alert from '@material-ui/lab/Alert'
 import VisibilityIcon from '@material-ui/icons/Visibility'
+import { Divider } from '@material-ui/core'
 import PostSimpleInfo from './PostSimpleInfo'
 import Comment from './Comment'
 import { fromNow, isDeprecated } from '../util/dayjs'
@@ -18,10 +19,11 @@ const PostContent: FC<PostContentProps> = (
   const time = fromNow(post.fields.modifiedTime)
   return (
     <article className='post mb-7'>
-      <div className='text-4xl font-bold post-title text-center' {...salAttr}>
+      <div className='text-2xl md:text-4xl font-bold post-title text-center' {...salAttr}>
         {post.document.title}
       </div>
-      <PostSimpleInfo node={post} className='text-center my-3' {...salAttr}>
+      <Divider className='mt-5' />
+      <PostSimpleInfo node={post} className='max-w-lg mx-auto my-3' {...salAttr}>
         <span style={{ display: 'none' }} id='busuanzi_container_page_pv' className='cursor-pointer hover:text-blue-400 duration-500 transition-colors'>
           <VisibilityIcon className='align-text-bottom text-base' />
           <span className='ml-2' id='busuanzi_value_page_pv' />

@@ -149,8 +149,8 @@ export const query = graphql`
       id
       fields {
         slug
-        birthTime(formatString: "YYYY-MM-DD HH:mm:ss", locale: "zh-cn")
-        modifiedTime(formatString: "YYYY-MM-DD HH:mm:ss", locale: "zh-cn")
+        birthTime
+        modifiedTime
       }
       html
       document {

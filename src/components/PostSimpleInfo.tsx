@@ -18,7 +18,7 @@ const PostSimpleInfo: FC<SimpleInfoProps> = ({ node, className, children, fromNo
   const modifiedTime = dayjs(fields.modifiedTime)
   const birthTime = dayjs(fields.birthTime)
   return (
-    <div className={`flex-none text-gray-500 dark:text-gray-400 space-x-7 ${className}`}>
+    <div className={`flex flex-wrap flex-auto justify-between text-gray-500 dark:text-gray-400 ${className}`}>
       <span className='cursor-pointer hover:text-blue-400 duration-500 transition-colors' onClick={() => navigate('/archive')}>
         <EditSharp className='align-text-bottom text-base' /> {fromNow ? modifiedTime.fromNow() : modifiedTime.format(formatTemplate)}
       </span>

@@ -18,7 +18,7 @@ controller 到使用框架开始一步一步搭建。
 == RESTFul
 
 RESTFUl
-一种软件架构风格、设计风格，而不是标准，只是提供了一组设计原则和约束条件（源自https://baike.baidu.com/item/RESTful/4406165?fr=aladdin[百度百科]）。这是一篇如何使用
+一种软件架构风格、设计风格，而不是标准，只是提供了一组设计原则和约束条件（源自 https://baike.baidu.com/item/RESTful/4406165?fr=aladdin[百度百科]）。这是一篇如何使用
 spring boot 来进行构建一个 restful Api
 的记录，他的概念和核心我不再赘述，具体可查看文末的参考链接。在这之前，我们需要对我们
 Api 进行一个简单的设计。
@@ -61,7 +61,7 @@ http://localhost:8080/api/
 http://localhost:8080/api/v1
 ....
 
-另一种做法是，将版本号放在HTTP头信息中，但不如放入URL方便和直观。https://developer.github.com/v3/media/#request-specific-version[Github]采用这种做法。
+另一种做法是，将版本号放在HTTP头信息中，但不如放入URL方便和直观。 https://developer.github.com/v3/media/#request-specific-version[Github]采用这种做法。
 
 3、 我们选用五个常用的HTTP动词
 

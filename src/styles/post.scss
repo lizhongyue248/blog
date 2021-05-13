@@ -23,8 +23,8 @@
     }
   }
 
-  a {
-    overflow-wrap: break-word;
+  p, b, a, strong {
+    overflow-wrap: break-word !important;
   }
 
   .literalblock .content pre {

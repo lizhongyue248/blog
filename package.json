@@ -28,7 +28,7 @@
     "update:dependency": "yarn upgrade-interactive --latest"
   },
   "config": {
-    "port": 8019
+    "port": 8020
   },
   "dependencies": {
     "@material-ui/core": "^4.11.4",
