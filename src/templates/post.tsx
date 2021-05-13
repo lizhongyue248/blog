@@ -62,7 +62,7 @@ const Post: FC<PostProps> = (props): ReactElement => {
     const parser = new DOMParser()
     const article = parser.parseFromString(post.html, 'text/html')
     const tocElement = article.querySelector('.toc') || { outerHTML: '' }
-    setToc(tocElement.outerHTML.replaceAll('data-sal="fade" data-sal-duration="1000" data-sal-repeat="true"', ''))
+    setToc(tocElement.outerHTML.replaceAll('data-sal="fade" data-sal-duration="500" data-sal-repeat="true"', ''))
     document.querySelector('#post-content .toc')?.classList.add('hidden')
     const headerSelect = Array(6).fill(0).map((_, index) => `.post h${index + 2}[id]`).join(',')
     document.querySelectorAll(headerSelect).forEach((block) => {

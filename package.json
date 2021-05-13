@@ -1,6 +1,6 @@
 {
   "name": "z-yue",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "description": "中月的博客",
   "keywords": [
@@ -20,12 +20,15 @@
     "url": "https://github.com/lizhongyue248"
   },
   "scripts": {
-    "develop": "gatsby develop -p 8017",
-    "start": "gatsby develop -p 8017",
+    "develop": "gatsby develop -p $npm_package_config_port",
+    "start": "gatsby develop -p $npm_package_config_port",
     "build": "gatsby build",
     "serve": "gatsby serve",
     "clean": "gatsby clean",
     "update:dependency": "yarn upgrade-interactive --latest"
+  },
+  "config": {
+    "port": 8019
   },
   "dependencies": {
     "@material-ui/core": "^4.11.4",

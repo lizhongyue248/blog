@@ -4,10 +4,7 @@
   "extensions": {
     "endpoints": {
       "Remote GraphQL Endpoint": {
-        "url": "http://localhost:8017/___graphql",
-        "headers": {
-          "Authorization": "Bearer TOKEN"
-        },
+        "url": "http://localhost:8019/___graphql",
         "introspect": true
       }
     }
