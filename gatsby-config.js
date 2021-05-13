@@ -158,7 +158,7 @@ module.exports = {
                 url: site.siteMetadata.siteUrl + node.fields.slug,
                 guid: site.siteMetadata.siteUrl + node.fields.slug,
                 custom_elements: [{
-                  'content:encoded': node.html
+                  'content:encoded': node.html.replace(/data-sal="fade" data-sal-duration="500" data-sal-repeat="true"/g, '')
                 }]
               })),
             output: '/rss.xml',
