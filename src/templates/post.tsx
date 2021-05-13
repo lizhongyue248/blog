@@ -92,7 +92,7 @@ const Post: FC<PostProps> = (props): ReactElement => {
     <Layout
       title={postMeta.title}
       postMeta={postMeta}
-      banner={postMeta.image}
+      banner={null}
       actions={[
         <SpeedDial
           ariaLabel='目录'

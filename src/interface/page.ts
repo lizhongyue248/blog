@@ -19,7 +19,7 @@ export interface LayoutProps {
   title?: string
   other?: ReactElement
   actions?: ReactElement[]
-  banner?: string
+  banner?: string | null
   postMeta?: PostMeta
 }
 

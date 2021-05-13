@@ -15,7 +15,7 @@ const Layout: FC<LayoutProps> = (
   {
     title = '阿月很乖',
     postMeta,
-    banner = 'https://rmt.dogedoge.com/fetch/fluid/storage/bg/vdysjx.png?w=1920&fmt=webp',
+    banner = 'https://resources.echocow.cn/blog/bg/bg5.jpg',
     children,
     actions,
     other
@@ -58,8 +58,8 @@ const Layout: FC<LayoutProps> = (
       <MuiThemeProvider theme={theme}>
         <Background color={dark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(17,135,250,0.8)'} />
         <CssBaseline />
-        <Nav actions={actions} />
-        <Banner banner={banner} title={title} other={other} />
+        <Nav actions={actions} banner={banner !== null} />
+        {banner && <Banner banner={banner} title={title} other={other} />}
         <div id='container' className='w-full flex justify-center'>
           <Container maxWidth='lg' className='text-gray-800'>
             <Paper

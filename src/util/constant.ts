@@ -98,7 +98,6 @@ export const getMonth = (date: Date) : string => {
 }
 
 export const banner = [
-  '/blog/bg/bg.jpg',
   '/blog/bg/bg1.jpg',
   '/blog/bg/bg2.jpg',
   '/blog/bg/bg3.jpg',
@@ -119,3 +118,5 @@ export const banner = [
 export const cdn = 'https://resources.echocow.cn'
 
 export const getBanner = (round = 1): string => `${cdn}${banner[Math.round(new Date().getTime() * round / 100000 % banner.length)]}`
+
+export const toCdn = (path: string): string => cdn + path

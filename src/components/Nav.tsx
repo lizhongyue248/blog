@@ -33,11 +33,13 @@ import { isBrowser } from '../util/constant'
 import { darkState, searchState } from '../store/base'
 
 interface Props {
-  children: ReactElement;
+  children: ReactElement
+  banner: boolean
 }
 
 interface ArrayProps {
-  actions?: ReactElement[];
+  actions?: ReactElement[]
+  banner?: boolean
 }
 
 interface Menu {
@@ -61,7 +63,7 @@ const useStyles = makeStyles((theme: Theme) =>
 )
 
 const Bar = (props: Props): ReactElement => {
-  const { children } = props
+  const { children, banner } = props
   const classes = useStyles()
   const trigger = useScrollTrigger({
     disableHysteresis: true,
@@ -69,11 +71,11 @@ const Bar = (props: Props): ReactElement => {
     target: isBrowser() ? window : undefined
   })
   return cloneElement(children, {
-    className: `${children.props.className} ${trigger ? classes.scroll : ''}`
+    className: `${children.props.className} ${!banner || trigger ? classes.scroll : ''}`
   })
 }
 
-const Nav: FC<ArrayProps> = ({ actions: actionProps = [] }): ReactElement => {
+const Nav: FC<ArrayProps> = ({ actions: actionProps = [], banner = true }): ReactElement => {
   // const [dark, setDark] = useLocalStorageState('palette-dark', isBrowser() ? window.matchMedia('(prefers-color-scheme: dark)').matches : true)
   const [dark, setDark] = useRecoilState(darkState)
   const [open, { setTrue: show, setFalse: hide }] = useBoolean(false)
@@ -129,7 +131,7 @@ const Nav: FC<ArrayProps> = ({ actions: actionProps = [] }): ReactElement => {
 
   return (
     <div>
-      <Bar>
+      <Bar banner={banner}>
         <AppBar elevation={4} className={`min-h-0 h-16 bg-transparent transition-all duration-700 ${classes.appBar}`}>
           <Toolbar className='h-full min-h-0 max-w-7xl w-full flex justify-between mx-auto'>
             <div className='flex'>
