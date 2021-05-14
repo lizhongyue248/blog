@@ -13,7 +13,7 @@ import { Divider, Drawer, Toolbar } from '@material-ui/core'
 import { isBrowser } from '../util/constant'
 import { PostMeta } from '../interface/page'
 import { PostProps } from '../interface/asciidoc'
-import PostContent from '../components/PostContent'
+import PostContent, { globalSalAttrString } from '../components/PostContent'
 import Layout from '../components/Layout'
 import '../styles/fontawesome.min.css'
 import '../styles/asciidoc.scss'
@@ -62,7 +62,7 @@ const Post: FC<PostProps> = (props): ReactElement => {
     const parser = new DOMParser()
     const article = parser.parseFromString(post.html, 'text/html')
     const tocElement = article.querySelector('.toc') || { outerHTML: '' }
-    setToc(tocElement.outerHTML.replace(/data-sal="fade" data-sal-duration="500" data-sal-repeat="true"/g, ''))
+    setToc(tocElement.outerHTML.replace(new RegExp(globalSalAttrString, 'g'), ''))
     document.querySelector('#post-content .toc')?.classList.add('hidden')
     const headerSelect = Array(6).fill(0).map((_, index) => `.post h${index + 2}[id]`).join(',')
     document.querySelectorAll(headerSelect).forEach((block) => {

@@ -13,6 +13,8 @@ export const salAttr = {
   'data-sal-repeat': 'true'
 }
 
+export const globalSalAttrString = 'data-sal="fade" data-sal-duration="500" data-sal-repeat="true"'
+
 const PostContent: FC<PostContentProps> = (
   { node: post, children, comment = true }
 ): ReactElement => {

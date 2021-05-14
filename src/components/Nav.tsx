@@ -185,7 +185,7 @@ const Nav: FC<ArrayProps> = ({ actions: actionProps = [], banner = true }): Reac
         </List>
       </Drawer>
       <div className='fixed right-4 bottom-4 z-50'>
-        {actions.map(ele => cloneElement(ele, { hidden: shouldToTop }))}
+        {actions}
       </div>
     </div>
   )
