@@ -1,4 +1,5 @@
 import { FC, ReactElement, useEffect, useRef, useState } from 'react'
+import { useSize } from 'ahooks'
 import { isBrowser } from '../util/constant'
 import { BackgroundProps } from '../interface/page'
 
@@ -18,15 +19,17 @@ const Background: FC<BackgroundProps> = (
 ): ReactElement => {
   const ref = useRef<HTMLCanvasElement>(null)
   const [intervalReturn, setIntervalReturn] = useState<ReturnType<typeof setInterval>>()
-  const W = isBrowser() ? window.innerWidth : 0
   const H = isBrowser() ? window.innerHeight : 0
+  const { width: W = 0 } = isBrowser() ? useSize(document.querySelector('body')) : {}
   useEffect(() => {
+    if (intervalReturn !== undefined) clearInterval(intervalReturn)
     const canvas = ref.current
     if (!canvas) return
     const context = canvas.getContext('2d')
     if (!context) return
     canvas.width = W
     canvas.height = H
+    canvas.style.width = '100%'
     const mp = 50
     const particles: Particles[] = []
     for (let i = 0; i < mp; i++) {
@@ -69,9 +72,7 @@ const Background: FC<BackgroundProps> = (
         }
       }
     }
-    if (intervalReturn !== undefined) {
-      clearInterval(intervalReturn)
-    }
+    if (intervalReturn !== undefined) clearInterval(intervalReturn)
     setIntervalReturn(setInterval(draw, 33))
   }, [color, W, H])
   return <canvas ref={ref} id='canvas' className={classesName} style={style} />

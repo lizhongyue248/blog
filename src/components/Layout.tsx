@@ -36,13 +36,8 @@ const Layout: FC<LayoutProps> = (
     const documentTitle = document.title
     let titleTime: ReturnType<typeof setTimeout>
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        document.title = '(つェ⊂) 看不到我~ ' + documentTitle
-        clearTimeout(titleTime)
-      } else {
-        document.title = '(*´∇｀*) 被发现啦~ ' + documentTitle
-        titleTime = setTimeout(() => { document.title = documentTitle }, 2000)
-      }
+      document.title = document.hidden ? `(つェ⊂) 看不到我~ ${documentTitle}` : `(*´∇｀*) 被发现啦~ ${documentTitle}`
+      if (document.hidden) { clearTimeout(titleTime) } else { titleTime = setTimeout(() => { document.title = documentTitle }, 2000) }
     })
     const salOption: Options = {
       root: null,

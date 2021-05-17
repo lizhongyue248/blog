@@ -76,7 +76,6 @@ const Bar = (props: Props): ReactElement => {
 }
 
 const Nav: FC<ArrayProps> = ({ actions: actionProps = [], banner = true }): ReactElement => {
-  // const [dark, setDark] = useLocalStorageState('palette-dark', isBrowser() ? window.matchMedia('(prefers-color-scheme: dark)').matches : true)
   const [dark, setDark] = useRecoilState(darkState)
   const [open, { setTrue: show, setFalse: hide }] = useBoolean(false)
   const classes = useStyles()
