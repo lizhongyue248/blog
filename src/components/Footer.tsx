@@ -28,6 +28,13 @@ const Footer: FC = (): ReactElement => {
       data-sal-duration='1000'
       data-sal-repeat='true'
     >
+      <Chip
+        className='mx-2 h-full mb-3'
+        size='small'
+        label={`z-yue ${packageJson.version}`}
+        clickable
+        color='primary'
+      />
       <div>
         总访问量 <span id='busuanzi_value_site_pv' /> 次
         <FavoriteBorderIcon className='align-middle text-xl mx-2 px-1 animate-ping' />
@@ -36,17 +43,12 @@ const Footer: FC = (): ReactElement => {
       </div>
       <div>Copyright © 2017 - {getYear()}.
         <br className='sm:hidden' />
-        <Chip
-          className='mx-2 h-full'
-          size='small'
-          label={`z-yue ${packageJson.version}`}
-          clickable
-          color='primary'
-        />
-        All Rights Reserved.
+        &nbsp;&nbsp;All Rights Reserved.
+      </div>
+      <div>
+        <a href='https://beian.miit.gov.cn' className='no-underline' target='_blank' rel='noreferrer'>黔 ICP 备 17008630 号-3</a>
       </div>
       <div className='my-1'>
-        {/*  <a href='https://beian.miit.gov.cn' target='_blank' rel='noreferrer'>黔 ICP 备 17008630 号-2</a> */}
         {
           actions.map(action => (
             <Tooltip
