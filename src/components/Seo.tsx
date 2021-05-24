@@ -32,7 +32,8 @@ const Seo: FC<SeoProps> = ({ post = { category: '' } }): ReactElement => {
       title={post.title || name}
       titleTemplate={titleTemplate}
       script={[
-        { async: true, src: '//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js' }
+        { async: true, src: '//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js' },
+        { async: true, 'data-ad-client': 'ca-pub-4396842140136522', src: '//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js' }
       ]}
       meta={[
         { name: 'title', content: post.title || name },
