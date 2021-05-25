@@ -45,9 +45,19 @@ const Footer: FC = (): ReactElement => {
         <br className='sm:hidden' />
         &nbsp;&nbsp;All Rights Reserved.
       </div>
-      <div>
-        <a href='https://beian.miit.gov.cn' className='no-underline' target='_blank' rel='noreferrer'>黔 ICP 备 17008630 号-3</a>
-      </div>
+      {
+        [
+          { href: 'https://beian.miit.gov.cn', img: 'https://resources.echocow.cn/icon/ICP.ico', alt: 'ICP', text: '黔 ICP 备 17008630 号-3' },
+          { href: 'http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=52042102000068', img: 'https://resources.echocow.cn/icon/GA.png', alt: '贵公网安备', text: '贵公网安备 52042102000068 号' }
+        ].map(link => (
+          <div key={link.alt} className='py-1'>
+            <a href={link.href} className='no-underline hover:underline align-middle' target='_blank' rel='noreferrer'>
+              <img alt={link.alt} className='inline-block pr-2 w-7' src={link.img} />
+              {link.text}
+            </a>
+          </div>
+        ))
+      }
       <div className='my-1'>
         {
           actions.map(action => (
