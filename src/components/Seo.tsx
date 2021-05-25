@@ -36,6 +36,7 @@ const Seo: FC<SeoProps> = ({ post = { category: '' } }): ReactElement => {
         { async: true, 'data-ad-client': 'ca-pub-4396842140136522', src: '//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js' }
       ]}
       meta={[
+        { name: 'baidu_union_verify', content: 'a9ce529a9d7c1b784ccea1a3c0e6b64c' },
         { name: 'title', content: post.title || name },
         { name: 'description', content: post.description || description },
         { name: 'image', content: post.image || image },
