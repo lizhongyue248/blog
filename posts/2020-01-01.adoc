@@ -8,6 +8,7 @@ v2.0, 2020-01-15: Rewritten for version 2
 :toc:
 :source-highlighter: pygments
 :source-linenums-option:
+:page-exclude: true
 
 DocGist is a URL proxy tool that converts http://asciidoctor.org/docs/asciidoc-syntax-quick-reference/[AsciiDoc] documents fetched from Gists (http://gist.github.com), GitHub repositories, Dropbox folders and other sources to HTML.
 The conversion to HTML is performed in the browser (client-side) using the https://github.com/asciidoctor/asciidoctor.js[Asciidoctor.js] JavaScript library.

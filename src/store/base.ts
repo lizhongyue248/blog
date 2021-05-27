@@ -1,3 +1,4 @@
+import { Options } from 'sal.js'
 import { atom, DefaultValue, AtomEffect } from 'recoil'
 import { isBrowser } from '../util/constant'
 
@@ -33,4 +34,14 @@ export const darkState = atom<boolean>({
 export const searchState = atom<boolean>({
   key: 'search',
   default: false
+})
+
+export const salState = atom<Options>({
+  key: 'sal',
+  default: {
+    root: null,
+    threshold: 0.00000000000000000001,
+    once: true,
+    disabled: true
+  }
 })

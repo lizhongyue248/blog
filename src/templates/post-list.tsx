@@ -20,8 +20,12 @@ const useStyles = makeStyles(() =>
   })
 )
 
-const PostSimple: FC<Node> = (node) : ReactElement => {
-  const { document, fields, pageAttributes } = node
+const PostSimple: FC<Node> = (node): ReactElement => {
+  const {
+    document,
+    fields,
+    pageAttributes
+  } = node
   const classes = useStyles()
   const toPost = async () => {
     await navigate(fields.slug)
@@ -45,7 +49,10 @@ const PostSimple: FC<Node> = (node) : ReactElement => {
       </Grid>
       <Grid item xs className='flex flex-col h-72 md:h-52 mt-7 px-4 md:px-0 lg:mt-0'>
         <div className='flex-none'>
-          <h1 className='text-2xl font-bold text-black mt-0 cursor-pointer hover:text-blue-400 duration-500 transition-colors' onClick={toPost}>
+          <h1
+            className='text-2xl font-bold text-black mt-0 cursor-pointer hover:text-blue-400 duration-500 transition-colors'
+            onClick={toPost}
+          >
             {
               pageAttributes.sort && <PublishIcon className='align-top text-4xl' />
             }
@@ -53,7 +60,10 @@ const PostSimple: FC<Node> = (node) : ReactElement => {
           </h1>
         </div>
         <div className='flex-grow text-left text-lg cursor-pointer overflow-hidden'>
-          <p className={`mt-0 hover:text-blue-400 duration-500 transition-colors ${classes.description}`} onClick={toPost}>
+          <p
+            className={`mt-0 hover:text-blue-400 duration-500 transition-colors ${classes.description}`}
+            onClick={toPost}
+          >
             {pageAttributes.description}
           </p>
         </div>
@@ -65,7 +75,13 @@ const PostSimple: FC<Node> = (node) : ReactElement => {
 
 const PostList: FC<PostListProps> = ({ data }): ReactElement => {
   const nodes = data.allAsciidoc.edges.map(edge => edge.node)
-  const { pageInfo = { itemCount: 0, pageCount: 0, currentPage: 1 } } = data.allAsciidoc
+  const {
+    pageInfo = {
+      itemCount: 0,
+      pageCount: 0,
+      currentPage: 1
+    }
+  } = data.allAsciidoc
 
   const handleChange = async (_: ChangeEvent<unknown>, value: number) => {
     await navigate(`/blog/${value <= 1 ? '' : value}`)
@@ -97,7 +113,12 @@ export default PostList
 
 export const pageQuery = graphql`
   query pageQuery($skip: Int!, $limit: Int!) {
-    allAsciidoc(sort: {order: [ASC, DESC], fields: [pageAttributes___sort, fields___birthTime]}, limit: $limit, skip: $skip) {
+    allAsciidoc(
+      filter: {pageAttributes: {exclude: {ne: "true"}}}
+      sort: {order: [ASC, DESC], fields: [pageAttributes___sort, fields___birthTime]},
+      limit: $limit,
+      skip: $skip
+    ) {
       edges {
         node {
           id
