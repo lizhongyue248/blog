@@ -29,6 +29,52 @@ span.bar {
 }
 ----
 
+[%hardbreaks]
+`#fcf`
+`#00BCD4`
+`rgb(232, 74, 87)`
+`rgba(103,58,183,50%)`
+`hsl(88, 50%, 53%)`
+`hsla(36, 100%, 50%, 75%)`
+
+We should use the color color:blueviolet[] in our logo.
+
+Let's take an example with a _GraphViz_ "Hello World":
+
+[graphviz]
+....
+digraph foo {
+  node [style=rounded]
+  node1 [shape=box]
+  node2 [fillcolor=yellow, style="rounded,filled", shape=diamond]
+  node3 [shape=record, label="{ a | b | c }"]
+
+  node1 -> node2 -> node3
+}
+....
+emoji:wink[]
+
+:stem:
+
+A matrix can be written as
+
+[stem]
+++++
+[[a,b],[c,d]]((n),(k))
+sqrt(4) = 2
+sqrt(9) = 3
+++++
+
+[stem]
+++++
+令 g(x) = [f(b)-f(a)]·F(\xi) - [F(b)-F(a)]·f(\xi) \\
+而 g(a) = g(b) \\
+由罗尔定理，g(\xi) = 0 \\
+即 [f(b)-f(a)]·F'(\xi) - [F(b)-F(a)]·f'(\xi) = 0
+++++
+
+
+
 The DocGist project is found at https://github.com/asciidoctor/docgist where you can get the code, file issues and contribute.
 
 [NOTE]

@@ -1,6 +1,10 @@
 /* eslint-disable */
 const asciidoc = require('asciidoctor')()
 const Asciidoctor = require('asciidoctor')
+const emoji = require('asciidoctor-emoji')
+const mathJaxProcessor = require('@djencks/asciidoctor-mathjax')
+const kroki = require('asciidoctor-kroki')
+const color = require('asciidoctor-color')
 const _ = require('lodash')
 
 const filterAsciiDoc = ({ node }, pluginOptions = {}) => {
@@ -36,6 +40,9 @@ exports.onCreateNode = async (
       ['html5']
     )
   }
+  // Plugins
+  [emoji, mathJaxProcessor, kroki, color]
+    .forEach(plugin => plugin.register(asciidoc.Extensions))
 
   // changes the incoming imagesdir option to take the
   const asciidocOptions = processPluginOptions(pluginOptions, pathPrefix)
@@ -92,10 +99,8 @@ exports.onCreateNode = async (
     createNode(asciiNode)
     createParentChildLink({ parent: node, child: asciiNode })
   } catch (err) {
-    reporter.panicOnBuild(
-      `Error processing Asciidoc ${node.absolutePath ? `file ${node.absolutePath}` : `in node ${node.id}`}:\n
-      ${err.message}`
-    )
+    const info = node.absolutePath ? `file ${node.absolutePath}` : `in node ${node.id}`
+    reporter.panicOnBuild(`Error processing Asciidoc ${info}:\n ${err.message}`)
   }
 }
 
