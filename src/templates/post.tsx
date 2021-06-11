@@ -76,7 +76,13 @@ const Post: FC<PostProps> = (props): ReactElement => {
     })
     document.querySelectorAll('.post img').forEach(block => {
       const element = block as HTMLElement
-      element.classList.add('shadow-image', 'mb-3')
+      element.classList.add('shadow-image', 'mb-3', 'cursor-pointer')
+      element.onclick = () => {
+        const src = element.getAttribute('src') || ''
+        // const alt = element.getAttribute('alt') || ''
+        // showImg(src, alt)
+        window.open(src, '_blank')
+      }
     })
     Prism.highlightAll()
   }, [])

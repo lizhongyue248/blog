@@ -2,7 +2,7 @@ import { FC, ReactElement, useEffect } from 'react'
 import sal from 'sal.js'
 import { useRecoilValue } from 'recoil'
 import { blue, purple } from '@material-ui/core/colors'
-import { createMuiTheme, MuiThemeProvider, CssBaseline, Container, Paper } from '@material-ui/core'
+import { createMuiTheme, MuiThemeProvider, CssBaseline, Container, Paper, Backdrop } from '@material-ui/core'
 import Seo from './Seo'
 import Nav from './Nav'
 import Footer from './Footer'
@@ -10,6 +10,16 @@ import Banner from './Banner'
 import Background from './Background'
 import { darkState, salState } from '../store/base'
 import { LayoutProps } from '../interface/page'
+import useImgPreview from '../hooks/useImgPreview'
+
+const ImgPreview = (): ReactElement => {
+  const { open, src, alt, handleClose } = useImgPreview()
+  return (
+    <Backdrop className='z-30' open={open} onClick={handleClose}>
+      <img src={src} alt={alt} />
+    </Backdrop>
+  )
+}
 
 const Layout: FC<LayoutProps> = (
   {
@@ -48,6 +58,7 @@ const Layout: FC<LayoutProps> = (
       <MuiThemeProvider theme={theme}>
         <Background color={dark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(17,135,250,0.8)'} />
         <CssBaseline />
+        <ImgPreview />
         <Nav actions={actions} banner={banner !== null} />
         {banner && <Banner banner={banner} title={title} other={other} />}
         <div id='container' className='w-full flex justify-center'>

@@ -25,3 +25,15 @@ export interface SeoData {
   allDataJson: SiteData
   site: { siteMetadata: SiteMeta }
 }
+
+export interface ImgPreview {
+  open: boolean
+  src: string
+  alt: string
+}
+
+export interface UseImgPreview extends ImgPreview{
+  handleClose: () => void
+  handleOpen: (src: string, alt: string) => void
+  reset: () => void
+}

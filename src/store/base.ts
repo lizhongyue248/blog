@@ -1,6 +1,7 @@
 import { Options } from 'sal.js'
 import { atom, DefaultValue, AtomEffect } from 'recoil'
 import { isBrowser } from '../util/constant'
+import { ImgPreview } from '../interface/site'
 
 const darkStore = isBrowser() ? window.localStorage.getItem('dark') : false
 
@@ -43,5 +44,14 @@ export const salState = atom<Options>({
     threshold: 0.00000000000000000001,
     once: true,
     disabled: true
+  }
+})
+
+export const imgPreviewState = atom<ImgPreview>({
+  key: 'img-preview',
+  default: {
+    open: false,
+    src: '',
+    alt: ''
   }
 })

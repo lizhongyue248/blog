@@ -26,10 +26,11 @@ module.exports = {
   },
   flags: {
     DEV_SSR: false,
-    FAST_DEV: true,
+    FAST_DEV: false,
     FAST_REFRESH: true,
     PARALLEL_SOURCING: true,
-    PRESERVE_WEBPACK_CACHE: true
+    PRESERVE_WEBPACK_CACHE: true,
+    LMDB_STORE: true
   },
   plugins: [
     {

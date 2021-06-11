@@ -131,7 +131,7 @@ const Nav: FC<ArrayProps> = ({ actions: actionProps = [], banner = true }): Reac
   return (
     <div>
       <Bar banner={banner}>
-        <AppBar elevation={4} className={`min-h-0 h-16 bg-transparent transition-all duration-700 ${classes.appBar}`}>
+        <AppBar elevation={4} className={`z-10 min-h-0 h-16 bg-transparent transition-all duration-700 ${classes.appBar}`}>
           <Toolbar className='h-full min-h-0 max-w-7xl w-full flex justify-between mx-auto'>
             <div className='flex'>
               <Link to='/blog' className='no-underline'>
@@ -183,7 +183,7 @@ const Nav: FC<ArrayProps> = ({ actions: actionProps = [], banner = true }): Reac
           ))}
         </List>
       </Drawer>
-      <div className='fixed right-4 bottom-4 z-50'>
+      <div className='fixed right-4 bottom-4 z-10'>
         {actions}
       </div>
     </div>
