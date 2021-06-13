@@ -10,16 +10,17 @@ jobs:
         with:
           path: service
       - uses: gradle/wrapper-validation-action@v1
-#  update:
-#    name: "Update"
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v2
-#        with:
-#          path: service
-#      - name: Update Gradle Wrapper
-#        uses: gradle-update/update-gradle-wrapper-action@v1
-#        with:
-#          repo-token: ${{ secrets.ACCESS_TOKEN }}
-#          reviewers: lizhongyue248
-#          labels: automated pr, dependencies
+  update:
+    name: "Update"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: service
+    steps:
+      - uses: actions/checkout@v2
+      - name: Update Gradle Wrapper
+        uses: gradle-update/update-gradle-wrapper-action@v1
+        with:
+          repo-token: ${{ secrets.ACCESS_TOKEN }}
+          reviewers: lizhongyue248
+          labels: automated pr, dependencies
