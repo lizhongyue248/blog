@@ -1,0 +1,36 @@
+name: Delpoy
+
+on:
+  push:
+    branches:
+      - master
+
+defaults:
+  run:
+    working-directory: service
+
+jobs:
+  delpoy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build with Gradle
+        run: ./gradlew installDist
+      - name: Deloy to Huawei ECS
+        uses: cross-the-world/ssh-scp-ssh-pipelines@latest
+        with:
+          host: ${{ secrets.HUAWEI_HOST }}
+          user: ${{ secrets.HUAWEI_USER }}
+          pass: ${{ secrets.HUAWEI_PASS }}
+          scp: |
+            ./service/build/install/service/** => /root/service/
+          last_ssh: |
+            kill -9 `netstat -ntpl | grep 8000 | awk -F ' ' '{print $7}' | awk -F '/' '{print $1}'`
+            nohup sh /root/service/bin/service -config=/root/service/application.conf > /root/service/serivce.log 2>&1 &
