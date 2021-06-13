@@ -32,6 +32,10 @@ fun Application.configureRouting() {
       call.respond(pageViewHandle.all())
     }
 
+    get("/pages/view") {
+      call.respond(pageViewHandle.view())
+    }
+
     get("/pages") {
       val names = call.parameters.getAll("names")
       if (names.isNullOrEmpty()) call.respond(HttpStatusCode.BadRequest)

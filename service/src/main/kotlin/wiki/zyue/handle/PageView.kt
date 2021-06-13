@@ -42,6 +42,7 @@ data class PageViewResponse(
   val favorite: Int,
   val hate: Int
 )
+
 /**
  * @date 2021/6/12 01:44:41
  * @author echo
@@ -154,5 +155,15 @@ class PageViewHandle {
           hate = pageViewRepository.hate
         )
       }.ifEmpty { listOf() }
+  }
+
+  /**
+   * (GET) /pages/view
+   * Get all page view.
+   */
+  fun view() = transaction {
+    PageViewRepository.all()
+      .sumOf { it.count }
+      .let { mapOf("number" to it) }
   }
 }
