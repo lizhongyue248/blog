@@ -1,10 +1,10 @@
 /* eslint-disable */
 const asciidoc = require('asciidoctor')()
 const Asciidoctor = require('asciidoctor')
-const emoji = require('asciidoctor-emoji')
 const mathJaxProcessor = require('@djencks/asciidoctor-mathjax')
-const kroki = require('asciidoctor-kroki')
 const color = require('asciidoctor-color')
+const emoji = require('asciidoctor-emoji')
+const kroki = require('asciidoctor-kroki')
 const _ = require('lodash')
 
 const filterAsciiDoc = ({ node }, pluginOptions = {}) => {

@@ -19,6 +19,11 @@
     "email": "lizhongyue248@163.com",
     "url": "https://github.com/lizhongyue248"
   },
+  "workspaces": {
+    "packages": [
+      "plugins/**/*"
+    ]
+  },
   "scripts": {
     "develop": "gatsby develop -p $npm_package_config_port",
     "start": "gatsby develop -p $npm_package_config_port",
