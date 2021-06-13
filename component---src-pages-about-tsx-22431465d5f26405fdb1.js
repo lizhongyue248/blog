@@ -1,0 +1,2 @@
+(self.webpackChunkz_yue=self.webpackChunkz_yue||[]).push([[49],{10249:function(e,n,t){"use strict";t.r(n);var u=t(60596),a=t(89500),c=t(16203),i=t(85893);n.default=function(e){var n=e.data.asciidoc;return(0,i.jsx)(c.Z,{title:n.document.title,banner:(0,u.Eg)(5),children:(0,i.jsx)(a.ZP,{node:n})})}}}]);
+//# sourceMappingURL=component---src-pages-about-tsx-22431465d5f26405fdb1.js.map

@@ -1,0 +1,9 @@
+/*! Apply the style for chart */
+
+/*! Bind the Event handler */
+
+/*! Find the Events type */
+
+/*! Set theme for accumulation chart */
+
+/*! UnBind the Event handler */
