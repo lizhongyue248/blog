@@ -32,5 +32,4 @@ jobs:
           scp: |
             ./service/build/install/service/** => /root/service/
           last_ssh: |
-            kill -9 `netstat -ntpl | grep 8000 | awk -F ' ' '{print $7}' | awk -F '/' '{print $1}'`
-            nohup sh /root/service/bin/service -config=/root/service/application.conf > /root/service/serivce.log 2>&1 &
+            sh /root/service/run.sh
