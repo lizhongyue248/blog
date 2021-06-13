@@ -11,7 +11,9 @@ fun Application.configureHTTP() {
     method(HttpMethod.Post)
 //    header(HttpHeaders.Authorization)
     allowCredentials = true
-    host("localhost")
+    if (developmentMode) {
+      host("*")
+    }
     host("zyue.wiki", listOf("https"))
   }
 
