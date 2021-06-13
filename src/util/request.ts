@@ -1,8 +1,8 @@
 import { extend } from 'umi-request'
 
 const request = extend({
+  prefix: 'https://service.ayue.wiki',
   timeout: 10000,
-  getResponse: true,
   mode: 'cors'
 })
 

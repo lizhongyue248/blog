@@ -1,3 +1,5 @@
+import { PageView } from './site'
+
 export interface Node {
   html: string
   id: string
@@ -39,4 +41,9 @@ export interface PostListProps {
     next?: PageContent
     previous?: PageContent
   }
+}
+
+export interface PostSimpleProp {
+  node: Node
+  view: PageView
 }

@@ -1,6 +1,5 @@
 import { FC, ReactElement } from 'react'
 import Alert from '@material-ui/lab/Alert'
-import VisibilityIcon from '@material-ui/icons/Visibility'
 import { Divider } from '@material-ui/core'
 import PostSimpleInfo from './PostSimpleInfo'
 import Comment from './Comment'
@@ -16,7 +15,7 @@ export const salAttr = {
 export const globalSalAttrString = 'data-sal="fade" data-sal-duration="500" data-sal-repeat="true"'
 
 const PostContent: FC<PostContentProps> = (
-  { node: post, children, comment = true }
+  { node: post, children, comment = true, view }
 ): ReactElement => {
   const time = fromNow(post.fields.modifiedTime)
   return (
@@ -25,12 +24,7 @@ const PostContent: FC<PostContentProps> = (
         {post.document.title}
       </div>
       <Divider className='mt-5' />
-      <PostSimpleInfo node={post} className='max-w-lg mx-auto my-3' {...salAttr}>
-        <span style={{ display: 'none' }} id='busuanzi_container_page_pv' className='cursor-pointer hover:text-blue-400 duration-500 transition-colors'>
-          <VisibilityIcon className='align-text-bottom text-base' />
-          <span className='ml-2' id='busuanzi_value_page_pv' />
-        </span>
-      </PostSimpleInfo>
+      <PostSimpleInfo node={post} className='max-w-lg mx-auto my-3' view={view} {...salAttr} />
       <div className='mt-5'>
         {
           post.pageAttributes.image &&

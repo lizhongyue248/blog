@@ -120,3 +120,8 @@ export const cdn = 'https://resources.echocow.cn'
 export const getBanner = (round = 1): string => `${cdn}${banner[Math.round(new Date().getTime() * round / 100000 % banner.length)]}`
 
 export const toCdn = (path: string): string => cdn + path
+
+export const requestOptions = {
+  pollingInterval: 3000,
+  pollingWhenHidden: false
+}

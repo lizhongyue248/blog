@@ -2,7 +2,7 @@ import { FC, ReactElement, useEffect, useState } from 'react'
 import { useClipboard } from 'use-clipboard-copy'
 import Prism from 'prismjs'
 import { graphql, Link } from 'gatsby'
-import { useBoolean } from 'ahooks'
+import { useBoolean, useRequest } from 'ahooks'
 import SpeedDial from '@material-ui/lab/SpeedDial'
 import Alert from '@material-ui/lab/Alert'
 import { ListAlt } from '@material-ui/icons'
@@ -11,6 +11,7 @@ import { Theme } from '@material-ui/core/styles'
 import Snackbar from '@material-ui/core/Snackbar'
 import { Divider, Drawer, Toolbar } from '@material-ui/core'
 import { isBrowser } from '../util/constant'
+import { PageView } from '../interface/site'
 import { PostMeta } from '../interface/page'
 import { PostProps } from '../interface/asciidoc'
 import PostContent, { globalSalAttrString } from '../components/PostContent'
@@ -18,6 +19,7 @@ import Layout from '../components/Layout'
 import '../styles/fontawesome.min.css'
 import '../styles/asciidoc.scss'
 import '../styles/post.scss'
+import { pageView } from '../api/page-view'
 
 interface CatalogueProps {
   list?: string
@@ -94,6 +96,7 @@ const Post: FC<PostProps> = (props): ReactElement => {
     category: post.pageAttributes.category
   }
 
+  const { data: view } = useRequest<PageView>(() => pageView(post.id, postMeta.title, post.fields.slug))
   return (
     <Layout
       title={postMeta.title}
@@ -109,7 +112,7 @@ const Post: FC<PostProps> = (props): ReactElement => {
         />]}
     >
       <Catalogue show={drawer} list={toc} visibleToggle={drawerToggle} />
-      <PostContent node={post}>
+      <PostContent node={post} view={view}>
         <Divider />
         <div className='mt-4 font-bold' {...salAttr}>
           <span>上一篇：</span>

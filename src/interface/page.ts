@@ -1,4 +1,5 @@
 import { CSSProperties, ReactElement, ReactNode } from 'react'
+import { PageView } from './site'
 import { Node } from './asciidoc'
 
 export interface PostMeta {
@@ -42,4 +43,5 @@ export interface PostContentProps {
   node: Node
   comment?: boolean
   children?: ReactElement[]
+  view?: PageView
 }

@@ -1,8 +1,11 @@
 import { FC, ReactElement } from 'react'
 import { Helmet } from 'react-helmet'
 import { graphql, useStaticQuery } from 'gatsby'
+import { useRequest } from 'ahooks'
 import { useLocation } from '@reach/router'
-import { SeoProps, SeoData } from '../interface/site'
+import { isBrowser } from '../util/constant'
+import { SeoProps, SeoData, PageView } from '../interface/site'
+import { pageView } from '../api/page-view'
 
 const Seo: FC<SeoProps> = ({ post = { category: '' } }): ReactElement => {
   const { pathname } = useLocation()
@@ -27,12 +30,15 @@ const Seo: FC<SeoProps> = ({ post = { category: '' } }): ReactElement => {
   `)
   const { name, keyword, description, image, titleTemplate } = allDataJson.nodes[0]
   const { siteMetadata } = site
+  const url = new URL(isBrowser() ? window.location.href : '/home')
+  if (!url.pathname.startsWith('/articles')) {
+    useRequest<PageView>(() => pageView(post.title || name, post.title || name, url.pathname), { throwOnError: true })
+  }
   return (
     <Helmet
       title={post.title || name}
       titleTemplate={titleTemplate}
       script={[
-        { async: true, src: '//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js' },
         { async: true, 'data-ad-client': 'ca-pub-4396842140136522', src: '//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js' }
       ]}
       meta={[

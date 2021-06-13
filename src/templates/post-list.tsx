@@ -1,12 +1,16 @@
 import { FC, ReactElement, ChangeEvent } from 'react'
 import { graphql, navigate } from 'gatsby'
+import { useRequest } from 'ahooks'
 import Pagination from '@material-ui/lab/Pagination'
 import PublishIcon from '@material-ui/icons/Publish'
 import { createStyles } from '@material-ui/core/styles'
 import { Grid, makeStyles } from '@material-ui/core'
-import { PostListProps, Node } from '../interface/asciidoc'
+import { requestOptions } from '../util/constant'
+import { PagesView } from '../interface/site'
+import { PostListProps, PostSimpleProp } from '../interface/asciidoc'
 import PostSimpleInfo from '../components/PostSimpleInfo'
 import Layout from '../components/Layout'
+import { pages } from '../api/page-view'
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -20,16 +24,14 @@ const useStyles = makeStyles(() =>
   })
 )
 
-const PostSimple: FC<Node> = (node): ReactElement => {
+const PostSimple: FC<PostSimpleProp> = ({ node, view }): ReactElement => {
   const {
     document,
     fields,
     pageAttributes
   } = node
   const classes = useStyles()
-  const toPost = async () => {
-    await navigate(fields.slug)
-  }
+  const toPost = async () => { await navigate(fields.slug) }
   return (
     <Grid
       container
@@ -67,7 +69,7 @@ const PostSimple: FC<Node> = (node): ReactElement => {
             {pageAttributes.description}
           </p>
         </div>
-        <PostSimpleInfo fromNow node={node} />
+        <PostSimpleInfo fromNow node={node} view={view} between={false} className='md:justify-start space-x-5 sm:space-x-8 md:space-x-12' />
       </Grid>
     </Grid>
   )
@@ -86,9 +88,12 @@ const PostList: FC<PostListProps> = ({ data }): ReactElement => {
   const handleChange = async (_: ChangeEvent<unknown>, value: number) => {
     await navigate(`/blog/${value <= 1 ? '' : value}`)
   }
+  const nodeIds = nodes.map(node => `${node.id}`)
+  const { data: views = {} } = useRequest<PagesView>(() => pages(nodeIds), requestOptions)
+
   return (
     <Layout other={<div>念念不忘，必有回响</div>}>
-      {nodes.map(node => (<PostSimple key={node.id} {...node} />))}
+      {nodes.map(node => (<PostSimple key={node.id} node={node} view={views[node.id]} />))}
       <div
         className='flex'
         data-sal='slide-up'

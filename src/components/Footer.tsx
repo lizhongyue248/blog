@@ -1,11 +1,14 @@
 import { FC, ReactElement } from 'react'
 import { navigate } from 'gatsby'
+import { useRequest } from 'ahooks'
 import RssFeedIcon from '@material-ui/icons/RssFeed'
 import GitHubIcon from '@material-ui/icons/GitHub'
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder'
 import { Chip, Divider, IconButton, Tooltip } from '@material-ui/core'
-import { isBrowser } from '../util/constant'
+import { isBrowser, requestOptions } from '../util/constant'
 import { getYear } from '../util'
+import { ResultNumber } from '../interface/site'
+import { pagesView, userView } from '../api/page-view'
 import packageJson from '../../package.json'
 
 const Footer: FC = (): ReactElement => {
@@ -21,6 +24,8 @@ const Footer: FC = (): ReactElement => {
       onClick: () => navigate('/rss.xml')
     }
   ]
+  const { data: view = { number: 0 } } = useRequest<ResultNumber>(() => pagesView(), requestOptions)
+  const { data: users = { number: 0 } } = useRequest<ResultNumber>(() => userView(), requestOptions)
   return (
     <footer
       className='w-full text-center py-9'
@@ -36,9 +41,9 @@ const Footer: FC = (): ReactElement => {
         color='primary'
       />
       <div>
-        总访问量 <span id='busuanzi_value_site_pv' /> 次
+        总访问量 {view.number}  次
         <FavoriteBorderIcon className='align-middle text-xl mx-2 px-1 animate-ping' />
-        总访客数 <span id='busuanzi_value_site_uv' /> 人
+        总访客数 {users.number} 人
         <Divider variant='inset' className='my-1' />
       </div>
       <div>Copyright © 2017 - {getYear()}.
