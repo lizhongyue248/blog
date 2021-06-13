@@ -4,8 +4,8 @@ import { ActionType, Ip, PagesView, PageView, ResultNumber } from '../interface/
 export const pageView = (name: string, title: string, path: string): Promise<PageView> =>
   request.get<PageView>(`/page/view/${name}`, { params: { title, path } })
 
-export const pageAction = (name: string, title: string, path: string, type: ActionType): Promise<void> =>
-  request.get<void>(`/page/action/${name}`, { params: { title, path, type } })
+export const pageAction = (view: PageView, type: ActionType): Promise<void> =>
+  request.get<void>(`/page/action/${view.name}`, { params: { title: view.title, path: view.path, type } })
 
 export const pageAll = (): Promise<PageView[]> =>
   request.get<PageView[]>('/page/all')

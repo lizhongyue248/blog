@@ -30,7 +30,7 @@ const Seo: FC<SeoProps> = ({ post = { category: '' } }): ReactElement => {
   `)
   const { name, keyword, description, image, titleTemplate } = allDataJson.nodes[0]
   const { siteMetadata } = site
-  const url = new URL(isBrowser() ? window.location.href : '/home')
+  const url = new URL(isBrowser() ? window.location.href : 'https://zyue.wiki/home')
   if (!url.pathname.startsWith('/articles')) {
     useRequest<PageView>(() => pageView(post.title || name, post.title || name, url.pathname), { throwOnError: true })
   }

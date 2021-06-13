@@ -41,7 +41,7 @@ export interface BackgroundProps {
 
 export interface PostContentProps {
   node: Node
+  view?: PageView
   comment?: boolean
   children?: ReactElement[]
-  view?: PageView
 }

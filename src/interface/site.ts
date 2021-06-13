@@ -67,7 +67,8 @@ export interface ResultNumber {
 }
 
 export enum ActionType {
-  FAVORITE, HATE
+  FAVORITE= 'FAVORITE',
+  HATE = 'HATE'
 }
 
 export interface UseService {

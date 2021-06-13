@@ -1,7 +1,7 @@
 import { FC, ReactElement, useEffect } from 'react'
 import * as sal from 'sal.js'
 import { useRecoilValue } from 'recoil'
-import { blue, purple } from '@material-ui/core/colors'
+import { blue, pink } from '@material-ui/core/colors'
 import { createMuiTheme, MuiThemeProvider, CssBaseline, Container, Paper } from '@material-ui/core'
 import Seo from './Seo'
 import Nav from './Nav'
@@ -29,7 +29,7 @@ const Layout: FC<LayoutProps> = (
         type: dark ? 'dark' : 'light',
         divider: '#BDBDBD',
         primary: blue,
-        secondary: purple
+        secondary: pink
       }
     }
   )
