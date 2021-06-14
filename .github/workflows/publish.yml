@@ -1,9 +1,12 @@
 name: Github Publish
 
 on:
+  pull_request:
+    paths-ignore:
+      - "service/**"
   push:
-    branches:
-      - master
+    paths-ignore:
+      - "service/**"
 
 jobs:
   build:

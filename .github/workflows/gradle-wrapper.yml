@@ -1,5 +1,13 @@
 name: "Validate Gradle Wrapper"
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "service/**"
+  pull_request:
+    paths:
+      - "service/**"
 
 jobs:
   validation:
