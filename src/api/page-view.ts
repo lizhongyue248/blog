@@ -16,8 +16,8 @@ export const pagesView = (): Promise<ResultNumber> =>
 export const pages = (names: string[]): Promise<PagesView> =>
   request.get<PagesView>('/pages', { params: { names } })
 
-export const userView = (): Promise<ResultNumber> =>
-  request.get<ResultNumber>('/user/view')
+export const userView = (ip: string): Promise<ResultNumber> =>
+  request.get<ResultNumber>('/user/view', { params: { ip } })
 
 export const userIps = (): Promise<Ip[]> =>
   request.get<Ip[]>('/user/ips')

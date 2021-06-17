@@ -1,4 +1,5 @@
 import { FC, ReactElement } from 'react'
+import request from 'umi-request'
 import { navigate } from 'gatsby'
 import { useRequest } from 'ahooks'
 import RssFeedIcon from '@material-ui/icons/RssFeed'
@@ -7,7 +8,7 @@ import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder'
 import { Chip, Divider, IconButton, Tooltip } from '@material-ui/core'
 import { isBrowser, requestOptions } from '../util/constant'
 import { getYear } from '../util'
-import { ResultNumber } from '../interface/site'
+import { ResultNumber, UserIp } from '../interface/site'
 import { pagesView, userView } from '../api/page-view'
 import packageJson from '../../package.json'
 
@@ -25,7 +26,15 @@ const Footer: FC = (): ReactElement => {
     }
   ]
   const { data: view = { number: 0 } } = useRequest<ResultNumber>(() => pagesView(), requestOptions)
-  const { data: users = { number: 0 } } = useRequest<ResultNumber>(() => userView(), requestOptions)
+  const { data: users = { number: 0 } } = useRequest<ResultNumber>(async () => {
+    let data:UserIp
+    try {
+      data = await request.get('https://api.ipify.org/?format=json')
+    } catch (e) {
+      data = { ip: '0.0.0.0' }
+    }
+    return userView(data.ip)
+  }, requestOptions)
   return (
     <footer
       className='w-full text-center py-9'

@@ -62,6 +62,10 @@ export interface Ip {
   visit: string
 }
 
+export interface UserIp {
+  ip: string
+}
+
 export interface ResultNumber {
   number: number
 }

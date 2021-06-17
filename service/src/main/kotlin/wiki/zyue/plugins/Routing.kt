@@ -43,7 +43,9 @@ fun Application.configureRouting() {
     }
 
     get("/user/view") {
-      call.respond(userView(call.request.origin.remoteHost))
+      val ip = call.parameters["ip"]
+      if (ip.isNullOrEmpty()) call.respond(HttpStatusCode.BadRequest)
+      call.respond(userView(ip!!))
     }
 
     get("/user/ips") {
