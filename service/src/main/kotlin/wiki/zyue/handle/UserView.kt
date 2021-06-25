@@ -57,7 +57,7 @@ fun userView(host: String) = transaction {
  * (GET) /user/ips
  */
 fun userIps() = transaction {
-  IpRepository.all().sortedBy { it.visit }.ifEmpty { listOf() }.map {
+  IpRepository.all().limit(1000).sortedByDescending { it.visit }.ifEmpty { listOf() }.map {
     Ip(name = it.name, visit = it.visit)
   }
 }
