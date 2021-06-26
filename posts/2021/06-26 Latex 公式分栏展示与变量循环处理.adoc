@@ -1,0 +1,214 @@
+= Latex 公式分栏展示与变量循环处理
+:page-description: 最近在做高等数学的公式总结，然后发现了 Latex 这个宝贝，于是想把自己总结地一些东西给写上去打印出来，但是发现 Latex 的布局学问很大，折腾了好久终于找到了解决办法。
+:page-category: 考研
+:page-image: https://resources.echocow.cn/file/2021/06/26/latex.png
+:toc:
+
+其实自己博客也整合进入了 `Latex` 的，但是却十分不友好，感觉使用的整合库没有十分完全，很多东西没有办法使用。所以还是回归到了 `Latex`，可是 `Latex` 的布局学问真的很大，目前遇到一个比较复杂的问题就是公式的分栏的处理。
+
+自己想要的效果图如下：
+
+image::https://resources.echocow.cn/file/2021/06/26/iShot2021-06-26%2013.34.04.png[Example]
+
+主要是有以下的几个要求：
+
+. 序号自动生成：每个章节的公式序号都自动计算，不需要自己手动编写。
+. 左右分栏布局：支持多栏的布局
+. 在 `Latex` 中使用循环变量进行遍历公式
+
+但是每一个实现起来都遇到不少的坑，在这里记录一下。
+
+== 序号自动生成
+
+每一节的时候，序号都从 1 开始计数，每次使用序号这个命令的时候，将会自增。这里我们就需要使用到 `Latex` 里面的计数器功能了。
+
+[source,latex]
+----
+\newcounter{Number}[section] %  <1>
+\renewcommand{\theNumber}{\arabic{Number}} % <2>
+\newcommand{\Number}{\refstepcounter{Number}\makebox[1cm]{\textcircled{\scriptsize{\theNumber}}}} % <3>
+----
+<1> 定义一个计数器的名字叫做 `Number`，在每个 `section` 的时候重置。
+<2> 定义一个命令 `\theNumber` ，使用这个命令可以获取到 `Number` 的阿拉伯数字形式。
+<3> 定义一个命令 `\Number`，使用这个命令将会执行 `\refstepcounter` 自增命令；这里可以根据需求进行扩展添加 `ref` 进行关联，同时将会显示 `\makebox` 后面的内容，在这里我让他显示为一个圆圈里面加个数字的形式。
+
+那么我们现在写公式就可以这样写：
+
+[source, latex]
+----
+\Number 公式 1,
+\Number 公式 2,
+\Number 公式 3
+......
+----
+
+这样他就会进行自增了，效果如下：
+
+image::https://resources.echocow.cn/file/2021/06/26/iShot2021-06-26%2013.51.43.png[效果图]
+
+== 公式分栏布局
+
+查了很多资料，发现常用的一些方式都非常不好用，例如 `equation`, `align*` 等，使用的时候要不就是有公式编号，要不就是布局的时候很复杂。自己也是踩了很多坑，但是最终也解决了问题。
+
+=== 使用 `flalign*`
+
+第一种方式是使用 `flalign*` ，代码如下：
+
+[source, latex]
+----
+\section{高阶导数}
+如果函数$f(x)$在点 x 处 n 阶可导，则在点 x 的某领域内$f(x)$必定有一切低于 n 阶的导数。 % <1>
+\begin{flalign*}
+     & \Number (\sin x)^n = \sin (x + n \cdot \frac{\pi}{2})         &
+     & \Number (\cos x)^n = \cos (x + n \cdot \frac{\pi}{2})         & \\
+     & \Number (u\pm v)^n = u ^ n \pm v ^ n                          &
+     & \Number (uv)^n = \sum\limits_{k=0}^{n}C_n^ku^{(k)}v^{(n - k)} & \\
+\end{flalign*}
+----
+<1> 其实使用 `flalign*` 会发现他的上边距会很大，有一行左右的上边距，所以这里我加了一行文字，让他和节标题不会太显得太空太远。
+
+效果如图：
+
+image::https://resources.echocow.cn/file/2021/06/26/iShot2021-06-26%2013.58.49.png[flalign]
+
+
+但是上边距的问题没有很好的办法解决，我不可能在所有节的地方都加一句话让他不显得那么空，所以我尝试寻找其他的办法。
+
+=== 使用 `parcolumns` 包
+
+随后就找了几种分列的布局，例如 `multicol` 这个包，但是他的问题更大，他需要把左侧的全部写在一起然后再在右侧的，那么这样的话我们的序号就会编程从左边 1234，右边 5678 了。还有一个包不会触发序号的自增，最后尝试了只有 `parcolumns` 这个包勉强可以办到。
+
+代码如下：
+
+[source,latex]
+----
+\begin{parcolumns}[nofirstindent]{3}
+    \colchunk{\Number 公式 1}
+    \colchunk{\Number 公式 2}
+    \colchunk{\Number 公式 3}
+    \colplacechunks
+\end{parcolumns}
+----
+
+效果自然是分三列的了，但是如果我一二三列都有很多公式呢？先是这样写
+
+
+[source,latex]
+----
+\begin{parcolumns}[nofirstindent]{3}
+    \colchunk{\Number 公式 1\\ \Number 公式 11 \\ \Number 公式 12}
+    \colchunk{\Number 公式 2\\ \Number 公式 21 \\ \Number 公式 22}
+    \colchunk{\Number 公式 3\\ \Number 公式 31 \\ \Number 公式 32}
+    \colplacechunks
+\end{parcolumns}
+----
+
+会发现问题也是和 `multicol` 一样的
+
+image::https://resources.echocow.cn/%5Cfile%5C2021%5C06%5C26%5CiShot2021-06-26%2014.11.24.png[效果]
+
+解决办法就是再多写几列，如下:
+
+[source,latex]
+----
+\begin{parcolumns}[nofirstindent]{3}
+    \colchunk{\Number 公式 1}
+    \colchunk{\Number 公式 2}
+    \colchunk{\Number 公式 3}
+    \colplacechunks
+    \colchunk{\Number 公式 4}
+    \colchunk{\Number 公式 5}
+    \colchunk{\Number 公式 6}
+    \colplacechunks
+    \colchunk{\Number 公式 7}
+    \colchunk{\Number 公式 8}
+    \colchunk{\Number 公式 9}
+    \colplacechunks
+\end{parcolumns}
+----
+
+这样就能够完美解决了，这是 `multicol` 没法比的。
+
+=== 使用 `tabular*` 表格
+
+不知道大家是否还记得以前 H5，Css3 没出来之前最流行的布局是什么？没错就是 `table` 布局，多个表格嵌套进行布局，自然而然的，`Latex` 里面也可以这样玩儿，代码如下：
+
+[source, latex]
+----
+\begin{flushleft} % <1>
+    \begin{tabular*}{\textwidth}{@{}l@{\extracolsep{\fill}}l} % <2>
+        \Number 公式 1 & \Number 公式 2 \\
+        \Number 公式 3 & \Number 公式 4 \\
+        \Number 公式 5 & \Number 公式 5 \\
+    \end{tabular*}
+\end{flushleft}
+----
+
+<1> 让表格内的所有内容居左。
+<2> 这一行代码中的 `\textwidth` 就是让他宽为文本内容的宽，然后 `@{}` 是不需要边距，`\extracolsep{\fill}` 让表格填满区域。
+
+效果就不贴了，同样能够达到目的。
+
+== 循环变量进行遍历
+
+仔细观察上面的方式就会发现，假设我的公式是一行两个的，那么第一个公式后面就要加上分隔符，例如 `&`。如果是第二个（即行末），就要加上换行符 `\\` 或 `\colplacechunks` 命令进行绘制。如果我们公式很多的时候，需要自己手动计算哪一个公式是第一列的，哪个一个公式是第二列的然后加上不同的符号。当我们需要在中间插入一个新的公式的时候你就会发现我们需要去改这个公式后面的所有公式的符号，因为数目发生了变化，后面共识的索引也就发生了变化。这样的话我们写起来是非常不方便的，所以按照程序员的思维，我们可以将这些公式存储到一个集合变量里面去，然后遍历的输出出来，对于奇数个的索引，添加分隔符，对于偶数个的索引，添加换行符。
+
+按照上面的思路我们就需要去寻找 `Latex` 里面的解决办法，尝试了几个库，最终比较好用的就是 `listofitems` 集合库与 `xint` 工具库。
+
+先引用进来
+
+[source, latex]
+----
+\usepackage{listofitems}
+\usepackage{xint,xintcore,xinttools}
+----
+
+然后按照上面的步骤执行操作，这里现以表格的方式进行展示
+
+[source, latex]
+----
+\section{不定积分基本公式}
+\readlist*\indefiniteIntegration{% <1>
+    \Number 公式 1,
+    \Number 公式 2,
+    \Number 公式 3,
+    \Number 公式 4,
+    \Number 公式 5,
+    \Number 公式 6,
+}
+
+\begin{flushleft}
+    \begin{tabular*}{\textwidth}{@{}l@{\extracolsep{\fill}}l}
+        \xintFor* #1 in {\xintSeq {1}{\listlen\indefiniteIntegration[]}}\do % <2>
+        {
+            \indefiniteIntegration[#1]  % <3>
+            \xintiiifOdd{#1}{&}{\\}     % <4>
+        }
+    \end{tabular*}
+\end{flushleft}
+----
+
+<1> 定义一个 `\indefiniteIntegration` 列表，然后存入公式（公式就省略了）。
+<2> 使用 `\xintFor*` 工具进行遍历，`#1` 就是变量的名字，`\xintSeq` 则是生成一个从 1 到列表 `\indefiniteIntegration` 长度的数字集合。**注意：我们这里遍历的数字，即列表的索引。**
+<3> 打印 `\indefiniteIntegration` 列表 `#1` 位置的元素
+<4> 使用 `\xintiiifOdd` 进行判断 `#1` 是不是偶数，如果是，就输出 `&`，否则输出 `\\`
+
+这样就达到我们想要的效果了，以后我们需要加公式直接在列表里面加就行了，不需要我们担心他会不会生成换行符这些了。
+
+而如果使用 `parcolumns`，也是差不多的，如下：
+
+[source, latex]
+----
+\begin{parcolumns}[nofirstindent]{2}
+    \xintFor* #1 in {\xintSeq {1}{\listlen\indefiniteIntegration[]}}\do
+    {
+        \colchunk{\indefiniteIntegration[#1]}
+        \xintiiifOdd{#1}{}{\colplacechunks}
+    }
+\end{parcolumns}
+----
+
+
+== 总结
+
+`Latex` 真香！以前自己的毕业论文就是用 `Latex` 的，学校强制要求的，自己还没觉得那么好用，现在用着感觉真的很棒啊！！！以后考虑多多使用 `Latex` 来写一些东西啦！非常很适合程序员！
