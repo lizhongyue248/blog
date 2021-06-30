@@ -9,10 +9,6 @@ class CustomConverter {
   convert (node, transform) {
     const domString = this.baseConverter.convert(node, transform)
     const $ = cheerio.load(domString, null, false)
-    const dom = $('div, h1, h2, h3, h4, h5, h6, ul, li')
-    dom.prop('data-sal', 'fade')
-    dom.prop('data-sal-duration', '500')
-    dom.prop('data-sal-repeat', 'true')
     return $.html()
   }
 }

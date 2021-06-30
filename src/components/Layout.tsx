@@ -1,5 +1,4 @@
 import { FC, ReactElement, useEffect } from 'react'
-import * as sal from 'sal.js'
 import { useRecoilValue } from 'recoil'
 import { blue, pink } from '@material-ui/core/colors'
 import { createMuiTheme, MuiThemeProvider, CssBaseline, Container, Paper } from '@material-ui/core'
@@ -8,7 +7,7 @@ import Nav from './Nav'
 import Footer from './Footer'
 import Banner from './Banner'
 import Background from './Background'
-import { darkState, salState } from '../store/base'
+import { darkState } from '../store/base'
 import { LayoutProps } from '../interface/page'
 
 const Layout: FC<LayoutProps> = (
@@ -22,7 +21,6 @@ const Layout: FC<LayoutProps> = (
   }
 ): ReactElement => {
   const dark = useRecoilValue(darkState)
-  const salOptions = useRecoilValue(salState)
   const theme = createMuiTheme(
     {
       palette: {
@@ -40,7 +38,6 @@ const Layout: FC<LayoutProps> = (
       document.title = document.hidden ? `(つェ⊂) 看不到我~ ${documentTitle}` : `(*´∇｀*) 被发现啦~ ${documentTitle}`
       if (document.hidden) { clearTimeout(titleTime) } else { titleTime = setTimeout(() => { document.title = documentTitle }, 2000) }
     })
-    sal.default(salOptions)
   }, [])
   return (
     <div>

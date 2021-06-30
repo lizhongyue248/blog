@@ -8,7 +8,6 @@
     "update:dependency": "yarn upgrade-interactive --latest"
   },
   "dependencies": {
-    "@djencks/asciidoctor-mathjax": "^0.0.7",
     "asciidoctor": "^2.2.4",
     "asciidoctor-color": "^0.2.1",
     "asciidoctor-emoji": "^0.3.4",

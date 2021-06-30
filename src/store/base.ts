@@ -1,4 +1,3 @@
-import { Options } from 'sal.js'
 import { atom, DefaultValue, AtomEffect } from 'recoil'
 import { isBrowser } from '../util/constant'
 import { ImgPreview } from '../interface/site'
@@ -37,15 +36,15 @@ export const searchState = atom<boolean>({
   default: false
 })
 
-export const salState = atom<Options>({
-  key: 'sal',
-  default: {
-    root: null,
-    threshold: 0.00000000000000000001,
-    once: true,
-    disabled: true
-  }
-})
+// export const salState = atom<Options>({
+//   key: 'sal',
+//   default: {
+//     root: null,
+//     threshold: 0.00000000000000000001,
+//     once: true,
+//     disabled: true
+//   }
+// })
 
 export const imgPreviewState = atom<ImgPreview>({
   key: 'img-preview',

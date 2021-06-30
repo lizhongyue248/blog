@@ -1,7 +1,6 @@
 /* eslint-disable */
 const asciidoc = require('asciidoctor')()
 const Asciidoctor = require('asciidoctor')
-const mathJaxProcessor = require('@djencks/asciidoctor-mathjax')
 const color = require('asciidoctor-color')
 const emoji = require('asciidoctor-emoji')
 const kroki = require('asciidoctor-kroki')
@@ -41,7 +40,7 @@ exports.onCreateNode = async (
     )
   }
   // Plugins
-  [emoji, mathJaxProcessor, kroki, color]
+  [emoji, kroki, color]
     .forEach(plugin => plugin.register(asciidoc.Extensions))
 
   // changes the incoming imagesdir option to take the

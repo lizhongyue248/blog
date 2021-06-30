@@ -14,7 +14,7 @@ export const colors = [
   'cyan',
   'indigo',
   'purple',
-  'lightBlue',
+  'sky',
   'pink'
 ]
 
@@ -34,7 +34,7 @@ export const bgColors = [
   'bg-cyan-500',
   'bg-indigo-500',
   'bg-purple-500',
-  'bg-lightBlue-500',
+  'bg-sky-500',
   'bg-pink-500'
 ]
 
@@ -54,7 +54,7 @@ export const textColors = [
   'text-cyan-500',
   'text-indigo-500',
   'text-purple-500',
-  'text-lightBlue-500',
+  'text-sky-500',
   'text-pink-500'
 ]
 export const borderColors = [
@@ -73,7 +73,7 @@ export const borderColors = [
   'border-cyan-500',
   'border-indigo-500',
   'border-purple-500',
-  'border-lightBlue-500',
+  'border-sky-500',
   'border-pink-500'
 ]
 

@@ -6,7 +6,6 @@ import { createStyles, Theme } from '@material-ui/core/styles'
 import { makeStyles } from '@material-ui/core'
 import { isBrowser } from '../util/constant'
 import { BannerProps } from '../interface/page'
-import 'sal.js/dist/sal.css'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
