@@ -25,8 +25,7 @@ module.exports = {
     FAST_DEV: false,
     FAST_REFRESH: true,
     PARALLEL_SOURCING: true,
-    PRESERVE_WEBPACK_CACHE: true,
-    LMDB_STORE: true
+    PRESERVE_WEBPACK_CACHE: true
   },
   plugins: [
     {
