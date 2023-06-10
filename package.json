@@ -41,7 +41,7 @@
     "clear-cache": "^1.0.1",
     "dayjs": "^1.10.6",
     "fuse.js": "^6.4.6",
-    "gatsby": "^3.10.2",
+    "gatsby": "^4.25.7",
     "gatsby-image": "^3.10.0",
     "gatsby-plugin-baidu-analytics": "^2.2.0",
     "gatsby-plugin-feed": "^3.10.0",
